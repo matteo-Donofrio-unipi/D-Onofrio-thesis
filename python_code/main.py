@@ -1,17 +1,13 @@
-# This is a sample Python script.
-
-# Press Maiusc+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 from DecisionTreeClassifier import *
 from plotFun import *
 import time
 
-# Press the green button in the gutter to run the script.
-first=False
-second=False
-third=False
-quarter=False
-fifth=True
+# Boolean verbose
+first=True #ESTRAZIONE DATASET TRAINING
+second=True #CALCOLO ALBERO DECISIONE
+third=True #ESTRAZIONE DATASET TEST
+quarter=True #PREDIZIONE E RISULTATO
+fifth=True #GRAFICA DELLE SERIE TEMPORALI
 
 
 print('TEST CLASS')
@@ -25,7 +21,7 @@ if(first==True):
     dfTrain=pd.DataFrame(dataset[0])
     window_size=5
     attributeList=list()
-    setVariables(5,attributeList)
+    setVariables(window_size,attributeList)
     verbose=True
     mpTrain,CandidatesListTrain,numberOfMotifTrain,numberOfDiscordTrain,CandidatesUsedListTrain=getDataStructures(dfTrain,verbose)
     print(dfTrain)
@@ -44,7 +40,7 @@ if(second==True):
     minSamplesLeaf=5
     removeUsedCandidate=1
     verbose=True
-    albero=fit(dfForDTree[:30],candidatesGroup,CandidatesUsedListTrain,maxDepth,minSamplesLeaf,numberOfMotifTrain,numberOfDiscordTrain,removeUsedCandidate,verbose)
+    albero=fit(dfForDTree[:15],candidatesGroup,CandidatesUsedListTrain,maxDepth,minSamplesLeaf,numberOfMotifTrain,numberOfDiscordTrain,removeUsedCandidate,verbose)
     print(attributeList)
     print(albero)
     printAll(albero)
@@ -60,10 +56,10 @@ if(third==True):
     dfTest=dfTest.iloc[:60] #ne prendo 50 altrimenti impiega tempo troppo lungo, sono 900 record totali
 
     attributeList=sorted(attributeList) #ordino attributi per rendere più efficiente 'computeSubSeqDistanceForTest'
-    dfForDTreeTest=computeSubSeqDistanceForTest(dfTest,dfTrain,attributeList,CandidatesListTrain,numberOfMotifTrain,numberOfDiscordTrain)
+    dfForDTreeTest,TsAndStartingPositionList=computeSubSeqDistanceForTest(dfTest,dfTrain,attributeList,CandidatesListTrain,numberOfMotifTrain,numberOfDiscordTrain)
     if(verbose==True):
         print(dfForDTreeTest)
-
+        print(TsAndStartingPositionList)
 
 if(quarter==True):
     # EFFETTUO PREDIZIONE E MISURO RISULTATO
@@ -82,29 +78,26 @@ if(quarter==True):
     print('F1-score %s' % f1_score(yTest, yPredicted, average=None))
     confusion_matrix(yTest, yPredicted)
 
-    print("--- %s seconds END OF EXECUTION" % (time.time() - start_time)/60)
+    print("--- %s seconds END OF EXECUTION" % (time.time() - start_time))
 
 
 if(fifth==True):
+    #ESTRAGGO TUTTO DI NUOVO PERCHE LE TS USATE PRIMA HANNO VALORI AGGIUNTI
     window_size = 5
     setVariablesForPlot(window_size)
-    dataset2 = arff.loadarff('CBF/CBF_TRAIN.arff')
+    dataset2 = arff.loadarff('ItalyPowerDemand/ItalyPowerDemand_TRAIN.arff')
     dfTrain2 = pd.DataFrame(dataset2[0])
     diz = {'Motif': [], 'Discord': []}
     PreProcessedTs = pd.DataFrame(diz)
 
-    for i in range(25):
-        Ts = np.array(dfTrain2.iloc[i].values)
-        print('TS ID:' + str(i))
-        print('TS CLASS:' + str(Ts[len(Ts)-1]))
-        mp, mot, motif_dist, dis = retrieve_all2(Ts)
-        # print('MP'+str(mp))
-        print("Motifs" + str(mot))
-        print("Motifs Dist" + str(motif_dist))
-        print("Discords" + str(dis))
-        plot_all(Ts, mp, mot, motif_dist, dis, window_size)
-        PreProcessedTs.loc[i] = mot, dis
+    for i in range(len(dfTrain2)):
+        for j in range(len(TsAndStartingPositionList)):
+            if(TsAndStartingPositionList[j][0] == i):
+                Ts = np.array(dfTrain2.iloc[i].values)
+                print('TS ID:' + str(i))
+                print('TS CLASS:' + str(Ts[len(Ts)-1]))
+                mp, mot, motif_dist, dis = retrieve_all2(Ts)
+                print('CANDIDATE START IN : '+str(TsAndStartingPositionList[j][1]))
+                plot_all(Ts, mp, mot, motif_dist, dis, window_size)
+                PreProcessedTs.loc[i] = mot, dis
 
-    PreProcessedTs = candidateFilter2(PreProcessedTs)
-    print('Motif/Discord estratti')
-    print(PreProcessedTs)

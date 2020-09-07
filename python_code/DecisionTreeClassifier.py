@@ -132,19 +132,21 @@ def computeSubSeqDistance(dataset, CandidatesList):
         dfForDTree['TsIndex'].iloc[i] = i
         dfForDTree['class'].iloc[i] = classValue
         counter = 0
-        # scandisco e calcolo distanza dai motif
+        # raccolgo i candidati di una riga
         for j in range(len(CandidatesList)):
             numMotif = len(CandidatesList['Motif'].iloc[j])
-            numDiscord = len(CandidatesList['Discord'].iloc[j])
+            # scandisco e calcolo distanza dai motif
             for k in range(numMotif):
                 l1 = CandidatesList['Motif'].iloc[j]  # lista di indice i in motifDiscordList
                 startingIndex = l1[k]  # indice di inizio del motif
                 TsContainingCandidateShapelet = np.array(dataset.iloc[j].values)  # Ts contenente candidato shapelet
-                Dp = distanceProfile.massDistanceProfile(TsContainingCandidateShapelet, int(startingIndex), window_size,
-                                                         TsToCompare)
+                Dp = distanceProfile.massDistanceProfile(TsContainingCandidateShapelet, int(startingIndex), window_size,TsToCompare)
                 minValueFromDProfile = min(Dp[0])  # Dp[0] contiene il Dp effettivo
                 dfForDTree[prefix + str(counter)].iloc[i] = minValueFromDProfile
                 counter += 1
+        for j in range(len(CandidatesList)):
+            numDiscord = len(CandidatesList['Discord'].iloc[j])
+            # scandisco e calcolo distanza dai discord
             for k in range(numDiscord):
                 l1 = CandidatesList['Discord'].iloc[j]  # lista di indice i in motifDiscordList
                 startingIndex = l1[k]  # indice di inizio del motif
@@ -213,6 +215,7 @@ def getBestIndexAttribute(vecMutualInfo, candidatesGroup, CandidatesUsedListTrai
             splitValue = vecMutualInfo.iloc[i]['splitValue']
             CandidatesUsedListTrain.iloc[
                 attributeToVerify] = True  # settando a true il candidato scelto, non sarà usato in seguito
+            print('gain: '+str(vecMutualInfo.iloc[i]['gain']))
         else:
             i += 1
 
@@ -322,6 +325,7 @@ def findBestAttributeValue(dataset, candidatesGroup, CandidatesUsedListTrain, nu
         vecMutualInfo = vecMutualInfo.sort_values(by='gain', ascending=False)
         indexBestAttribute = vecMutualInfo.iloc[0]['attribute']
         bestValueForSplit = vecMutualInfo.iloc[0]['splitValue']
+        print('gain: '+str(vecMutualInfo.iloc[0]['gain'])) #stampo gain
     if (verbose == True):
         print('BEST attribute | value')
         print(indexBestAttribute, bestValueForSplit)
@@ -499,6 +503,8 @@ def computeSubSeqDistanceForTest(datasetTest, datasetTrain, attributeList, Candi
     # quantifico il num di candidati e in base a tale valore genero colonne per dfForDTree
     columnsList2 = list()
     prefix = 'cand'
+    TsAndStartingPositionList=list() #contiene le coppie (Ts, startingPosition) per tenere traccia degli shaplet ottenuti
+    booleanForTsAndStartingPos=True #dopo aver raccolto dati nel primo giro, lo setto a false e mi fermo (altrimenti raccolgo stessi dati)
     for i in attributeList:
         columnsList2.append(prefix + str(i))
     columnsList2.append('TsIndex')
@@ -521,7 +527,6 @@ def computeSubSeqDistanceForTest(datasetTest, datasetTrain, attributeList, Candi
             counter = 0
             for j in range(len(CandidatesList)):
                 numMotif = len(CandidatesList['Motif'].iloc[j])
-                numDiscord = len(CandidatesList['Discord'].iloc[j])
                 for k in range(numMotif):
                     if (counter == candidateIndex):
                         l1 = CandidatesList['Motif'].iloc[j]  # lista di indice i in motifDiscordList
@@ -532,8 +537,11 @@ def computeSubSeqDistanceForTest(datasetTest, datasetTrain, attributeList, Candi
                                                                  window_size, TsToCompare)
                         minValueFromDProfile = min(Dp[0])  # Dp[0] contiene il Dp effettivo
                         dfForDTree[prefix + str(counter)].iloc[i] = minValueFromDProfile
+                        if(booleanForTsAndStartingPos==True):
+                            TsAndStartingPositionList.append([j,startingIndex])
                     counter += 1
-
+            for j in range(len(CandidatesList)):
+                numDiscord = len(CandidatesList['Discord'].iloc[j])
                 for k in range(numDiscord):
                     if (counter == candidateIndex):
                         l1 = CandidatesList['Discord'].iloc[j]  # lista di indice i in motifDiscordList
@@ -544,13 +552,17 @@ def computeSubSeqDistanceForTest(datasetTest, datasetTrain, attributeList, Candi
                                                                  window_size, TsToCompare)
                         minValueFromDProfile = min(Dp[0])  # Dp[0] contiene il Dp effettivo
                         dfForDTree[prefix + str(counter)].iloc[i] = minValueFromDProfile
+                        if (booleanForTsAndStartingPos == True):
+                            TsAndStartingPositionList.append([j, startingIndex])
                     counter += 1
+
+        booleanForTsAndStartingPos = False #setto a false e smetto di raccogliere informazioni
 
     le = LabelEncoder()
     num_classes = le.fit_transform(dfForDTree['class'])
     dfForDTree['class'] = num_classes
 
-    return dfForDTree  # columnsList2 restituito per generare poi dFrame in "Split" (struttura dframe)
+    return dfForDTree,TsAndStartingPositionList  # columnsList2 restituito per generare poi dFrame in "Split" (struttura dframe)
 
 
 
