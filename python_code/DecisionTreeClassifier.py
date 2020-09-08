@@ -27,8 +27,6 @@ def setVariables(window_s,attributeL):
     attributeList=attributeL
 
 def retrieve_all(Ts):  # fornita la Ts calcola e restituisce mp, motifs, motifs_distances e discords
-    Ts = Ts[0:127]  # rimuovo l'attributo "classe"
-
     dfMP = pd.DataFrame(Ts).astype(float)  # genero Dframe per lavorarci su, DA CAPIRE PERCHE SERVE FLOAT
     mp, mpi = matrixProfile.stomp(dfMP[0].values, window_size)  # OK STOMP
 
@@ -86,7 +84,7 @@ def getDataStructures(df, verbose):
 
     # CALCOLO MOTIF E DISCORD E LI INSERISCO NEL DIZIONARIO
     for i in range(len(df)):
-        Ts = np.array(df.iloc[i][:-2].values)
+        Ts = np.array(df.iloc[i][:-2].values) #-2 perche rimuovo l'attributo target e index inserito precedentemente
         mp, mot, motif_dist, dis = retrieve_all(Ts)
         diz['Motif'].insert(i, mot)
         diz['Discord'].insert(i, dis)
@@ -283,7 +281,7 @@ def computeMutualInfo(datasetForMutual, candidatesGroup, numberOfMotif, numberOf
 # restituiendo il dataset splittato e i valori trovati
 def findBestAttributeValue(dataset, candidatesGroup, CandidatesUsedListTrain, numberOfMotif, numberOfDiscord,
                            removeUsedCandidate, verbose):
-    # VERBOSE AGGIUNGERE
+
     # cerca e restituisce attributo migliore su cui splittaree relativo valore ottimale (optimal split point)
     # CANDIDATE GROUP permette di scegliere se usare come candidati 0=motifs 1=discord 2=entrambi
     bestGain = 0

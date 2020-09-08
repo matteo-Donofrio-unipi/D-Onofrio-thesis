@@ -34,13 +34,14 @@ if(first==True):
 
 if(second==True):
     #COSTRUISCO DECISION TREE
-    candidatesGroup=0
-    albero=None
+    #SET IPER-PARAMETRI -----
+    candidatesGroup=1
     maxDepth=3
     minSamplesLeaf=5
-    removeUsedCandidate=1
+    removeUsedCandidate=0
+    #------
     verbose=True
-    albero=fit(dfForDTree[:15],candidatesGroup,CandidatesUsedListTrain,maxDepth,minSamplesLeaf,numberOfMotifTrain,numberOfDiscordTrain,removeUsedCandidate,verbose)
+    albero=fit(dfForDTree[:5],candidatesGroup,CandidatesUsedListTrain,maxDepth,minSamplesLeaf,numberOfMotifTrain,numberOfDiscordTrain,removeUsedCandidate,verbose)
     print(attributeList)
     print(albero)
     printAll(albero)
@@ -53,7 +54,7 @@ if(third==True):
     verbose=True
     dataset2 = arff.loadarff('ItalyPowerDemand/ItalyPowerDemand_TEST.arff')
     dfTest = pd.DataFrame(dataset2[0]) #30 record su matrice da 128 attributi + 'b': classe appartenenza
-    dfTest=dfTest.iloc[:60] #ne prendo 50 altrimenti impiega tempo troppo lungo, sono 900 record totali
+    dfTest=dfTest.iloc[:10] #ne prendo 50 altrimenti impiega tempo troppo lungo, sono 900 record totali
 
     attributeList=sorted(attributeList) #ordino attributi per rendere più efficiente 'computeSubSeqDistanceForTest'
     dfForDTreeTest,TsAndStartingPositionList=computeSubSeqDistanceForTest(dfTest,dfTrain,attributeList,CandidatesListTrain,numberOfMotifTrain,numberOfDiscordTrain)
