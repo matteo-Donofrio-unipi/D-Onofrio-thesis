@@ -368,11 +368,3 @@ class Tree:
                 return self.treeExplorer(pattern, node.left)
             else:
                 return self.treeExplorer(pattern, node.right)
-
-
-
-
-
-
-
-

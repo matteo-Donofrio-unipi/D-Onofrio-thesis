@@ -24,6 +24,29 @@ from sklearn.metrics import roc_curve, auc, roc_auc_score
 # DALL'ESTRAZIONE AL PASSAGGIO PER LA CREAZIONE DELL'ALBERO
 
 
+
+def computeLoadedDataset(X, y):
+
+    columnsList = np.arange(len(X[0]))
+    columnsList2 = list()
+    lastAttribute = ['TsIndex', 'class']
+    prefix = 'att'
+
+    for i in columnsList:
+        columnsList2.append(prefix + str(i))
+    columnsList2.append('target')
+    dataset = pd.DataFrame(columns=columnsList2, index=range(0, len(X)))
+
+    for i in range(len(X)):
+        l1 = list()
+        record = X[i]
+        for j in range(len(X[i])):
+            l1.append(record[j][0])
+        l1.append(y[i])
+        dataset.iloc[i] = l1
+
+    return dataset
+
 def retrieve_all(Ts,window_size):  # fornita la Ts calcola e restituisce mp, motifs, motifs_distances e discords
     dfMP = pd.DataFrame(Ts).astype(float)  # genero Dframe per lavorarci su, DA CAPIRE PERCHE SERVE FLOAT
     mp, mpi = matrixProfile.stomp(dfMP[0].values, window_size)  # OK STOMP

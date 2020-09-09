@@ -1,29 +1,38 @@
 from Tree import *
 from PreProcessingLibrary import  *
 import time
+from tslearn.datasets import UCR_UEA_datasets
 
 
 first=True #ESTRAZIONE DATASET TRAINING
 second=True #CALCOLO ALBERO DECISIONE
 third=True #ESTRAZIONE DATASET TEST
 quarter=True #PREDIZIONE E RISULTATO
-fifth=True #GRAFICA DELLE SERIE TEMPORALI
+fifth=False #GRAFICA DELLE SERIE TEMPORALI
 
-
-
+#genero albero (VUOTO) e avvio timer
 tree= Tree(candidatesGroup=1,maxDepth=3,minSamplesLeaf=5,removeUsedCandidate=0,verbose=1)
 start_time = time.time()
+
+
 
 
 if(first==True):
     #ACQUISISCO STRUTTURE DATI DEL TRAINING SET
     verbose = True
-    dataset = arff.loadarff('ItalyPowerDemand/ItalyPowerDemand_TRAIN.arff')
-    dfTrain=pd.DataFrame(dataset[0])
+
+    #CARICO DATI DAL FILE
+    #datasetTrain = arff.loadarff('ItalyPowerDemand/ItalyPowerDemand_TRAIN.arff')
+    #dfTrain=pd.DataFrame(datasetTrain[0])
+
+    #CARICO DATI DA LIBRERIA (FUNZIONE)
+    X_train, y_train, X_test, y_test = UCR_UEA_datasets().load_dataset('ItalyPowerDemand')
+    dfTrain = computeLoadedDataset(X_train, y_train)
+
+    # genero strtutture dati ausiliarie
     window_size = 5
     mpTrain,CandidatesListTrain,numberOfMotifTrain,numberOfDiscordTrain,CandidatesUsedListTrain=getDataStructures(dfTrain,window_size,verbose=1)
-    print(dfTrain)
-    dfForDTree=computeSubSeqDistance(dfTrain,CandidatesListTrain,window_size)
+    dfForDTree = computeSubSeqDistance(dfTrain, CandidatesListTrain, window_size)
     if(verbose==True):
         print(dfForDTree)
 
@@ -47,9 +56,16 @@ if(second==True):
 if(third==True):
     #GENERO STRUTTURE DATI PER TEST SET
     verbose=True
-    dataset2 = arff.loadarff('ItalyPowerDemand/ItalyPowerDemand_TEST.arff')
-    dfTest = pd.DataFrame(dataset2[0]) #30 record su matrice da 128 attributi + 'b': classe appartenenza
-    dfTest=dfTest.iloc[:10] #ne prendo 50 altrimenti impiega tempo troppo lungo, sono 900 record totali
+
+    # CARICO DATI DAL FILE
+    #datasetTest = arff.loadarff('ItalyPowerDemand/ItalyPowerDemand_TEST.arff')
+    #dfTest = pd.DataFrame(datasetTest[0])  # 30 record su matrice da 128 attributi + 'b': classe appartenenza
+
+
+    # CARICO DATI DA LIBRERIA (FUNZIONE)
+    dfTest = computeLoadedDataset(X_test, y_test)
+    dfTest = dfTest.iloc[10:20]  # ne prendo 50 altrimenti impiega tempo troppo lungo, sono 900 record totali
+
 
     tree.attributeList=sorted(tree.attributeList) #ordino attributi per rendere più efficiente 'computeSubSeqDistanceForTest'
     dfForDTreeTest,TsAndStartingPositionList=computeSubSeqDistanceForTest(dfTest,dfTrain,tree.attributeList,CandidatesListTrain,numberOfMotifTrain,numberOfDiscordTrain,window_size)
