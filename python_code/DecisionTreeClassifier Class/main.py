@@ -2,7 +2,8 @@ from Tree import *
 from PreProcessingLibrary import  *
 import time
 from tslearn.datasets import UCR_UEA_datasets
-
+from pathlib import Path
+from datetime import datetime
 
 first=True #ESTRAZIONE DATASET TRAINING
 second=True #CALCOLO ALBERO DECISIONE
@@ -17,6 +18,8 @@ start_time = time.time()
 
 
 
+
+
 if(first==True):
     #ACQUISISCO STRUTTURE DATI DEL TRAINING SET
     verbose = True
@@ -26,7 +29,7 @@ if(first==True):
     #dfTrain=pd.DataFrame(datasetTrain[0])
 
     #CARICO DATI DA LIBRERIA (FUNZIONE)
-    X_train, y_train, X_test, y_test = UCR_UEA_datasets().load_dataset('ItalyPowerDemand')
+    X_train, y_train, X_test, y_test = UCR_UEA_datasets().load_dataset('CBF')
     dfTrain = computeLoadedDataset(X_train, y_train)
 
     # genero strtutture dati ausiliarie
@@ -85,16 +88,36 @@ if(quarter==True):
         for a, b in zip(yTest, yPredicted):
             print(a, b)
 
-    print(type(yPredicted))
-    print(type(yTest))
-
-    print(classification_report(yTest, yPredicted))
-    print('Accuracy %s' % accuracy_score(yTest, yPredicted))
-    print('F1-score %s' % f1_score(yTest, yPredicted, average=None))
+    cR = classification_report(yTest, yPredicted)
+    aS = accuracy_score(yTest, yPredicted)
+    f1 = f1_score(yTest, yPredicted, average=None)
     confusion_matrix(yTest, yPredicted)
+    totalTime = time.time() - start_time
 
-    print("--- %s seconds END OF EXECUTION" % (time.time() - start_time))
+    print('Classification Report %s' % cR)
+    print('Accuracy %s' % aS)
+    print('F1-score %s' % f1)
+    print(" %s seconds END OF EXECUTION" % totalTime)
 
+    #salvo su file i risultati di questa configuazione
+    Path("./TestResults").mkdir(parents=True, exist_ok=True)
+    dateTimeObj = datetime.now()
+    nameFile='./TestResults/TestResults1.txt'
+    file = open(nameFile, "a+")
+
+    if(tree.candidatesGroup==0):
+        group='Motifs'
+    elif(tree.candidatesGroup == 1):
+        group = 'Discords'
+    else:
+        group = 'Both'
+
+    file.write('Hyper-parameter value : \n')
+    file.write('Candidates Group :  %s  \nMax Depth Tree :  %d  \nMin Samples for Leaf :  %d  \nUsed Candidates are removed :  %d  \n  \n' % (group,tree.maxDepth,tree.minSamplesLeaf,tree.removeUsedCandidate))
+    file.write('Classification Report:\n %s \nAccuracy %s \nF1-score %s \n' % (cR , aS ,f1))
+    file.write("%s seconds END OF EXECUTION \n " % str(totalTime))
+    file.write('\n \n \n ---------------------------------------------------- \n \n \n' )
+    file.close()
 
 
 
