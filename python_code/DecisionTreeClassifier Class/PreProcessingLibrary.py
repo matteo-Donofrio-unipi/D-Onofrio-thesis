@@ -47,17 +47,17 @@ def computeLoadedDataset(X, y):
 
     return dataset
 
-def retrieve_all(Ts,window_size):  # fornita la Ts calcola e restituisce mp, motifs, motifs_distances e discords
+def retrieve_all(Ts,window_size,k):  # fornita la Ts calcola e restituisce mp, motifs, motifs_distances e discords
     dfMP = pd.DataFrame(Ts).astype(float)  # genero Dframe per lavorarci su, DA CAPIRE PERCHE SERVE FLOAT
     mp, mpi = matrixProfile.stomp(dfMP[0].values, window_size)  # OK STOMP
 
     # PREPARO TUPLA DA PASSARE ALLA FUN MOTIF (RICHIEDE TUPLA FATTA DA MP E MPI)
     tupla = mp, mpi
 
-    mot, motif_dist = motifs.motifs(dfMP[0].values, tupla, 2)
+    mot, motif_dist = motifs.motifs(dfMP[0].values, tupla, k)
 
     # CALCOLO DISCORDS
-    dis = discords(mp, window_size, 2)
+    dis = discords(mp, window_size, k)
     # print('Discords starting position: '+str(dis))
 
     tupla = mp, mot, motif_dist, dis
@@ -97,7 +97,7 @@ def buildCandidatesUsedList(CandidatesList, numberOfMotif, numberOfDiscord):
 
 
 
-def getDataStructures(df,window_size,verbose):
+def getDataStructures(df,window_size,k,verbose):
     # trasformo da stringa a numero il campo target
     le = LabelEncoder()
     num_classes = le.fit_transform(df['target'])
@@ -109,7 +109,7 @@ def getDataStructures(df,window_size,verbose):
     # CALCOLO MOTIF E DISCORD E LI INSERISCO NEL DIZIONARIO
     for i in range(len(df)):
         Ts = np.array(df.iloc[i][:-2].values) #-2 perche rimuovo l'attributo target e index inserito precedentemente
-        mp, mot, motif_dist, dis = retrieve_all(Ts,window_size)
+        mp, mot, motif_dist, dis = retrieve_all(Ts,window_size,k)
         diz['Motif'].insert(i, mot)
         diz['Discord'].insert(i, dis)
 
@@ -191,7 +191,6 @@ def computeSubSeqDistance(dataset, CandidatesList,window_size):
 def computeSubSeqDistanceForTest(datasetTest, datasetTrain, attributeList, CandidatesList, numberOfMotif,
                                  numberOfDiscord,window_size):
     # quantifico il num di candidati usati dall'albero e in base a tale valore genero colonne per dfForDTree
-    # quantifico il num di candidati e in base a tale valore genero colonne per dfForDTree
     columnsList2 = list()
     prefix = 'cand'
     TsAndStartingPositionList=list() #contiene le coppie (Ts, startingPosition) per tenere traccia degli shaplet ottenuti
@@ -211,8 +210,8 @@ def computeSubSeqDistanceForTest(datasetTest, datasetTrain, attributeList, Candi
         #I VALORI (-1, -2) SONO DIVERSI DA QUELLI USATI IN COMPUTE NORMALE, PERCHE QUI NON PASSO LA STRUTTURA A GETDATASTRUCTURES => NON AGGIUNGO COLONNA TS INDEX
         dfForDTree['TsIndex'].iloc[i] = i
         dfForDTree['class'].iloc[i] = classValue
-        counter = 0
-        # scandisco e calcolo distanza dai motif
+        counter = 0 #scandisco candidate list (prima motif poi discord) incrementando counter -> cosi prenderò il candidato counter-esimo
+        # scandisco e calcolo distanza dai candidati
         for z in range(len(attributeList)):
             candidateIndex = attributeList[z]
             counter = 0
@@ -259,6 +258,12 @@ def computeSubSeqDistanceForTest(datasetTest, datasetTrain, attributeList, Candi
 #FUNZIONI PER PLOTTING DEI DATI
 
 
+
+def plotData(Ts):
+    Ts.plot(figsize=(7, 7), legend=None, title='Time series')
+    plt.show()
+
+
 def plot_motifs(mtfs, labels, ax, data, window_size):
     #data can be raw data or MP
     colori = 0
@@ -283,6 +288,8 @@ def plot_discords(dis, ax, data, window_size):
     for start in dis:
         end = start + window_size
         ax.plot(start, data[start], color, label='Discord')
+        if(end >= len(data)):
+            end=len(data)-1
         ax.plot(end, data[end], color, markerfacecolor='none')
 
         ax.plot(range(start, start + window_size), data[start:start + window_size], color, linewidth=2)
@@ -314,7 +321,7 @@ def plot_all(Ts, mp, mot, motif_dist, dis, window_size):
     plt.show()
 
 
-def retrieve_all2(Ts,window_size):  # fornita la Ts calcola e restituisce mp, motifs, motifs_distances e discords
+def retrieve_all2(Ts,window_size,k):  # fornita la Ts calcola e restituisce mp, motifs, motifs_distances e discords
     Ts = Ts[:len(Ts)-1]  # rimuovo l'attributo "classe"
 
     dfMP = pd.DataFrame(Ts).astype(float)  # genero Dframe per lavorarci su, DA CAPIRE PERCHE SERVE FLOAT
@@ -323,13 +330,13 @@ def retrieve_all2(Ts,window_size):  # fornita la Ts calcola e restituisce mp, mo
     # PREPARO TUPLA DA PASSARE ALLA FUN MOTIF (RICHIEDE TUPLA FATTA DA MP E MPI)
     tupla = mp, mpi
 
-    mot, motif_dist = motifs.motifs(dfMP[0].values, tupla, 2)
+    mot, motif_dist = motifs.motifs(dfMP[0].values, tupla, k)
 
     # CALCOLO MOTIFS
     print('Motifs starting position: ' + str(mot) + ' Motifs values (min distances): ' + str(motif_dist))
 
     # CALCOLO DISCORDS
-    dis = discords(mp, window_size, 2)
+    dis = discords(mp, window_size, k)
     print('Discords starting position: ' + str(dis))
 
     tupla = mp, mot, motif_dist, dis

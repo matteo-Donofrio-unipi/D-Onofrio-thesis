@@ -20,11 +20,13 @@ from sklearn.metrics import accuracy_score, f1_score, classification_report
 from sklearn.metrics import roc_curve, auc, roc_auc_score
 
 class Tree:
-    def __init__(self,candidatesGroup,maxDepth,minSamplesLeaf,removeUsedCandidate,verbose):
+    def __init__(self,candidatesGroup,maxDepth,minSamplesLeaf,removeUsedCandidate,window_size,k,verbose):
         self.candidatesGroup=candidatesGroup
         self.maxDepth=maxDepth
         self.minSamplesLeaf=minSamplesLeaf
         self.removeUsedCandidate=removeUsedCandidate
+        self.window_size=window_size
+        self.k=k
         self.verbose=verbose
         self.attributeList=list()
 

@@ -10,9 +10,10 @@ second=True #CALCOLO ALBERO DECISIONE
 third=True #ESTRAZIONE DATASET TEST
 quarter=True #PREDIZIONE E RISULTATO
 fifth=False #GRAFICA DELLE SERIE TEMPORALI
+sixth=False #GRAFICA DI SERIE TEMPORALI E MATRIX PROFILE DEI CANDIDATI SCELTI
 
 #genero albero (VUOTO) e avvio timer
-tree= Tree(candidatesGroup=1,maxDepth=3,minSamplesLeaf=5,removeUsedCandidate=0,verbose=1)
+tree= Tree(candidatesGroup=0,maxDepth=4,minSamplesLeaf=5,removeUsedCandidate=0,window_size=5,k=1,verbose=1) # K= NUM DI MOTIF/DISCORD ESTRATTI
 start_time = time.time()
 
 
@@ -29,13 +30,14 @@ if(first==True):
     #dfTrain=pd.DataFrame(datasetTrain[0])
 
     #CARICO DATI DA LIBRERIA (FUNZIONE)
-    X_train, y_train, X_test, y_test = UCR_UEA_datasets().load_dataset('CBF')
+    X_train, y_train, X_test, y_test = UCR_UEA_datasets().load_dataset('ItalyPowerDemand')
     dfTrain = computeLoadedDataset(X_train, y_train)
-
+    print(dfTrain)
+    patternLenght=len(dfTrain.iloc[0])-1
     # genero strtutture dati ausiliarie
-    window_size = 5
-    mpTrain,CandidatesListTrain,numberOfMotifTrain,numberOfDiscordTrain,CandidatesUsedListTrain=getDataStructures(dfTrain,window_size,verbose=1)
-    dfForDTree = computeSubSeqDistance(dfTrain, CandidatesListTrain, window_size)
+
+    mpTrain,CandidatesListTrain,numberOfMotifTrain,numberOfDiscordTrain,CandidatesUsedListTrain=getDataStructures(dfTrain,tree.window_size,tree.k,verbose=1)
+    dfForDTree = computeSubSeqDistance(dfTrain, CandidatesListTrain, tree.window_size)
     if(verbose==True):
         print(dfForDTree)
 
@@ -46,7 +48,7 @@ if(second==True):
     verbose = True
     #COSTRUISCO DECISION TREE
     #------
-    tree.fit(dfForDTree[:5],CandidatesUsedListTrain,numberOfMotifTrain,numberOfDiscordTrain,verbose=True)
+    tree.fit(dfForDTree,CandidatesUsedListTrain,numberOfMotifTrain,numberOfDiscordTrain,verbose=True)
     if(verbose==True):
         print(tree.attributeList)
         print(tree.Root)
@@ -67,11 +69,11 @@ if(third==True):
 
     # CARICO DATI DA LIBRERIA (FUNZIONE)
     dfTest = computeLoadedDataset(X_test, y_test)
-    dfTest = dfTest.iloc[10:20]  # ne prendo 50 altrimenti impiega tempo troppo lungo, sono 900 record totali
+    #dfTest = dfTest.iloc[10:20]  # ne prendo 50 altrimenti impiega tempo troppo lungo, sono 900 record totali
 
 
     tree.attributeList=sorted(tree.attributeList) #ordino attributi per rendere più efficiente 'computeSubSeqDistanceForTest'
-    dfForDTreeTest,TsAndStartingPositionList=computeSubSeqDistanceForTest(dfTest,dfTrain,tree.attributeList,CandidatesListTrain,numberOfMotifTrain,numberOfDiscordTrain,window_size)
+    dfForDTreeTest,TsAndStartingPositionList=computeSubSeqDistanceForTest(dfTest,dfTrain,tree.attributeList,CandidatesListTrain,numberOfMotifTrain,numberOfDiscordTrain,tree.window_size)
     if(verbose==True):
         print(dfForDTreeTest)
         print(TsAndStartingPositionList)
@@ -112,31 +114,39 @@ if(quarter==True):
     else:
         group = 'Both'
 
-    file.write('Hyper-parameter value : \n')
-    file.write('Candidates Group :  %s  \nMax Depth Tree :  %d  \nMin Samples for Leaf :  %d  \nUsed Candidates are removed :  %d  \n  \n' % (group,tree.maxDepth,tree.minSamplesLeaf,tree.removeUsedCandidate))
-    file.write('Classification Report:\n %s \nAccuracy %s \nF1-score %s \n' % (cR , aS ,f1))
+    file.write('HYPER-PARAMETER-VALUES   \n')
+    file.write('Candidates Group :  %s  \nMax Depth Tree :  %d  \nMin Samples for Leaf :  %d  \nUsed Candidates are removed :  %d  \nWindow Size :  %d  \n  \n' % (group,tree.maxDepth,tree.minSamplesLeaf,tree.removeUsedCandidate,tree.window_size))
+    file.write('\nDATASET INFO   \n')
+    file.write('#Pattern Training :  %d  \n#Pattern Test :  %d  \nLength pattern :  %d  \n' % (len(dfTrain), len(dfTest), patternLenght))
+    file.write('CLASSIFICATION REPORT:\n %s \nAccuracy %s \nF1-score %s \n' % (cR , aS ,f1))
     file.write("%s seconds END OF EXECUTION \n " % str(totalTime))
     file.write('\n \n \n ---------------------------------------------------- \n \n \n' )
     file.close()
 
 
-
 if(fifth==True):
+    for i in range(len(dfTrain)):
+        Ts = np.array(dfTrain.iloc[i].values)
+        print('TS ID:' + str(i))
+        print('TS CLASS:' + str(Ts[len(Ts)-1]))
+        plotData(dfTrain.iloc[i])
+
+
+
+
+if(sixth==True):
     #ESTRAGGO TUTTO DI NUOVO PERCHE LE TS USATE PRIMA HANNO VALORI AGGIUNTI
-    window_size = 5
-    dataset2 = arff.loadarff('ItalyPowerDemand/ItalyPowerDemand_TRAIN.arff')
-    dfTrain2 = pd.DataFrame(dataset2[0])
     diz = {'Motif': [], 'Discord': []}
     PreProcessedTs = pd.DataFrame(diz)
 
-    for i in range(len(dfTrain2)):
+    for i in range(len(dfTrain)):
         for j in range(len(TsAndStartingPositionList)):
             if(TsAndStartingPositionList[j][0] == i):
-                Ts = np.array(dfTrain2.iloc[i].values)
+                Ts = np.array(dfTrain.iloc[i].values)
                 print('TS ID:' + str(i))
                 print('TS CLASS:' + str(Ts[len(Ts)-1]))
-                mp, mot, motif_dist, dis = retrieve_all2(Ts,window_size)
+                mp, mot, motif_dist, dis = retrieve_all2(Ts,tree.window_size,tree.k)
                 print('CANDIDATE START IN : '+str(TsAndStartingPositionList[j][1]))
-                plot_all(Ts, mp, mot, motif_dist, dis, window_size)
+                plot_all(Ts, mp, mot, motif_dist, dis, tree.window_size)
                 PreProcessedTs.loc[i] = mot, dis
 
