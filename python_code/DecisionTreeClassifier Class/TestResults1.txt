@@ -401,3 +401,99 @@ F1-score [0.72902604 0.72477963]
  ---------------------------------------------------- 
  
  
+
+ 
+ 
+HYPER-PARAMETER-VALUES   
+Candidates Group :  Both  
+Max Depth Tree :  2  
+Min Samples for Leaf :  5  
+Used Candidates are removed :  0  
+Window Size :  5  
+  
+
+DATASET INFO   
+#Pattern Training :  67  
+#Pattern Test :  1029  
+Length pattern :  24  
+CLASSIFICATION REPORT:
+               precision    recall  f1-score   support
+
+           0       0.60      0.82      0.70       513
+           1       0.73      0.46      0.56       516
+
+    accuracy                           0.64      1029
+   macro avg       0.66      0.64      0.63      1029
+weighted avg       0.66      0.64      0.63      1029
+ 
+Accuracy 0.6423712342079689 
+F1-score [0.69686985 0.56398104] 
+6735.935796499252 seconds END OF EXECUTION 
+ 
+ 
+ 
+ ---------------------------------------------------- 
+ 
+ 
+HYPER-PARAMETER-VALUES   
+Candidates Group :  Discords  
+Max Depth Tree :  3  
+Min Samples for Leaf :  5  
+Used Candidates are removed :  0  
+Window Size :  10  
+  
+
+DATASET INFO   
+#Pattern Training :  67  
+#Pattern Test :  1029  
+Length pattern :  24  
+CLASSIFICATION REPORT:
+               precision    recall  f1-score   support
+
+           0       0.83      0.89      0.86       513
+           1       0.88      0.82      0.85       516
+
+    accuracy                           0.85      1029
+   macro avg       0.85      0.85      0.85      1029
+weighted avg       0.85      0.85      0.85      1029
+ 
+Accuracy 0.8522837706511176 
+F1-score [0.85714286 0.84708249] 
+1927.5880360603333 seconds END OF EXECUTION 
+ 
+ 
+ 
+ ---------------------------------------------------- 
+ 
+ 
+HYPER-PARAMETER-VALUES   
+Candidates Group :  Discords  
+Max Depth Tree :  3  
+Min Samples for Leaf :  5  
+Used Candidates are removed :  1  
+Window Size :  10  
+  
+
+DATASET INFO   
+#Pattern Training :  67  
+#Pattern Test :  1029  
+Length pattern :  24  
+CLASSIFICATION REPORT:
+               precision    recall  f1-score   support
+
+           0       0.82      0.92      0.87       513
+           1       0.91      0.79      0.85       516
+
+    accuracy                           0.86      1029
+   macro avg       0.87      0.86      0.86      1029
+weighted avg       0.87      0.86      0.86      1029
+ 
+Accuracy 0.859086491739553 
+F1-score [0.8673376  0.84974093] 
+1925.7226119041443 seconds END OF EXECUTION 
+ 
+ 
+ 
+ ---------------------------------------------------- 
+ 
+ 

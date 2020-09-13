@@ -199,7 +199,7 @@ def computeSubSeqDistanceForTest(datasetTest, datasetTrain, attributeList, Candi
         columnsList2.append(prefix + str(i))
     columnsList2.append('TsIndex')
     columnsList2.append('class')
-    dfForDTree = pd.DataFrame(columns=columnsList2, index=range(0, len(datasetTest)))
+    dfForDTreeTest = pd.DataFrame(columns=columnsList2, index=range(0, len(datasetTest)))
 
     # per ogni Ts, scandisco ogni candidato e calcolo la distanza minore
     for i in range(len(datasetTest)):
@@ -208,8 +208,8 @@ def computeSubSeqDistanceForTest(datasetTest, datasetTrain, attributeList, Candi
         classValue = TsToCompare[len(TsToCompare) - 1]  # la classe è sempre il penultimo attributo
         TsToCompare = TsToCompare[:len(TsToCompare) - 2]  # la serie è ottenuta rimuovendo i due ultimi attributi
         #I VALORI (-1, -2) SONO DIVERSI DA QUELLI USATI IN COMPUTE NORMALE, PERCHE QUI NON PASSO LA STRUTTURA A GETDATASTRUCTURES => NON AGGIUNGO COLONNA TS INDEX
-        dfForDTree['TsIndex'].iloc[i] = i
-        dfForDTree['class'].iloc[i] = classValue
+        dfForDTreeTest['TsIndex'].iloc[i] = i
+        dfForDTreeTest['class'].iloc[i] = classValue
         counter = 0 #scandisco candidate list (prima motif poi discord) incrementando counter -> cosi prenderò il candidato counter-esimo
         # scandisco e calcolo distanza dai candidati
         for z in range(len(attributeList)):
@@ -226,7 +226,7 @@ def computeSubSeqDistanceForTest(datasetTest, datasetTrain, attributeList, Candi
                         Dp = distanceProfile.massDistanceProfile(TsContainingCandidateShapelet, int(startingIndex),
                                                                  window_size, TsToCompare)
                         minValueFromDProfile = min(Dp[0])  # Dp[0] contiene il Dp effettivo
-                        dfForDTree[prefix + str(counter)].iloc[i] = minValueFromDProfile
+                        dfForDTreeTest[prefix + str(counter)].iloc[i] = minValueFromDProfile
                         if(booleanForTsAndStartingPos==True):
                             TsAndStartingPositionList.append([j,startingIndex])
                     counter += 1
@@ -241,7 +241,7 @@ def computeSubSeqDistanceForTest(datasetTest, datasetTrain, attributeList, Candi
                         Dp = distanceProfile.massDistanceProfile(TsContainingCandidateShapelet, int(startingIndex),
                                                                  window_size, TsToCompare)
                         minValueFromDProfile = min(Dp[0])  # Dp[0] contiene il Dp effettivo
-                        dfForDTree[prefix + str(counter)].iloc[i] = minValueFromDProfile
+                        dfForDTreeTest[prefix + str(counter)].iloc[i] = minValueFromDProfile
                         if (booleanForTsAndStartingPos == True):
                             TsAndStartingPositionList.append([j, startingIndex])
                     counter += 1
@@ -249,10 +249,10 @@ def computeSubSeqDistanceForTest(datasetTest, datasetTrain, attributeList, Candi
         booleanForTsAndStartingPos = False #setto a false e smetto di raccogliere informazioni
 
     le = LabelEncoder()
-    num_classes = le.fit_transform(dfForDTree['class'])
-    dfForDTree['class'] = num_classes
+    num_classes = le.fit_transform(dfForDTreeTest['class'])
+    dfForDTreeTest['class'] = num_classes
 
-    return dfForDTree,TsAndStartingPositionList  # columnsList2 restituito per generare poi dFrame in "Split" (struttura dframe)
+    return dfForDTreeTest,TsAndStartingPositionList  # columnsList2 restituito per generare poi dFrame in "Split" (struttura dframe)
 
 
 #FUNZIONI PER PLOTTING DEI DATI

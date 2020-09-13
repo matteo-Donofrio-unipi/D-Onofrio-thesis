@@ -13,12 +13,8 @@ fifth=False #GRAFICA DELLE SERIE TEMPORALI
 sixth=False #GRAFICA DI SERIE TEMPORALI E MATRIX PROFILE DEI CANDIDATI SCELTI
 
 #genero albero (VUOTO) e avvio timer
-tree= Tree(candidatesGroup=0,maxDepth=4,minSamplesLeaf=5,removeUsedCandidate=0,window_size=5,k=1,verbose=1) # K= NUM DI MOTIF/DISCORD ESTRATTI
+tree= Tree(candidatesGroup=1,maxDepth=3,minSamplesLeaf=5,removeUsedCandidate=1,window_size=10,k=1,verbose=1) # K= NUM DI MOTIF/DISCORD ESTRATTI
 start_time = time.time()
-
-
-
-
 
 
 if(first==True):
@@ -73,6 +69,7 @@ if(third==True):
 
 
     tree.attributeList=sorted(tree.attributeList) #ordino attributi per rendere più efficiente 'computeSubSeqDistanceForTest'
+    tree.attributeList=np.unique(tree.attributeList)
     dfForDTreeTest,TsAndStartingPositionList=computeSubSeqDistanceForTest(dfTest,dfTrain,tree.attributeList,CandidatesListTrain,numberOfMotifTrain,numberOfDiscordTrain,tree.window_size)
     if(verbose==True):
         print(dfForDTreeTest)
