@@ -495,5 +495,286 @@ F1-score [0.8673376  0.84974093]
  
  
  ---------------------------------------------------- 
+ GUN POINT
+ ---------------------------------------------------- 
+
+ 
+HYPER-PARAMETER-VALUES   
+Candidates Group :  Motifs  
+Max Depth Tree :  2  
+Min Samples for Leaf :  5  
+Used Candidates are removed :  0  
+Window Size :  5  
+  
+
+DATASET INFO   
+#Pattern Training :  50  
+#Pattern Test :  150  
+Length pattern :  150  
+CLASSIFICATION REPORT:
+               precision    recall  f1-score   support
+
+           0       0.77      0.58      0.66        76
+           1       0.66      0.82      0.73        74
+
+    accuracy                           0.70       150
+   macro avg       0.71      0.70      0.70       150
+weighted avg       0.71      0.70      0.70       150
+ 
+Accuracy 0.7 
+F1-score [0.66165414 0.73053892] 
+614.6731796264648 seconds END OF EXECUTION 
+ 
+ 
+ 
+ ---------------------------------------------------- 
+ 
+ 
+HYPER-PARAMETER-VALUES   
+Candidates Group :  Motifs  
+Max Depth Tree :  2  
+Min Samples for Leaf :  5  
+Used Candidates are removed :  1  
+Window Size :  5  
+  
+
+DATASET INFO   
+#Pattern Training :  50  
+#Pattern Test :  150  
+Length pattern :  150  
+CLASSIFICATION REPORT:
+               precision    recall  f1-score   support
+
+           0       0.77      0.58      0.66        76
+           1       0.66      0.82      0.73        74
+
+    accuracy                           0.70       150
+   macro avg       0.71      0.70      0.70       150
+weighted avg       0.71      0.70      0.70       150
+ 
+Accuracy 0.7 
+F1-score [0.66165414 0.73053892] 
+620.2044641971588 seconds END OF EXECUTION 
+ 
+ 
+ 
+ ---------------------------------------------------- 
+ 
+ 
+HYPER-PARAMETER-VALUES   
+Candidates Group :  Discords  
+Max Depth Tree :  2  
+Min Samples for Leaf :  5  
+Used Candidates are removed :  0  
+Window Size :  5  
+  
+
+DATASET INFO   
+#Pattern Training :  50  
+#Pattern Test :  150  
+Length pattern :  150  
+CLASSIFICATION REPORT:
+               precision    recall  f1-score   support
+
+           0       0.63      0.42      0.50        76
+           1       0.56      0.74      0.64        74
+
+    accuracy                           0.58       150
+   macro avg       0.59      0.58      0.57       150
+weighted avg       0.59      0.58      0.57       150
+ 
+Accuracy 0.58 
+F1-score [0.50393701 0.63583815] 
+629.9945871829987 seconds END OF EXECUTION 
+ 
+ 
+ 
+ ---------------------------------------------------- 
+ 
+ 
+HYPER-PARAMETER-VALUES   
+Candidates Group :  Discords  
+Max Depth Tree :  2  
+Min Samples for Leaf :  5  
+Used Candidates are removed :  0  
+Window Size :  10  
+  
+
+DATASET INFO   
+#Pattern Training :  50  
+#Pattern Test :  150  
+Length pattern :  150  
+CLASSIFICATION REPORT:
+               precision    recall  f1-score   support
+
+           0       0.55      0.86      0.67        76
+           1       0.66      0.28      0.40        74
+
+    accuracy                           0.57       150
+   macro avg       0.60      0.57      0.53       150
+weighted avg       0.60      0.57      0.53       150
+ 
+Accuracy 0.5733333333333334 
+F1-score [0.67010309 0.39622642] 
+673.6274280548096 seconds END OF EXECUTION 
+ 
+ 
+ 
+ ---------------------------------------------------- 
+ 
+ 
+HYPER-PARAMETER-VALUES   
+Candidates Group :  Discords  
+Max Depth Tree :  2  
+Min Samples for Leaf :  5  
+Used Candidates are removed :  0  
+Window Size :  20  
+  
+
+DATASET INFO   
+#Pattern Training :  50  
+#Pattern Test :  150  
+Length pattern :  150  
+CLASSIFICATION REPORT:
+               precision    recall  f1-score   support
+
+           0       0.86      0.74      0.79        76
+           1       0.76      0.88      0.82        74
+
+    accuracy                           0.81       150
+   macro avg       0.81      0.81      0.81       150
+weighted avg       0.81      0.81      0.81       150
+ 
+Accuracy 0.8066666666666666 
+F1-score [0.79432624 0.81761006] 
+626.1589815616608 seconds END OF EXECUTION 
+ 
+ 
+ 
+ ---------------------------------------------------- 
+ 
+ 
+HYPER-PARAMETER-VALUES   
+Candidates Group :  Motifs  
+Max Depth Tree :  2  
+Min Samples for Leaf :  5  
+Used Candidates are removed :  0  
+Window Size :  20  
+  
+
+DATASET INFO   
+#Pattern Training :  50  
+#Pattern Test :  150  
+Length pattern :  150  
+CLASSIFICATION REPORT:
+               precision    recall  f1-score   support
+
+           0       0.88      0.91      0.90        76
+           1       0.90      0.88      0.89        74
+
+    accuracy                           0.89       150
+   macro avg       0.89      0.89      0.89       150
+weighted avg       0.89      0.89      0.89       150
+ 
+Accuracy 0.8933333333333333 
+F1-score [0.8961039  0.89041096] 
+604.5307130813599 seconds END OF EXECUTION 
+ 
+ 
+ 
+ ---------------------------------------------------- 
+ 
+ 
+HYPER-PARAMETER-VALUES   
+Candidates Group :  Discords  
+Max Depth Tree :  3  
+Min Samples for Leaf :  5  
+Used Candidates are removed :  0  
+Window Size :  20  
+  
+
+DATASET INFO   
+#Pattern Training :  50  
+#Pattern Test :  150  
+Length pattern :  150  
+CLASSIFICATION REPORT:
+               precision    recall  f1-score   support
+
+           0       0.70      0.75      0.72        76
+           1       0.72      0.66      0.69        74
+
+    accuracy                           0.71       150
+   macro avg       0.71      0.71      0.71       150
+weighted avg       0.71      0.71      0.71       150
+ 
+Accuracy 0.7066666666666667 
+F1-score [0.72151899 0.69014085] 
+635.7182178497314 seconds END OF EXECUTION 
+ 
+ 
+ 
+ ---------------------------------------------------- 
+ 
+ 
+HYPER-PARAMETER-VALUES   
+Candidates Group :  Discords  
+Max Depth Tree :  4  
+Min Samples for Leaf :  5  
+Used Candidates are removed :  0  
+Window Size :  20  
+  
+
+DATASET INFO   
+#Pattern Training :  50  
+#Pattern Test :  150  
+Length pattern :  150  
+CLASSIFICATION REPORT:
+               precision    recall  f1-score   support
+
+           0       0.78      0.66      0.71        76
+           1       0.70      0.81      0.75        74
+
+    accuracy                           0.73       150
+   macro avg       0.74      0.73      0.73       150
+weighted avg       0.74      0.73      0.73       150
+ 
+Accuracy 0.7333333333333333 
+F1-score [0.71428571 0.75      ] 
+644.5555441379547 seconds END OF EXECUTION 
+ 
+ 
+ 
+ ---------------------------------------------------- 
+ 
+ 
+HYPER-PARAMETER-VALUES   
+Candidates Group :  Both  
+Max Depth Tree :  3  
+Min Samples for Leaf :  5  
+Used Candidates are removed :  0  
+Window Size :  20  
+  
+
+DATASET INFO   
+#Pattern Training :  50  
+#Pattern Test :  150  
+Length pattern :  150  
+CLASSIFICATION REPORT:
+               precision    recall  f1-score   support
+
+           0       0.88      0.91      0.90        76
+           1       0.90      0.88      0.89        74
+
+    accuracy                           0.89       150
+   macro avg       0.89      0.89      0.89       150
+weighted avg       0.89      0.89      0.89       150
+ 
+Accuracy 0.8933333333333333 
+F1-score [0.8961039  0.89041096] 
+2018.7370970249176 seconds END OF EXECUTION 
+ 
+ 
+ 
+ ---------------------------------------------------- 
  
  
