@@ -1,3 +1,4 @@
+DATASET : ItalyPowerDemand
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Motifs  
 Max Depth Tree :  2  
@@ -28,7 +29,7 @@ F1-score [0.6831421  0.61189189]
  
  ---------------------------------------------------- 
  
- 
+DATASET : ItalyPowerDemand 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Discords  
 Max Depth Tree :  2  
@@ -59,7 +60,7 @@ F1-score [0.71288744 0.57692308]
  
  ---------------------------------------------------- 
  
- 
+DATASET : ItalyPowerDemand 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Motifs  
 Max Depth Tree :  3  
@@ -90,7 +91,7 @@ F1-score [0.69717138 0.57476636]
  
  ---------------------------------------------------- 
  
- 
+DATASET : ItalyPowerDemand 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Motifs  
 Max Depth Tree :  3  
@@ -121,7 +122,7 @@ F1-score [0.69717138 0.57476636]
  
  ---------------------------------------------------- 
  
- 
+DATASET : ItalyPowerDemand 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Discords  
 Max Depth Tree :  3  
@@ -152,7 +153,7 @@ F1-score [0.74422899 0.71589744]
  
  ---------------------------------------------------- 
  
- 
+DATASET : ItalyPowerDemand 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Motifs  
 Max Depth Tree :  4  
@@ -183,7 +184,7 @@ F1-score [0.675      0.66797642]
  
  ---------------------------------------------------- 
  
- 
+DATASET : ItalyPowerDemand 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Discords  
 Max Depth Tree :  4  
@@ -214,7 +215,7 @@ F1-score [0.73598553 0.69327731]
  
  ---------------------------------------------------- 
  
- 
+DATASET : ItalyPowerDemand 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Discords  
 Max Depth Tree :  5  
@@ -245,7 +246,7 @@ F1-score [0.73598553 0.69327731]
  
  ---------------------------------------------------- 
  
- 
+DATASET : ItalyPowerDemand 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Discords  
 Max Depth Tree :  3  
@@ -276,7 +277,7 @@ F1-score [0.74422899 0.71589744]
  
  ---------------------------------------------------- 
  
- 
+DATASET : ItalyPowerDemand 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Discords  
 Max Depth Tree :  3  
@@ -307,7 +308,7 @@ F1-score [0.74422899 0.71589744]
  
  ---------------------------------------------------- 
  
- 
+DATASET : ItalyPowerDemand 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Discords  
 Max Depth Tree :  3  
@@ -338,7 +339,7 @@ F1-score [0.68502582 0.59151786]
  
  ---------------------------------------------------- 
  
- 
+DATASET : ItalyPowerDemand 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Discords  
 Max Depth Tree :  4  
@@ -369,7 +370,7 @@ F1-score [0.68502582 0.59151786]
  
  ---------------------------------------------------- 
  
- 
+DATASET : ItalyPowerDemand 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Discords  
 Max Depth Tree :  3  
@@ -403,7 +404,7 @@ F1-score [0.72902604 0.72477963]
  
 
  
- 
+DATASET : ItalyPowerDemand 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Both  
 Max Depth Tree :  2  
@@ -434,7 +435,7 @@ F1-score [0.69686985 0.56398104]
  
  ---------------------------------------------------- 
  
- 
+DATASET : ItalyPowerDemand 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Discords  
 Max Depth Tree :  3  
@@ -465,7 +466,7 @@ F1-score [0.85714286 0.84708249]
  
  ---------------------------------------------------- 
  
- 
+DATASET : ItalyPowerDemand 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Discords  
 Max Depth Tree :  3  
@@ -498,7 +499,7 @@ F1-score [0.8673376  0.84974093]
  GUN POINT
  ---------------------------------------------------- 
 
- 
+DATASET : GunPoint
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Motifs  
 Max Depth Tree :  2  
@@ -529,7 +530,7 @@ F1-score [0.66165414 0.73053892]
  
  ---------------------------------------------------- 
  
- 
+DATASET : GunPoint 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Motifs  
 Max Depth Tree :  2  
@@ -560,7 +561,7 @@ F1-score [0.66165414 0.73053892]
  
  ---------------------------------------------------- 
  
- 
+DATASET : GunPoint 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Discords  
 Max Depth Tree :  2  
@@ -591,7 +592,7 @@ F1-score [0.50393701 0.63583815]
  
  ---------------------------------------------------- 
  
- 
+DATASET : GunPoint 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Discords  
 Max Depth Tree :  2  
@@ -622,7 +623,7 @@ F1-score [0.67010309 0.39622642]
  
  ---------------------------------------------------- 
  
- 
+DATASET : GunPoint 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Discords  
 Max Depth Tree :  2  
@@ -653,7 +654,7 @@ F1-score [0.79432624 0.81761006]
  
  ---------------------------------------------------- 
  
- 
+DATASET : GunPoint 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Motifs  
 Max Depth Tree :  2  
@@ -684,7 +685,7 @@ F1-score [0.8961039  0.89041096]
  
  ---------------------------------------------------- 
  
- 
+DATASET : GunPoint 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Discords  
 Max Depth Tree :  3  
@@ -715,7 +716,7 @@ F1-score [0.72151899 0.69014085]
  
  ---------------------------------------------------- 
  
- 
+DATASET : GunPoint 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Discords  
 Max Depth Tree :  4  
@@ -746,7 +747,7 @@ F1-score [0.71428571 0.75      ]
  
  ---------------------------------------------------- 
  
- 
+DATASET : GunPoint 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Both  
 Max Depth Tree :  3  
@@ -777,7 +778,7 @@ F1-score [0.8961039  0.89041096]
  
  ---------------------------------------------------- 
  
- 
+DATASET : GunPoint 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Motifs  
 Max Depth Tree :  4  
@@ -808,7 +809,7 @@ F1-score [0.8961039  0.89041096]
  
  ---------------------------------------------------- 
  
- 
+DATASET : GunPoint 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Motifs  
 Max Depth Tree :  4  
@@ -839,7 +840,7 @@ F1-score [0.8961039  0.89041096]
  
  ---------------------------------------------------- 
  
- 
+DATASET : GunPoint 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Motifs  
 Max Depth Tree :  5  
@@ -870,7 +871,7 @@ F1-score [0.8961039  0.89041096]
  
  ---------------------------------------------------- 
  
- 
+DATASET : GunPoint 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Motifs  
 Max Depth Tree :  5  
@@ -901,7 +902,7 @@ F1-score [0.92957746 0.93670886]
  
  ---------------------------------------------------- 
  
- 
+DATASET : GunPoint 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Discords  
 Max Depth Tree :  5  
@@ -932,7 +933,7 @@ F1-score [0.90540541 0.90789474]
  
  ---------------------------------------------------- 
  
- 
+DATASET : GunPoint 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Motifs  
 Max Depth Tree :  2  
@@ -964,7 +965,7 @@ F1-score [0.65030675 0.58394161]
  
  ---------------------------------------------------- 
  
- 
+DATASET : GunPoint 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Motifs  
 Max Depth Tree :  2  
@@ -996,7 +997,7 @@ F1-score [0.56578947 0.55405405]
  
  ---------------------------------------------------- 
  
- 
+DATASET : GunPoint 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Motifs  
 Max Depth Tree :  2  
@@ -1029,7 +1030,7 @@ F1-score [0.66321244 0.39252336]
  
  ---------------------------------------------------- 
  
- 
+DATASET : GunPoint 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Motifs  
 Max Depth Tree :  2  
@@ -1062,7 +1063,7 @@ F1-score [0.59393939 0.5037037 ]
  
  ---------------------------------------------------- 
  
- 
+DATASET : GunPoint 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Motifs  
 Max Depth Tree :  2  
@@ -1095,7 +1096,7 @@ F1-score [0.16949153 0.46153846]
  
  ---------------------------------------------------- 
  
- 
+DATASET : GunPoint 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Motifs  
 Max Depth Tree :  2  
@@ -1128,7 +1129,7 @@ F1-score [0.8961039  0.89041096]
  
  ---------------------------------------------------- 
  
- 
+DATASET : GunPoint 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Motifs  
 Max Depth Tree :  2  
@@ -1161,7 +1162,7 @@ F1-score [0.36619718 0.43037975]
  
  ---------------------------------------------------- 
  
- 
+DATASET : ItalyPowerDemand 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Discords  
 Max Depth Tree :  3  
@@ -1194,7 +1195,7 @@ F1-score [0.3111639  0.52302632]
  
  ---------------------------------------------------- 
  
- 
+DATASET : ItalyPowerDemand 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Discords  
 Max Depth Tree :  3  
@@ -1227,7 +1228,7 @@ F1-score [0.4565425 0.4371909]
  
  ---------------------------------------------------- 
  
- 
+DATASET : ItalyPowerDemand 
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Discords  
 Max Depth Tree :  4  
@@ -1260,7 +1261,7 @@ F1-score [0.63030303 0.33875339]
  
  ---------------------------------------------------- 
  
- 
+DATASET : GunPoint
 HYPER-PARAMETER-VALUES   
 Candidates Group :  Motifs  
 Max Depth Tree :  2  
@@ -1322,6 +1323,686 @@ weighted avg       0.32      0.43      0.33      1029
 Accuracy 0.4334305150631681 
 F1-score [0.59485754 0.05815832] 
 1480.3546390533447 seconds END OF EXECUTION 
+ 
+ 
+ 
+ ---------------------------------------------------- 
+ 
+ 
+DATASET : ItalyPowerDemand   
+HYPER-PARAMETER-VALUES   
+Candidates Group :  Discords  
+Max Depth Tree :  3  
+Min Samples for Leaf :  5  
+Used Candidates are removed :  0  
+Window Size :  10  
+K (# motif/discord retrieved) :  1  
+  
+
+DATASET INFO   
+#Pattern Training :  67  
+#Pattern Training used :  33  
+#Pattern Test :  1029  
+Length pattern :  24  
+CLASSIFICATION REPORT:
+               precision    recall  f1-score   support
+
+           0       0.51      0.76      0.61       513
+           1       0.54      0.28      0.36       516
+
+    accuracy                           0.52      1029
+   macro avg       0.53      0.52      0.49      1029
+weighted avg       0.53      0.52      0.49      1029
+ 
+Accuracy 0.5189504373177842 
+F1-score [0.61297889 0.36456996] 
+166.771098613739 seconds END OF EXECUTION 
+ 
+ 
+ 
+ ---------------------------------------------------- 
+ 
+ 
+DATASET : GunPoint   
+HYPER-PARAMETER-VALUES   
+Candidates Group :  Discords  
+Max Depth Tree :  3  
+Min Samples for Leaf :  5  
+Used Candidates are removed :  0  
+Window Size :  10  
+K (# motif/discord retrieved) :  1  
+  
+
+DATASET INFO   
+#Pattern Training :  50  
+#Pattern Training used :  40  
+#Pattern Test :  150  
+Length pattern :  150  
+CLASSIFICATION REPORT:
+               precision    recall  f1-score   support
+
+           0       0.44      0.46      0.45        76
+           1       0.41      0.39      0.40        74
+
+    accuracy                           0.43       150
+   macro avg       0.43      0.43      0.43       150
+weighted avg       0.43      0.43      0.43       150
+ 
+Accuracy 0.4266666666666667 
+F1-score [0.44871795 0.40277778] 
+293.0835266113281 seconds END OF EXECUTION 
+ 
+ 
+ 
+ ---------------------------------------------------- 
+ 
+ 
+DATASET : GunPoint   
+HYPER-PARAMETER-VALUES   
+Candidates Group :  Motifs  
+Max Depth Tree :  2  
+Min Samples for Leaf :  5  
+Used Candidates are removed :  0  
+Window Size :  20  
+K (# motif/discord retrieved) :  1  
+  
+
+DATASET INFO   
+#Pattern Training :  50  
+#Pattern Training used :  40  
+#Pattern Test :  150  
+Length pattern :  150  
+CLASSIFICATION REPORT:
+               precision    recall  f1-score   support
+
+           0       0.70      0.58      0.63        76
+           1       0.63      0.74      0.68        74
+
+    accuracy                           0.66       150
+   macro avg       0.67      0.66      0.66       150
+weighted avg       0.67      0.66      0.66       150
+ 
+Accuracy 0.66 
+F1-score [0.63309353 0.68322981] 
+284.94438648223877 seconds END OF EXECUTION 
+ 
+ 
+ 
+ ---------------------------------------------------- 
+ 
+ 
+DATASET : GunPoint   
+HYPER-PARAMETER-VALUES   
+Candidates Group :  Motifs  
+Max Depth Tree :  2  
+Min Samples for Leaf :  5  
+Used Candidates are removed :  0  
+Window Size :  20  
+K (# motif/discord retrieved) :  1  
+  
+
+DATASET INFO   
+#Pattern Training :  50  
+#Pattern Training used :  40  
+#Pattern Test :  150  
+Length pattern :  150  
+CLASSIFICATION REPORT:
+               precision    recall  f1-score   support
+
+           0       0.58      0.74      0.65        76
+           1       0.63      0.46      0.53        74
+
+    accuracy                           0.60       150
+   macro avg       0.61      0.60      0.59       150
+weighted avg       0.61      0.60      0.59       150
+ 
+Accuracy 0.6 
+F1-score [0.65116279 0.53125   ] 
+267.9637634754181 seconds END OF EXECUTION 
+ 
+ 
+ 
+ ---------------------------------------------------- 
+ 
+ 
+DATASET : GunPoint   
+HYPER-PARAMETER-VALUES   
+Candidates Group :  Motifs  
+Max Depth Tree :  5  
+Min Samples for Leaf :  10  
+Used Candidates are removed :  1  
+Window Size :  50  
+K (# motif/discord retrieved) :  2  
+  
+
+DATASET INFO   
+#Pattern Training :  50  
+#Pattern Training used :  40  
+#Pattern Test :  150  
+Length pattern :  150  
+CLASSIFICATION REPORT:
+               precision    recall  f1-score   support
+
+           0       0.57      0.68      0.62        76
+           1       0.59      0.47      0.53        74
+
+    accuracy                           0.58       150
+   macro avg       0.58      0.58      0.57       150
+weighted avg       0.58      0.58      0.58       150
+ 
+Accuracy 0.58 
+F1-score [0.62275449 0.52631579] 
+485.96534729003906 seconds END OF EXECUTION 
+ 
+ 
+ 
+ ---------------------------------------------------- 
+ 
+ 
+DATASET : GunPoint   
+HYPER-PARAMETER-VALUES   
+Candidates Group :  Motifs  
+Max Depth Tree :  5  
+Min Samples for Leaf :  10  
+Used Candidates are removed :  1  
+Window Size :  50  
+K (# motif/discord retrieved) :  2  
+  
+
+DATASET INFO   
+#Pattern Training :  50  
+#Pattern Training used :  45  
+#Pattern Test :  150  
+Length pattern :  150  
+CLASSIFICATION REPORT:
+               precision    recall  f1-score   support
+
+           0       0.55      0.67      0.60        76
+           1       0.56      0.43      0.49        74
+
+    accuracy                           0.55       150
+   macro avg       0.55      0.55      0.55       150
+weighted avg       0.55      0.55      0.55       150
+ 
+Accuracy 0.5533333333333333 
+F1-score [0.6035503  0.48854962] 
+719.0606803894043 seconds END OF EXECUTION 
+ 
+ 
+ 
+ ---------------------------------------------------- 
+ 
+ 
+DATASET : GunPoint   
+HYPER-PARAMETER-VALUES   
+Candidates Group :  Motifs  
+Max Depth Tree :  5  
+Min Samples for Leaf :  10  
+Used Candidates are removed :  1  
+Window Size :  50  
+K (# motif/discord retrieved) :  2  
+  
+
+DATASET INFO   
+#Pattern Training :  50  
+#Pattern Training used :  5  
+#Pattern Test :  150  
+Length pattern :  150  
+CLASSIFICATION REPORT:
+               precision    recall  f1-score   support
+
+           0       0.65      0.59      0.62        76
+           1       0.62      0.68      0.65        74
+
+    accuracy                           0.63       150
+   macro avg       0.63      0.63      0.63       150
+weighted avg       0.63      0.63      0.63       150
+ 
+Accuracy 0.6333333333333333 
+F1-score [0.62068966 0.64516129] 
+2.1982593536376953 seconds END OF EXECUTION 
+ 
+ 
+ 
+ ---------------------------------------------------- 
+ 
+ 
+DATASET : GunPoint   
+HYPER-PARAMETER-VALUES   
+Candidates Group :  Motifs  
+Max Depth Tree :  5  
+Min Samples for Leaf :  10  
+Used Candidates are removed :  1  
+Window Size :  50  
+K (# motif/discord retrieved) :  2  
+  
+
+DATASET INFO   
+#Pattern Training :  50  
+#Pattern Training used :  5  
+#Pattern Test :  150  
+Length pattern :  150  
+CLASSIFICATION REPORT:
+               precision    recall  f1-score   support
+
+           0       0.12      0.12      0.12        76
+           1       0.14      0.15      0.14        74
+
+    accuracy                           0.13       150
+   macro avg       0.13      0.13      0.13       150
+weighted avg       0.13      0.13      0.13       150
+ 
+Accuracy 0.13333333333333333 
+F1-score [0.12162162 0.14473684] 
+1.3139793872833252 seconds END OF EXECUTION 
+ 
+ 
+ 
+ ---------------------------------------------------- 
+ 
+ 
+DATASET : GunPoint   
+HYPER-PARAMETER-VALUES   
+Candidates Group :  Motifs  
+Max Depth Tree :  5  
+Min Samples for Leaf :  10  
+Used Candidates are removed :  1  
+Window Size :  50  
+K (# motif/discord retrieved) :  2  
+  
+
+DATASET INFO   
+#Pattern Training :  50  
+#Pattern Training used :  5  
+#Pattern Test :  150  
+Length pattern :  150  
+CLASSIFICATION REPORT:
+               precision    recall  f1-score   support
+
+           0       0.05      0.03      0.03        76
+           1       0.33      0.50      0.40        74
+
+    accuracy                           0.26       150
+   macro avg       0.19      0.26      0.22       150
+weighted avg       0.19      0.26      0.21       150
+ 
+Accuracy 0.26 
+F1-score [0.03478261 0.4       ] 
+1.433807611465454 seconds END OF EXECUTION 
+ 
+ 
+ 
+ ---------------------------------------------------- 
+ 
+ 
+DATASET : GunPoint   
+HYPER-PARAMETER-VALUES   
+Candidates Group :  Motifs  
+Max Depth Tree :  5  
+Min Samples for Leaf :  10  
+Used Candidates are removed :  1  
+Window Size :  50  
+K (# motif/discord retrieved) :  2  
+  
+
+DATASET INFO   
+#Pattern Training :  50  
+#Pattern Training used :  5  
+#Pattern Test :  150  
+Length pattern :  150  
+CLASSIFICATION REPORT:
+               precision    recall  f1-score   support
+
+           0       0.50      0.95      0.66        76
+           1       0.43      0.04      0.07        74
+
+    accuracy                           0.50       150
+   macro avg       0.47      0.49      0.37       150
+weighted avg       0.47      0.50      0.37       150
+ 
+Accuracy 0.5 
+F1-score [0.65753425 0.07407407] 
+1.2809014320373535 seconds END OF EXECUTION 
+ 
+ 
+ 
+ ---------------------------------------------------- 
+ 
+ 
+DATASET : GunPoint   
+HYPER-PARAMETER-VALUES   
+Candidates Group :  Motifs  
+Max Depth Tree :  5  
+Min Samples for Leaf :  10  
+Used Candidates are removed :  1  
+Window Size :  50  
+K (# motif/discord retrieved) :  2  
+  
+
+DATASET INFO   
+#Pattern Training :  50  
+#Pattern Training used :  5  
+#Pattern Test :  150  
+Length pattern :  150  
+CLASSIFICATION REPORT:
+               precision    recall  f1-score   support
+
+           0       0.48      0.62      0.54        76
+           1       0.45      0.32      0.38        74
+
+    accuracy                           0.47       150
+   macro avg       0.47      0.47      0.46       150
+weighted avg       0.47      0.47      0.46       150
+ 
+Accuracy 0.47333333333333333 
+F1-score [0.5433526  0.37795276] 
+1.3056554794311523 seconds END OF EXECUTION 
+ 
+ 
+ 
+ ---------------------------------------------------- 
+ 
+ 
+DATASET : GunPoint   
+HYPER-PARAMETER-VALUES   
+Candidates Group :  Motifs  
+Max Depth Tree :  5  
+Min Samples for Leaf :  10  
+Used Candidates are removed :  1  
+Window Size :  50  
+K (# motif/discord retrieved) :  2  
+  
+
+DATASET INFO   
+#Pattern Training :  50  
+#Pattern Training used :  5  
+#Pattern Test :  150  
+Length pattern :  150  
+CLASSIFICATION REPORT:
+               precision    recall  f1-score   support
+
+           0       0.43      0.74      0.55        76
+           1       0.05      0.01      0.02        74
+
+    accuracy                           0.38       150
+   macro avg       0.24      0.38      0.28       150
+weighted avg       0.24      0.38      0.29       150
+ 
+Accuracy 0.38 
+F1-score [0.54634146 0.02105263] 
+1.264927864074707 seconds END OF EXECUTION 
+ 
+ 
+ 
+ ---------------------------------------------------- 
+ 
+ 
+DATASET : GunPoint   
+HYPER-PARAMETER-VALUES   
+Candidates Group :  Motifs  
+Max Depth Tree :  5  
+Min Samples for Leaf :  10  
+Used Candidates are removed :  1  
+Window Size :  50  
+K (# motif/discord retrieved) :  2  
+  
+
+DATASET INFO   
+#Pattern Training :  50  
+#Pattern Training used :  5  
+#Pattern Test :  150  
+Length pattern :  150  
+CLASSIFICATION REPORT:
+               precision    recall  f1-score   support
+
+           0       0.37      0.26      0.31        76
+           1       0.42      0.54      0.47        74
+
+    accuracy                           0.40       150
+   macro avg       0.39      0.40      0.39       150
+weighted avg       0.39      0.40      0.39       150
+ 
+Accuracy 0.4 
+F1-score [0.30769231 0.47058824] 
+1.2987959384918213 seconds END OF EXECUTION 
+ 
+ 
+ 
+ ---------------------------------------------------- 
+ 
+ 
+DATASET : GunPoint   
+HYPER-PARAMETER-VALUES   
+Candidates Group :  Motifs  
+Max Depth Tree :  5  
+Min Samples for Leaf :  10  
+Used Candidates are removed :  1  
+Window Size :  50  
+K (# motif/discord retrieved) :  2  
+  
+
+DATASET INFO   
+#Pattern Training :  50  
+#Pattern Training used :  5  
+#Pattern Test :  150  
+Length pattern :  150  
+CLASSIFICATION REPORT:
+               precision    recall  f1-score   support
+
+           0       0.49      0.28      0.35        76
+           1       0.49      0.70      0.57        74
+
+    accuracy                           0.49       150
+   macro avg       0.49      0.49      0.46       150
+weighted avg       0.49      0.49      0.46       150
+ 
+Accuracy 0.4866666666666667 
+F1-score [0.35294118 0.57458564] 
+1.2450590133666992 seconds END OF EXECUTION 
+ 
+ 
+ 
+ ---------------------------------------------------- 
+ 
+ 
+DATASET : GunPoint   
+HYPER-PARAMETER-VALUES   
+Candidates Group :  Motifs  
+Max Depth Tree :  5  
+Min Samples for Leaf :  10  
+Used Candidates are removed :  1  
+Window Size :  50  
+K (# motif/discord retrieved) :  2  
+  
+
+DATASET INFO   
+#Pattern Training :  50  
+#Pattern Training used :  5  
+#Pattern Test :  150  
+Length pattern :  150  
+CLASSIFICATION REPORT:
+               precision    recall  f1-score   support
+
+           0       0.54      0.18      0.27        76
+           1       0.50      0.84      0.63        74
+
+    accuracy                           0.51       150
+   macro avg       0.52      0.51      0.45       150
+weighted avg       0.52      0.51      0.45       150
+ 
+Accuracy 0.5066666666666667 
+F1-score [0.2745098  0.62626263] 
+1.3860690593719482 seconds END OF EXECUTION 
+ 
+ 
+ 
+ ---------------------------------------------------- 
+ 
+ 
+DATASET : GunPoint   
+HYPER-PARAMETER-VALUES   
+Candidates Group :  Motifs  
+Max Depth Tree :  5  
+Min Samples for Leaf :  10  
+Used Candidates are removed :  1  
+Window Size :  50  
+K (# motif/discord retrieved) :  2  
+  
+
+DATASET INFO   
+#Pattern Training :  50  
+#Pattern Training used :  5  
+#Pattern Test :  150  
+Length pattern :  150  
+CLASSIFICATION REPORT:
+               precision    recall  f1-score   support
+
+           0       0.02      0.01      0.02        76
+           1       0.30      0.43      0.35        74
+
+    accuracy                           0.22       150
+   macro avg       0.16      0.22      0.19       150
+weighted avg       0.16      0.22      0.18       150
+ 
+Accuracy 0.22 
+F1-score [0.01680672 0.35359116] 
+1.3738446235656738 seconds END OF EXECUTION 
+ 
+ 
+ 
+ ---------------------------------------------------- 
+ 
+ 
+DATASET : GunPoint   
+HYPER-PARAMETER-VALUES   
+Candidates Group :  Both  
+Max Depth Tree :  5  
+Min Samples for Leaf :  10  
+Used Candidates are removed :  1  
+Window Size :  50  
+K (# motif/discord retrieved) :  2  
+  
+
+DATASET INFO   
+#Pattern Training :  50  
+#Pattern Training used :  50  
+#Pattern Test :  150  
+Length pattern :  150  
+CLASSIFICATION REPORT:
+               precision    recall  f1-score   support
+
+           0       1.00      0.87      0.93        76
+           1       0.88      1.00      0.94        74
+
+    accuracy                           0.93       150
+   macro avg       0.94      0.93      0.93       150
+weighted avg       0.94      0.93      0.93       150
+ 
+Accuracy 0.9333333333333333 
+F1-score [0.92957746 0.93670886] 
+5419.198867321014 seconds END OF EXECUTION 
+ 
+ 
+ 
+ ---------------------------------------------------- 
+ 
+ 
+DATASET : ItalyPowerDemand   
+HYPER-PARAMETER-VALUES   
+Candidates Group :  Discords  
+Max Depth Tree :  5  
+Min Samples for Leaf :  20  
+Used Candidates are removed :  1  
+Window Size :  10  
+K (# motif/discord retrieved) :  1  
+  
+
+DATASET INFO   
+#Pattern Training :  67  
+#Pattern Training used :  67  
+#Pattern Test :  1029  
+Length pattern :  24  
+CLASSIFICATION REPORT:
+               precision    recall  f1-score   support
+
+           0       0.84      0.88      0.86       513
+           1       0.88      0.84      0.86       516
+
+    accuracy                           0.86      1029
+   macro avg       0.86      0.86      0.86      1029
+weighted avg       0.86      0.86      0.86      1029
+ 
+Accuracy 0.859086491739553 
+F1-score [0.86177312 0.85629336] 
+1976.9444296360016 seconds END OF EXECUTION 
+ 
+ 
+ 
+ ---------------------------------------------------- 
+ 
+ 
+DATASET : ItalyPowerDemand   
+HYPER-PARAMETER-VALUES   
+Candidates Group :  Discords  
+Max Depth Tree :  4  
+Min Samples for Leaf :  15  
+Used Candidates are removed :  1  
+Window Size :  10  
+K (# motif/discord retrieved) :  1  
+  
+
+DATASET INFO   
+#Pattern Training :  67  
+#Pattern Training used :  67  
+#Pattern Test :  1029  
+Length pattern :  24  
+CLASSIFICATION REPORT:
+               precision    recall  f1-score   support
+
+           0       0.84      0.88      0.86       513
+           1       0.88      0.84      0.86       516
+
+    accuracy                           0.86      1029
+   macro avg       0.86      0.86      0.86      1029
+weighted avg       0.86      0.86      0.86      1029
+ 
+Accuracy 0.859086491739553 
+F1-score [0.86177312 0.85629336] 
+1996.9573895931244 seconds END OF EXECUTION 
+ 
+ 
+ 
+ ---------------------------------------------------- 
+ 
+ 
+DATASET : ItalyPowerDemand   
+HYPER-PARAMETER-VALUES   
+Candidates Group :  Discords  
+Max Depth Tree :  4  
+Min Samples for Leaf :  15  
+Used Candidates are removed :  0  
+Window Size :  10  
+K (# motif/discord retrieved) :  1  
+  
+
+DATASET INFO   
+#Pattern Training :  67  
+#Pattern Training used :  67  
+#Pattern Test :  1029  
+Length pattern :  24  
+CLASSIFICATION REPORT:
+               precision    recall  f1-score   support
+
+           0       0.84      0.88      0.86       513
+           1       0.88      0.84      0.86       516
+
+    accuracy                           0.86      1029
+   macro avg       0.86      0.86      0.86      1029
+weighted avg       0.86      0.86      0.86      1029
+ 
+Accuracy 0.859086491739553 
+F1-score [0.86177312 0.85629336] 
+1957.561416387558 seconds END OF EXECUTION 
  
  
  

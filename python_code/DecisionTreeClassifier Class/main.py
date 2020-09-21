@@ -1,6 +1,7 @@
 from Tree import *
 from PreProcessingLibrary import  *
 import time
+from sklearn.utils.random import sample_without_replacement
 from tslearn.datasets import UCR_UEA_datasets
 from pathlib import Path
 from datetime import datetime
@@ -13,8 +14,10 @@ fifth=False #GRAFICA DELLE SERIE TEMPORALI
 sixth=False #GRAFICA DI SERIE TEMPORALI E MATRIX PROFILE DEI CANDIDATI SCELTI
 
 #genero albero (VUOTO) e avvio timer
-tree= Tree(candidatesGroup=1,maxDepth=3,minSamplesLeaf=5,removeUsedCandidate=1,window_size=10,k=1,verbose=1) # K= NUM DI MOTIF/DISCORD ESTRATTI
+tree= Tree(candidatesGroup=1,maxDepth=4,minSamplesLeaf=15,removeUsedCandidate=0,window_size=10,k=1,verbose=1) # K= NUM DI MOTIF/DISCORD ESTRATTI
 start_time = time.time()
+
+
 
 
 if(first==True):
@@ -26,15 +29,32 @@ if(first==True):
     #dfTrain=pd.DataFrame(datasetTrain[0])
 
     #CARICO DATI DA LIBRERIA (FUNZIONE)
-    X_train, y_train, X_test, y_test = UCR_UEA_datasets().load_dataset('ItalyPowerDemand')
+    le = LabelEncoder()
+
+    datasetName='ItalyPowerDemand'
+    X_train, y_train, X_test, y_test = UCR_UEA_datasets().load_dataset(datasetName)
+
+    dimWholeTrainSet=len(X_train)
+    dimSubTrainSet= int(len(X_train) * 1) #dim of new SubSet of X_train
+
+    selectedRecords=sample_without_replacement(len(X_train), dimSubTrainSet) #random records selected
+    print(selectedRecords)
+    X_train=X_train[selectedRecords]
+    #print(X_train)
+
+
     dfTrain = computeLoadedDataset(X_train, y_train)
-    print(dfTrain)
+    num_classes = le.fit_transform(dfTrain['target'])
+    print(np.unique(num_classes, return_counts=True))
     patternLenght=len(dfTrain.iloc[0])-1
+    print('PATT LENGHT: '+str(patternLenght))
+
     # genero strtutture dati ausiliarie
 
     mpTrain,CandidatesListTrain,numberOfMotifTrain,numberOfDiscordTrain,CandidatesUsedListTrain=getDataStructures(dfTrain,tree.window_size,tree.k,verbose=1)
     dfForDTree = computeSubSeqDistance(dfTrain, CandidatesListTrain, tree.window_size)
     if(verbose==True):
+        print(dfTrain)
         print(dfForDTree)
 
     print("--- %s seconds after getting DATA STRUCTURES" % (time.time() - start_time))
@@ -110,11 +130,11 @@ if(quarter==True):
         group = 'Discords'
     else:
         group = 'Both'
-
+    file.write('DATASET : %s   \n' % datasetName)
     file.write('HYPER-PARAMETER-VALUES   \n')
-    file.write('Candidates Group :  %s  \nMax Depth Tree :  %d  \nMin Samples for Leaf :  %d  \nUsed Candidates are removed :  %d  \nWindow Size :  %d  \n  \n' % (group,tree.maxDepth,tree.minSamplesLeaf,tree.removeUsedCandidate,tree.window_size))
+    file.write('Candidates Group :  %s  \nMax Depth Tree :  %d  \nMin Samples for Leaf :  %d  \nUsed Candidates are removed :  %d  \nWindow Size :  %d  \nK (# motif/discord retrieved) :  %d  \n  \n' % (group,tree.maxDepth,tree.minSamplesLeaf,tree.removeUsedCandidate,tree.window_size,tree.k))
     file.write('\nDATASET INFO   \n')
-    file.write('#Pattern Training :  %d  \n#Pattern Test :  %d  \nLength pattern :  %d  \n' % (len(dfTrain), len(dfTest), patternLenght))
+    file.write('#Pattern Training :  %d  \n#Pattern Training used :  %d  \n#Pattern Test :  %d  \nLength pattern :  %d  \n' % ( dimWholeTrainSet, dimSubTrainSet,len(dfTest), patternLenght) )
     file.write('CLASSIFICATION REPORT:\n %s \nAccuracy %s \nF1-score %s \n' % (cR , aS ,f1))
     file.write("%s seconds END OF EXECUTION \n " % str(totalTime))
     file.write('\n \n \n ---------------------------------------------------- \n \n \n' )
@@ -122,11 +142,20 @@ if(quarter==True):
 
 
 if(fifth==True):
+
+    le = LabelEncoder()
+    num_classes = le.fit_transform(dfTrain['target'])
+    plt.scatter(dfTrain['att0'], dfTrain['att1'],
+                c=num_classes)  # scatter mi permette di "disegnare" il piano in 2d, mettendo attributi, e avere graficamente classificazione lineare
+    plt.show()
+
     for i in range(len(dfTrain)):
         Ts = np.array(dfTrain.iloc[i].values)
         print('TS ID:' + str(i))
-        print('TS CLASS:' + str(Ts[len(Ts)-1]))
+        print('TS CLASS:' + str(dfTrain.iloc[i]['target']))
         plotData(dfTrain.iloc[i])
+
+
 
 
 
@@ -141,7 +170,7 @@ if(sixth==True):
             if(TsAndStartingPositionList[j][0] == i):
                 Ts = np.array(dfTrain.iloc[i].values)
                 print('TS ID:' + str(i))
-                print('TS CLASS:' + str(Ts[len(Ts)-1]))
+                print('TS CLASS:' + str(dfTrain.iloc[i]['target']))
                 mp, mot, motif_dist, dis = retrieve_all2(Ts,tree.window_size,tree.k)
                 print('CANDIDATE START IN : '+str(TsAndStartingPositionList[j][1]))
                 plot_all(Ts, mp, mot, motif_dist, dis, tree.window_size)
