@@ -1,20 +1,24 @@
 from Tree import *
 from PreProcessingLibrary import  *
+from TestFileManager import *
 import time
 from sklearn.utils.random import sample_without_replacement
 from tslearn.datasets import UCR_UEA_datasets
 from pathlib import Path
 from datetime import datetime
 
-first=True #ESTRAZIONE DATASET TRAINING
-second=True #CALCOLO ALBERO DECISIONE
-third=True #ESTRAZIONE DATASET TEST
-quarter=True #PREDIZIONE E RISULTATO
+first=False #ESTRAZIONE DATASET TRAINING
+second=False #CALCOLO ALBERO DECISIONE
+third=False #ESTRAZIONE DATASET TEST
+quarter=False #PREDIZIONE E RISULTATO
 fifth=False #GRAFICA DELLE SERIE TEMPORALI
 sixth=False #GRAFICA DI SERIE TEMPORALI E MATRIX PROFILE DEI CANDIDATI SCELTI
+seventh=True
 
 #genero albero (VUOTO) e avvio timer
 tree= Tree(candidatesGroup=1,maxDepth=4,minSamplesLeaf=15,removeUsedCandidate=0,window_size=10,k=1,verbose=1) # K= NUM DI MOTIF/DISCORD ESTRATTI
+datasetName='ItalyPowerDemand'
+nameFile = datasetName + 'TestResults.csv'
 start_time = time.time()
 
 
@@ -31,11 +35,12 @@ if(first==True):
     #CARICO DATI DA LIBRERIA (FUNZIONE)
     le = LabelEncoder()
 
-    datasetName='ItalyPowerDemand'
+
     X_train, y_train, X_test, y_test = UCR_UEA_datasets().load_dataset(datasetName)
 
     dimWholeTrainSet=len(X_train)
-    dimSubTrainSet= int(len(X_train) * 1) #dim of new SubSet of X_train
+    PercentageTrainingSet=0.1
+    dimSubTrainSet= int(len(X_train) * PercentageTrainingSet) #dim of new SubSet of X_train
 
     selectedRecords=sample_without_replacement(len(X_train), dimSubTrainSet) #random records selected
     print(selectedRecords)
@@ -113,32 +118,37 @@ if(quarter==True):
     confusion_matrix(yTest, yPredicted)
     totalTime = time.time() - start_time
 
+    if (tree.candidatesGroup == 0):
+        group = 'Motifs'
+    elif (tree.candidatesGroup == 1):
+        group = 'Discords'
+    else:
+        group = 'Both'
+
+    row=[group,tree.maxDepth,tree.minSamplesLeaf,tree.window_size,tree.removeUsedCandidate,tree.k,PercentageTrainingSet,round(aS,2),round(totalTime,2)]
     print('Classification Report %s' % cR)
     print('Accuracy %s' % aS)
     print('F1-score %s' % f1)
     print(" %s seconds END OF EXECUTION" % totalTime)
 
     #salvo su file i risultati di questa configuazione
-    Path("./TestResults").mkdir(parents=True, exist_ok=True)
-    dateTimeObj = datetime.now()
-    nameFile='./TestResults/TestResults1.txt'
-    file = open(nameFile, "a+")
+    #Path("./TestResults").mkdir(parents=True, exist_ok=True)
 
-    if(tree.candidatesGroup==0):
-        group='Motifs'
-    elif(tree.candidatesGroup == 1):
-        group = 'Discords'
-    else:
-        group = 'Both'
-    file.write('DATASET : %s   \n' % datasetName)
-    file.write('HYPER-PARAMETER-VALUES   \n')
-    file.write('Candidates Group :  %s  \nMax Depth Tree :  %d  \nMin Samples for Leaf :  %d  \nUsed Candidates are removed :  %d  \nWindow Size :  %d  \nK (# motif/discord retrieved) :  %d  \n  \n' % (group,tree.maxDepth,tree.minSamplesLeaf,tree.removeUsedCandidate,tree.window_size,tree.k))
-    file.write('\nDATASET INFO   \n')
-    file.write('#Pattern Training :  %d  \n#Pattern Training used :  %d  \n#Pattern Test :  %d  \nLength pattern :  %d  \n' % ( dimWholeTrainSet, dimSubTrainSet,len(dfTest), patternLenght) )
-    file.write('CLASSIFICATION REPORT:\n %s \nAccuracy %s \nF1-score %s \n' % (cR , aS ,f1))
-    file.write("%s seconds END OF EXECUTION \n " % str(totalTime))
-    file.write('\n \n \n ---------------------------------------------------- \n \n \n' )
-    file.close()
+
+    WriteCsv(nameFile, row)
+
+    # file = open(nameFile, "a+")
+    #
+    #
+    # file.write('DATASET : %s   \n' % datasetName)
+    # file.write('HYPER-PARAMETER-VALUES   \n')
+    # file.write('Candidates Group :  %s  \nMax Depth Tree :  %d  \nMin Samples for Leaf :  %d  \nUsed Candidates are removed :  %d  \nWindow Size :  %d  \nK (# motif/discord retrieved) :  %d  \n  \n' % (group,tree.maxDepth,tree.minSamplesLeaf,tree.removeUsedCandidate,tree.window_size,tree.k))
+    # file.write('\nDATASET INFO   \n')
+    # file.write('#Pattern Training :  %d  \n#Pattern Training used :  %d  \n#Pattern Test :  %d  \nLength pattern :  %d  \n' % ( dimWholeTrainSet, dimSubTrainSet,len(dfTest), patternLenght) )
+    # file.write('CLASSIFICATION REPORT:\n %s \nAccuracy %s \nF1-score %s \n' % (cR , aS ,f1))
+    # file.write("%s seconds END OF EXECUTION \n " % str(totalTime))
+    # file.write('\n \n \n ---------------------------------------------------- \n \n \n' )
+    # file.close()
 
 
 if(fifth==True):
@@ -175,4 +185,9 @@ if(sixth==True):
                 print('CANDIDATE START IN : '+str(TsAndStartingPositionList[j][1]))
                 plot_all(Ts, mp, mot, motif_dist, dis, tree.window_size)
                 PreProcessedTs.loc[i] = mot, dis
+
+
+if(seventh==True):
+    PlotValues(nameFile)
+
 
