@@ -7,17 +7,17 @@ from tslearn.datasets import UCR_UEA_datasets
 from pathlib import Path
 from datetime import datetime
 
-first=False #ESTRAZIONE DATASET TRAINING
-second=False #CALCOLO ALBERO DECISIONE
-third=False #ESTRAZIONE DATASET TEST
-quarter=False #PREDIZIONE E RISULTATO
+first=True #ESTRAZIONE DATASET TRAINING
+second=True #CALCOLO ALBERO DECISIONE
+third=True #ESTRAZIONE DATASET TEST
+quarter=True #PREDIZIONE E RISULTATO
 fifth=False #GRAFICA DELLE SERIE TEMPORALI
 sixth=False #GRAFICA DI SERIE TEMPORALI E MATRIX PROFILE DEI CANDIDATI SCELTI
 seventh=True
 
 #genero albero (VUOTO) e avvio timer
-tree= Tree(candidatesGroup=1,maxDepth=4,minSamplesLeaf=15,removeUsedCandidate=0,window_size=10,k=1,verbose=1) # K= NUM DI MOTIF/DISCORD ESTRATTI
-datasetName='ItalyPowerDemand'
+tree= Tree(candidatesGroup=0,maxDepth=5,minSamplesLeaf=10,removeUsedCandidate=1,window_size=50,k=2,verbose=1) # K= NUM DI MOTIF/DISCORD ESTRATTI
+datasetName='GunPoint'
 nameFile = datasetName + 'TestResults.csv'
 start_time = time.time()
 
@@ -39,7 +39,7 @@ if(first==True):
     X_train, y_train, X_test, y_test = UCR_UEA_datasets().load_dataset(datasetName)
 
     dimWholeTrainSet=len(X_train)
-    PercentageTrainingSet=0.1
+    PercentageTrainingSet=0.9
     dimSubTrainSet= int(len(X_train) * PercentageTrainingSet) #dim of new SubSet of X_train
 
     selectedRecords=sample_without_replacement(len(X_train), dimSubTrainSet) #random records selected
@@ -188,6 +188,7 @@ if(sixth==True):
 
 
 if(seventh==True):
+    #readCsv(nameFile)
     PlotValues(nameFile)
 
 
