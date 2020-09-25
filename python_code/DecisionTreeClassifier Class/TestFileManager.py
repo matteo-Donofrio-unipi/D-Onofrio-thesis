@@ -4,15 +4,14 @@ from matplotlib import pyplot as plt
 import pandas as pd
 import numpy as np
 import statistics
+import os
 
 def readCsv(fileName):
-    # csv file name
 
-    # initializing the titles and rows list
     fields = []
     rows = []
 
-    # reading csv file
+
     with open(fileName, 'r') as csvfile:
         # creating a csv reader object
         csvreader = csv.reader(csvfile)
@@ -40,13 +39,17 @@ def readCsv(fileName):
 
 
 def WriteCsv(fileName,row):
-    #fields = ['Candidates', 'Max depth', 'Min samples', 'Window size', 'Remove candi', 'k', '% Training set', 'Accuracy']
+    fields = ['Candidates', 'Max depth', 'Min samples', 'Window size', 'Remove candi', 'k', '% Training set', 'Accuracy','Time']
+    writeFileds=False
+    if(os.path.isfile(fileName)==False):
+        writeFileds=True
 
     # writing to csv file
     with open(fileName, 'a', newline='') as csvfile:
         # creating a csv writer object
         csvwriter = csv.writer(csvfile)
-
+        if (writeFileds):
+            csvwriter.writerow(fields)
         # writing the data rows
         csvwriter.writerow(row)
 

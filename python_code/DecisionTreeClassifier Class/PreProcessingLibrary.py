@@ -32,11 +32,13 @@ def computeLoadedDataset(X, y):
     lastAttribute = ['TsIndex', 'class']
     prefix = 'att'
 
+    #conto il numero di attributi e genero nomi colonne
     for i in columnsList:
         columnsList2.append(prefix + str(i))
     columnsList2.append('target')
     dataset = pd.DataFrame(columns=columnsList2, index=range(0, len(X)))
 
+    #aggiungo ad ogni record l'attributo classe
     for i in range(len(X)):
         l1 = list()
         record = X[i]
@@ -120,10 +122,11 @@ def getDataStructures(df,window_size,k,verbose):
     CandidatesUsedList = buildCandidatesUsedList(CandidatesList, numberOfMotif, numberOfDiscord)
 
     if (verbose == True):
-        print('Candidati estratti')
+        print('Candidati estratti: ')
         print(CandidatesList)
-        print(numberOfMotif, numberOfDiscord)
-        print(CandidatesUsedList)
+        print('numberOfMotif: %d, numberOfDiscord: %d \n'% (numberOfMotif, numberOfDiscord))
+        print('CandidatesUsedList: \n'+str(CandidatesUsedList))
+        print('\n')
 
     return mp, CandidatesList, numberOfMotif, numberOfDiscord, CandidatesUsedList
 

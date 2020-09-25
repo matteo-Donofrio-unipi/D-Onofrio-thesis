@@ -13,11 +13,19 @@ third=True #ESTRAZIONE DATASET TEST
 quarter=True #PREDIZIONE E RISULTATO
 fifth=False #GRAFICA DELLE SERIE TEMPORALI
 sixth=False #GRAFICA DI SERIE TEMPORALI E MATRIX PROFILE DEI CANDIDATI SCELTI
-seventh=True
+seventh=False
+
+useValidationSet = False
+usePercentageTrainingSet = True
+PercentageTrainingSet = 0.1  # % se voglio usare una percentuale di Training Set
+PercentageValidationSet = 0.8  # % set rispetto alla dim del Training Set
+writeOnCsv=False
 
 #genero albero (VUOTO) e avvio timer
-tree= Tree(candidatesGroup=0,maxDepth=5,minSamplesLeaf=10,removeUsedCandidate=1,window_size=50,k=2,verbose=1) # K= NUM DI MOTIF/DISCORD ESTRATTI
+le = LabelEncoder()
+tree= Tree(candidatesGroup=0,maxDepth=4,minSamplesLeaf=10,removeUsedCandidate=1,window_size=5,k=2,verbose=1) # K= NUM DI MOTIF/DISCORD ESTRATTI
 datasetName='GunPoint'
+datasetNames='GunPoint,ItalyPowerDemand,ArrowHead,ECG200,ECG5000,ElectricDevices,PhalangesOutlinesCorrect'
 nameFile = datasetName + 'TestResults.csv'
 start_time = time.time()
 
@@ -25,42 +33,76 @@ start_time = time.time()
 
 
 if(first==True):
-    #ACQUISISCO STRUTTURE DATI DEL TRAINING SET
     verbose = True
-
-    #CARICO DATI DAL FILE
-    #datasetTrain = arff.loadarff('ItalyPowerDemand/ItalyPowerDemand_TRAIN.arff')
-    #dfTrain=pd.DataFrame(datasetTrain[0])
-
-    #CARICO DATI DA LIBRERIA (FUNZIONE)
-    le = LabelEncoder()
 
 
     X_train, y_train, X_test, y_test = UCR_UEA_datasets().load_dataset(datasetName)
+    dimWholeTrainSet = len(X_train)
+    print('Initial Train set shape : ' + str(X_train.shape)+'\n')
 
-    dimWholeTrainSet=len(X_train)
-    PercentageTrainingSet=0.9
-    dimSubTrainSet= int(len(X_train) * PercentageTrainingSet) #dim of new SubSet of X_train
-
-    selectedRecords=sample_without_replacement(len(X_train), dimSubTrainSet) #random records selected
-    print(selectedRecords)
-    X_train=X_train[selectedRecords]
-    #print(X_train)
+    if(useValidationSet):
 
 
-    dfTrain = computeLoadedDataset(X_train, y_train)
-    num_classes = le.fit_transform(dfTrain['target'])
-    print(np.unique(num_classes, return_counts=True))
-    patternLenght=len(dfTrain.iloc[0])-1
-    print('PATT LENGHT: '+str(patternLenght))
 
-    # genero strtutture dati ausiliarie
+        dimValidationSet = int(len(X_train) * PercentageValidationSet)  # dim of new SubSet of X_train
+        selectedRecordsForValidation=sample_without_replacement(len(X_train), dimValidationSet,random_state=0) #always same records selected
+        print('selectedRecordsForValidation: '+str(selectedRecordsForValidation)+'\n')
 
-    mpTrain,CandidatesListTrain,numberOfMotifTrain,numberOfDiscordTrain,CandidatesUsedListTrain=getDataStructures(dfTrain,tree.window_size,tree.k,verbose=1)
+        # inserisco in df Training set con relative label
+        dfTrain = computeLoadedDataset(X_train, y_train)
+
+        patternLenght=len(dfTrain.iloc[0])-1
+
+
+        #estraggo val set e rimuovo record estratti da training set
+        dfVal=dfTrain.iloc[selectedRecordsForValidation]
+        dfTrain=dfTrain.drop(index=selectedRecordsForValidation)
+
+
+        print('Patter Lenght: ' + str(patternLenght) + '\n')
+
+        print('Final Train set shape : ' + str(dfTrain.shape))
+        print('Final Validation set shape : '+ str(dfVal.shape)+'\n')
+
+        num_classes = le.fit_transform(dfTrain['target'])
+        print('Final class distribution in Training set : ')
+        print(np.unique(num_classes, return_counts=True))
+        print('\n')
+
+        print('dfTrain: \n'+str(dfTrain))
+        print('dfVal: \n'+str(dfVal))
+
+
+    if(usePercentageTrainingSet):
+
+        dimSubTrainSet = int(len(X_train) * PercentageTrainingSet)  # dim of new SubSet of X_train
+        selectedRecords = sample_without_replacement(len(X_train), dimSubTrainSet)  # random records selected
+        print('selectedRecords: '+str(selectedRecords))
+
+        #inserisco in df Training set con relative label
+        dfTrain = computeLoadedDataset(X_train, y_train)
+
+        patternLenght = len(dfTrain.iloc[0]) - 1
+
+
+        dfTrain = dfTrain.iloc[selectedRecords]
+
+        print('Final Train set shape : ' + str(dfTrain.shape)+'\n')
+
+        num_classes = le.fit_transform(dfTrain['target'])
+        print('Final class distribution in Training set : ')
+        print(np.unique(num_classes, return_counts=True))
+        print('\n')
+
+        print('PATT LENGHT: ' + str(patternLenght))
+
+    # genero strtutture dati utilizzate effettivamente
+    mpTrain, CandidatesListTrain, numberOfMotifTrain, numberOfDiscordTrain, CandidatesUsedListTrain = getDataStructures(
+        dfTrain, tree.window_size, tree.k, verbose=1)
     dfForDTree = computeSubSeqDistance(dfTrain, CandidatesListTrain, tree.window_size)
-    if(verbose==True):
-        print(dfTrain)
-        print(dfForDTree)
+    if (verbose == True):
+        print('dfTrain: \n'+str(dfTrain))
+        print('dfForDTree: \n'+str(dfForDTree))
 
     print("--- %s seconds after getting DATA STRUCTURES" % (time.time() - start_time))
 
@@ -80,17 +122,12 @@ if(second==True):
 
 
 if(third==True):
-    #GENERO STRUTTURE DATI PER TEST SET
     verbose=True
 
-    # CARICO DATI DAL FILE
-    #datasetTest = arff.loadarff('ItalyPowerDemand/ItalyPowerDemand_TEST.arff')
-    #dfTest = pd.DataFrame(datasetTest[0])  # 30 record su matrice da 128 attributi + 'b': classe appartenenza
-
-
-    # CARICO DATI DA LIBRERIA (FUNZIONE)
-    dfTest = computeLoadedDataset(X_test, y_test)
-    #dfTest = dfTest.iloc[10:20]  # ne prendo 50 altrimenti impiega tempo troppo lungo, sono 900 record totali
+    if(useValidationSet):
+        dfTest=dfVal
+    else:
+        dfTest = computeLoadedDataset(X_test, y_test)
 
 
     tree.attributeList=sorted(tree.attributeList) #ordino attributi per rendere più efficiente 'computeSubSeqDistanceForTest'
@@ -131,24 +168,8 @@ if(quarter==True):
     print('F1-score %s' % f1)
     print(" %s seconds END OF EXECUTION" % totalTime)
 
-    #salvo su file i risultati di questa configuazione
-    #Path("./TestResults").mkdir(parents=True, exist_ok=True)
-
-
-    WriteCsv(nameFile, row)
-
-    # file = open(nameFile, "a+")
-    #
-    #
-    # file.write('DATASET : %s   \n' % datasetName)
-    # file.write('HYPER-PARAMETER-VALUES   \n')
-    # file.write('Candidates Group :  %s  \nMax Depth Tree :  %d  \nMin Samples for Leaf :  %d  \nUsed Candidates are removed :  %d  \nWindow Size :  %d  \nK (# motif/discord retrieved) :  %d  \n  \n' % (group,tree.maxDepth,tree.minSamplesLeaf,tree.removeUsedCandidate,tree.window_size,tree.k))
-    # file.write('\nDATASET INFO   \n')
-    # file.write('#Pattern Training :  %d  \n#Pattern Training used :  %d  \n#Pattern Test :  %d  \nLength pattern :  %d  \n' % ( dimWholeTrainSet, dimSubTrainSet,len(dfTest), patternLenght) )
-    # file.write('CLASSIFICATION REPORT:\n %s \nAccuracy %s \nF1-score %s \n' % (cR , aS ,f1))
-    # file.write("%s seconds END OF EXECUTION \n " % str(totalTime))
-    # file.write('\n \n \n ---------------------------------------------------- \n \n \n' )
-    # file.close()
+    if(writeOnCsv):
+        WriteCsv(nameFile, row)
 
 
 if(fifth==True):
@@ -188,7 +209,6 @@ if(sixth==True):
 
 
 if(seventh==True):
-    #readCsv(nameFile)
     PlotValues(nameFile)
 
 
