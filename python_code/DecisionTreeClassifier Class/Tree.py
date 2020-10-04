@@ -20,13 +20,14 @@ from sklearn.metrics import accuracy_score, f1_score, classification_report
 from sklearn.metrics import roc_curve, auc, roc_auc_score
 
 class Tree:
-    def __init__(self,candidatesGroup,maxDepth,minSamplesLeaf,removeUsedCandidate,window_size,k,verbose):
+    def __init__(self,candidatesGroup,maxDepth,minSamplesLeaf,removeUsedCandidate,window_size,k,warningDetected,verbose):
         self.candidatesGroup=candidatesGroup
         self.maxDepth=maxDepth
         self.minSamplesLeaf=minSamplesLeaf
         self.removeUsedCandidate=removeUsedCandidate
         self.window_size=window_size
         self.k=k
+        self.warningDetected=warningDetected
         self.verbose=verbose
         self.attributeList=list()
 
@@ -61,11 +62,19 @@ class Tree:
         columnsList = dataset.columns.values
         dizLeft = pd.DataFrame(columns=columnsList)
         dizRight = pd.DataFrame(columns=columnsList)
-        for i in range(len(dataset)):
-            if dataset.iloc[i][attribute] < value:
-                dizLeft = dizLeft.append(dataset.iloc[i], ignore_index=True)
-            else:
-                dizRight = dizRight.append(dataset.iloc[i], ignore_index=True)
+        attribute=str(attribute)
+        value=str(value)
+
+        q1=attribute+'<'+value
+        q2=attribute+'>='+value
+
+        dizLeft= dataset.query(q1)
+        dizRight= dataset.query(q2)
+
+        dizLeft = dizLeft.reset_index(drop=True)
+        dizRight = dizRight.reset_index(drop=True)
+
+
         return dizLeft, dizRight
 
 
@@ -208,7 +217,7 @@ class Tree:
             print(indexBestAttribute, bestValueForSplit)
 
         splitValue = bestValueForSplit
-        Dleft, Dright = self.split(dataset, indexBestAttribute, bestValueForSplit)
+        Dleft, Dright = self.split(dataset, 'cand'+str(indexBestAttribute), bestValueForSplit)
 
         return [indexBestAttribute, splitValue, Dleft, Dright]
 

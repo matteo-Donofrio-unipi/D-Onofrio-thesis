@@ -49,9 +49,19 @@ def computeLoadedDataset(X, y):
 
     return dataset
 
-def retrieve_all(Ts,window_size,k):  # fornita la Ts calcola e restituisce mp, motifs, motifs_distances e discords
+def retrieve_all(tree,Ts,window_size,k):  # fornita la Ts calcola e restituisce mp, motifs, motifs_distances e discords
     dfMP = pd.DataFrame(Ts).astype(float)  # genero Dframe per lavorarci su, DA CAPIRE PERCHE SERVE FLOAT
-    mp, mpi = matrixProfile.stomp(dfMP[0].values, window_size)  # OK STOMP
+
+    if(tree.warningDetected==True):
+        mp, mpi = ComputeMpAndMpi(Ts, window_size)
+    else:
+        mp, mpi = matrixProfile.stomp(dfMP[0].values, window_size)  # OK STOMP
+
+
+    if(np.isnan(mp).any() or np.isinf(mp).any()):
+        tree.warningDetected=True
+        print('switch to ComputeMpAndMpi')
+        mp, mpi = ComputeMpAndMpi(Ts, window_size)
 
     # PREPARO TUPLA DA PASSARE ALLA FUN MOTIF (RICHIEDE TUPLA FATTA DA MP E MPI)
     tupla = mp, mpi
@@ -64,6 +74,44 @@ def retrieve_all(Ts,window_size,k):  # fornita la Ts calcola e restituisce mp, m
 
     tupla = mp, mot, motif_dist, dis
     return tupla
+
+#my function for compute mp and mpi
+def ComputeMpAndMpi(Ts, window_size):
+    if window_size >= len(Ts) or window_size < 2:
+        raise ValueError('Window_size not supported')
+    Ts = Ts.astype(float)
+    lenTs = len(Ts)
+    mp = list()
+    mpi = list()
+    for i in range(lenTs):
+
+        bestDist = 1000
+        bestIdx = 0
+
+        if (i + window_size > lenTs):
+            break
+        else:
+            subSeq = Ts[i:i + window_size]
+
+            for j in range(lenTs):
+                if (j + window_size > lenTs):
+                    break
+                else:
+                    subSeqToCompute = Ts[j:j + window_size]
+                    dist = round(np.linalg.norm(subSeq - subSeqToCompute), 8)
+
+                    if (dist > 0 and dist < bestDist):
+                        bestDist = dist
+                        bestIdx = j  # starting index of founded closest subseq
+
+            mp.append(bestDist)
+            mpi.append(bestIdx)
+
+    return mp, mpi
+
+
+
+
 
 
 
@@ -99,7 +147,7 @@ def buildCandidatesUsedList(CandidatesList, numberOfMotif, numberOfDiscord):
 
 
 
-def getDataStructures(df,window_size,k,verbose):
+def getDataStructures(tree,df,window_size,k,verbose):
     # trasformo da stringa a numero il campo target
     le = LabelEncoder()
     num_classes = le.fit_transform(df['target'])
@@ -109,15 +157,23 @@ def getDataStructures(df,window_size,k,verbose):
     diz = {'Motif': [], 'Discord': []}
 
     # CALCOLO MOTIF E DISCORD E LI INSERISCO NEL DIZIONARIO
+
+    if(verbose):
+        print('start computing MP, MPI')
+
     for i in range(len(df)):
         Ts = np.array(df.iloc[i][:-2].values) #-2 perche rimuovo l'attributo target e index inserito precedentemente
-        mp, mot, motif_dist, dis = retrieve_all(Ts,window_size,k)
+        tupla= retrieve_all(tree,Ts,window_size,k)
+        mp, mot, motif_dist, dis = tupla
         diz['Motif'].insert(i, mot)
         diz['Discord'].insert(i, dis)
+
 
     # GENERO DFRAME DA DIZIONARIO
 
     CandidatesList = pd.DataFrame(diz)
+    print('CANDIDATE')
+    print(CandidatesList)
     CandidatesList, numberOfMotif, numberOfDiscord = candidateFilter(CandidatesList)
     CandidatesUsedList = buildCandidatesUsedList(CandidatesList, numberOfMotif, numberOfDiscord)
 
@@ -136,6 +192,7 @@ def getDataStructures(df,window_size,k,verbose):
 
 # per ogni Ts calcolo Dprofile con ogni candidato e inserisco la distanza minima con candidato i-esimo nella colonna i-esima
 def computeSubSeqDistance(dataset, CandidatesList,window_size):
+    print('start computing df for dtree')
     # quantifico il num di candidati e in base a tale valore genero colonne per dfForDTree
     numberOfCandidates = 0
     for i in range(len(CandidatesList)):

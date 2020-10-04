@@ -17,14 +17,14 @@ seventh=False
 
 useValidationSet = False
 usePercentageTrainingSet = True
-PercentageTrainingSet = 0.1  # % se voglio usare una percentuale di Training Set
-PercentageValidationSet = 0.8  # % set rispetto alla dim del Training Set
-writeOnCsv=False
+PercentageTrainingSet = 1  # % se voglio usare una percentuale di Training Set
+PercentageValidationSet = 0.25  # % set rispetto alla dim del Training Set
+writeOnCsv=True
 
 #genero albero (VUOTO) e avvio timer
 le = LabelEncoder()
-tree= Tree(candidatesGroup=0,maxDepth=4,minSamplesLeaf=10,removeUsedCandidate=1,window_size=5,k=2,verbose=1) # K= NUM DI MOTIF/DISCORD ESTRATTI
-datasetName='GunPoint'
+tree= Tree(candidatesGroup=0,maxDepth=5,minSamplesLeaf=50,removeUsedCandidate=1,window_size=25,k=2,warningDetected=False,verbose=1) # K= NUM DI MOTIF/DISCORD ESTRATTI
+datasetName='ECG5000'
 datasetNames='GunPoint,ItalyPowerDemand,ArrowHead,ECG200,ECG5000,ElectricDevices,PhalangesOutlinesCorrect'
 nameFile = datasetName + 'TestResults.csv'
 start_time = time.time()
@@ -39,6 +39,7 @@ if(first==True):
     X_train, y_train, X_test, y_test = UCR_UEA_datasets().load_dataset(datasetName)
     dimWholeTrainSet = len(X_train)
     print('Initial Train set shape : ' + str(X_train.shape)+'\n')
+    print('Initial Test set shape : ' + str(X_test.shape) + '\n')
 
     if(useValidationSet):
 
@@ -64,12 +65,19 @@ if(first==True):
         print('Final Train set shape : ' + str(dfTrain.shape))
         print('Final Validation set shape : '+ str(dfVal.shape)+'\n')
 
+        num_classes = le.fit_transform(dfVal['target'])
+        print('Final class distribution in Validation set : ')
+        print(np.unique(num_classes, return_counts=True))
+        print('\n')
+
         num_classes = le.fit_transform(dfTrain['target'])
         print('Final class distribution in Training set : ')
         print(np.unique(num_classes, return_counts=True))
         print('\n')
 
         print('dfTrain: \n'+str(dfTrain))
+        print(dfTrain.isnull().sum().sum())
+        print(dfTrain.isnull().values.any())
         print('dfVal: \n'+str(dfVal))
 
 
@@ -97,8 +105,9 @@ if(first==True):
         print('PATT LENGHT: ' + str(patternLenght))
 
     # genero strtutture dati utilizzate effettivamente
-    mpTrain, CandidatesListTrain, numberOfMotifTrain, numberOfDiscordTrain, CandidatesUsedListTrain = getDataStructures(
+    mpTrain, CandidatesListTrain, numberOfMotifTrain, numberOfDiscordTrain, CandidatesUsedListTrain = getDataStructures(tree,
         dfTrain, tree.window_size, tree.k, verbose=1)
+    print('dfTrain: \n' + str(dfTrain))
     dfForDTree = computeSubSeqDistance(dfTrain, CandidatesListTrain, tree.window_size)
     if (verbose == True):
         print('dfTrain: \n'+str(dfTrain))
@@ -162,7 +171,12 @@ if(quarter==True):
     else:
         group = 'Both'
 
-    row=[group,tree.maxDepth,tree.minSamplesLeaf,tree.window_size,tree.removeUsedCandidate,tree.k,PercentageTrainingSet,round(aS,2),round(totalTime,2)]
+    if(useValidationSet):
+        percentage=PercentageValidationSet
+    elif(usePercentageTrainingSet):
+        percentage=PercentageTrainingSet
+
+    row=[group,tree.maxDepth,tree.minSamplesLeaf,tree.window_size,tree.removeUsedCandidate,tree.k,percentage,round(aS,2),round(totalTime,2)]
     print('Classification Report %s' % cR)
     print('Accuracy %s' % aS)
     print('F1-score %s' % f1)

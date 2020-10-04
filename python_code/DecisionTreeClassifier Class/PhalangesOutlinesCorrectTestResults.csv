@@ -1,0 +1,2 @@
+Candidates,Max depth,Min samples,Window size,Remove candi,k,% Training set,Accuracy,Time
+Motifs,4,20,5,0,1,0.25,0.52,1116.1

@@ -55,6 +55,7 @@ def WriteCsv(fileName,row):
 
 
 def PlotValues(fileName):
+    errorBarPlot=False
     # initializing the titles and rows list
     fields = []
     rows = []
@@ -122,44 +123,6 @@ def PlotValues(fileName):
     mean=list()
     stdevList=list()
 
-    dfResults = dfResults.sort_values(by='PercentageTrainingSet', ascending=True)
-    print(dfResults)
-
-
-    actualP=dfResults.iloc[0]['PercentageTrainingSet']
-    actualMean=list()
-    actualMean.append(dfResults.iloc[0]['Accuracy'])
-
-    for i in range (len(dfResults)):
-        if(i==0):
-            continue
-        if(dfResults.iloc[i]['PercentageTrainingSet']==actualP and i!=(len(dfResults)-1)):
-            actualMean.append(dfResults.iloc[i]['Accuracy'])
-            actualP=dfResults.iloc[i]['PercentageTrainingSet']
-            continue
-        else:
-            mean.append(sum(actualMean)/len(actualMean))
-            if(len(actualMean)>1):
-                stdevList.append(statistics.stdev(actualMean))
-            else:
-                stdevList.append(0.1)
-            actualMean.clear()
-            actualMean.append(dfResults.iloc[i]['Accuracy'])
-            actualP = dfResults.iloc[i]['PercentageTrainingSet']
-
-    print(mean)
-    print(stdevList)
-
-    plt.plot(dfResults['PercentageTrainingSet'], dfResults['Accuracy'], 'or')
-    plt.xlabel('% Training Set')
-    plt.ylabel('Accuracy')
-    plt.show()
-
-    plt.errorbar(percentage, mean, yerr=stdevList, fmt='.k')
-    plt.xlabel('% Training Set')
-    plt.ylabel('Mean')
-    plt.show()
-
     dfResults = dfResults.sort_values(by='MaxDepth', ascending=True)
     print(dfResults['WindowSize'])
 
@@ -167,3 +130,46 @@ def PlotValues(fileName):
     plt.xlabel('MaxDepth')
     plt.ylabel('Accuracy')
     plt.show()
+
+    dfResults = dfResults.sort_values(by='PercentageTrainingSet', ascending=True)
+    print(dfResults)
+
+    plt.plot(dfResults['PercentageTrainingSet'], dfResults['Accuracy'], 'or')
+    plt.xlabel('% Training Set')
+    plt.ylabel('Accuracy')
+    plt.show()
+
+    if(errorBarPlot):
+
+
+        actualP=dfResults.iloc[0]['PercentageTrainingSet']
+        actualMean=list()
+        actualMean.append(dfResults.iloc[0]['Accuracy'])
+
+        for i in range (len(dfResults)):
+            if(i==0):
+                continue
+            if(dfResults.iloc[i]['PercentageTrainingSet']==actualP and i!=(len(dfResults)-1)):
+                actualMean.append(dfResults.iloc[i]['Accuracy'])
+                actualP=dfResults.iloc[i]['PercentageTrainingSet']
+                continue
+            else:
+                mean.append(sum(actualMean)/len(actualMean))
+                if(len(actualMean)>1):
+                    stdevList.append(statistics.stdev(actualMean))
+                else:
+                    stdevList.append(0.1)
+                actualMean.clear()
+                actualMean.append(dfResults.iloc[i]['Accuracy'])
+                actualP = dfResults.iloc[i]['PercentageTrainingSet']
+
+        print(mean)
+        print(stdevList)
+
+
+
+        plt.errorbar(percentage, mean, yerr=stdevList, fmt='.k')
+        plt.xlabel('% Training Set')
+        plt.ylabel('Mean')
+        plt.show()
+
