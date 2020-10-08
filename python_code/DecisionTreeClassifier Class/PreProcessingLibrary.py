@@ -18,6 +18,8 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score, f1_score, classification_report
 from sklearn.metrics import roc_curve, auc, roc_auc_score
+import math
+from scipy.spatial.distance import euclidean
 
 
 # LIBRERIA PER TUTTE LE FUNZIONI DI PRE PROCESSING DEI DATI
@@ -53,7 +55,7 @@ def retrieve_all(tree,Ts,window_size,k):  # fornita la Ts calcola e restituisce 
     dfMP = pd.DataFrame(Ts).astype(float)  # genero Dframe per lavorarci su, DA CAPIRE PERCHE SERVE FLOAT
 
     if(tree.warningDetected==True):
-        mp, mpi = ComputeMpAndMpi(Ts, window_size)
+        mp, mpi = ComputeMpAndMpi(dfMP[0].values, window_size)
     else:
         mp, mpi = matrixProfile.stomp(dfMP[0].values, window_size)  # OK STOMP
 
@@ -61,7 +63,7 @@ def retrieve_all(tree,Ts,window_size,k):  # fornita la Ts calcola e restituisce 
     if(np.isnan(mp).any() or np.isinf(mp).any()):
         tree.warningDetected=True
         print('switch to ComputeMpAndMpi')
-        mp, mpi = ComputeMpAndMpi(Ts, window_size)
+        mp, mpi =ComputeMpAndMpi(dfMP[0].values, window_size)
 
     # PREPARO TUPLA DA PASSARE ALLA FUN MOTIF (RICHIEDE TUPLA FATTA DA MP E MPI)
     tupla = mp, mpi
@@ -75,14 +77,19 @@ def retrieve_all(tree,Ts,window_size,k):  # fornita la Ts calcola e restituisce 
     tupla = mp, mot, motif_dist, dis
     return tupla
 
+
+
+
 #my function for compute mp and mpi
 def ComputeMpAndMpi(Ts, window_size):
     if window_size >= len(Ts) or window_size < 2:
         raise ValueError('Window_size not supported')
+
     Ts = Ts.astype(float)
     lenTs = len(Ts)
     mp = list()
     mpi = list()
+
     for i in range(lenTs):
 
         bestDist = 1000
@@ -94,11 +101,13 @@ def ComputeMpAndMpi(Ts, window_size):
             subSeq = Ts[i:i + window_size]
 
             for j in range(lenTs):
+                if(i==j):
+                    continue
                 if (j + window_size > lenTs):
                     break
                 else:
                     subSeqToCompute = Ts[j:j + window_size]
-                    dist = round(np.linalg.norm(subSeq - subSeqToCompute), 8)
+                    dist=euclidean(subSeq,subSeqToCompute)
 
                     if (dist > 0 and dist < bestDist):
                         bestDist = dist
@@ -108,8 +117,6 @@ def ComputeMpAndMpi(Ts, window_size):
             mpi.append(bestIdx)
 
     return mp, mpi
-
-
 
 
 
@@ -153,7 +160,8 @@ def getDataStructures(tree,df,window_size,k,verbose):
     num_classes = le.fit_transform(df['target'])
     df['target'] = num_classes
     df['TsIndex'] = np.arange(len(df))
-    # diz={'Motif':[],'Motif-Dist':[],'Discord':[]}
+
+
     diz = {'Motif': [], 'Discord': []}
 
     # CALCOLO MOTIF E DISCORD E LI INSERISCO NEL DIZIONARIO
@@ -162,11 +170,17 @@ def getDataStructures(tree,df,window_size,k,verbose):
         print('start computing MP, MPI')
 
     for i in range(len(df)):
+        if(tree.warningDetected==True and i % 100 == 0):
+            print('computing Ts #: '+str(i))
+
         Ts = np.array(df.iloc[i][:-2].values) #-2 perche rimuovo l'attributo target e index inserito precedentemente
         tupla= retrieve_all(tree,Ts,window_size,k)
         mp, mot, motif_dist, dis = tupla
         diz['Motif'].insert(i, mot)
         diz['Discord'].insert(i, dis)
+
+
+
 
 
     # GENERO DFRAME DA DIZIONARIO
@@ -191,13 +205,15 @@ def getDataStructures(tree,df,window_size,k,verbose):
 
 
 # per ogni Ts calcolo Dprofile con ogni candidato e inserisco la distanza minima con candidato i-esimo nella colonna i-esima
-def computeSubSeqDistance(dataset, CandidatesList,window_size):
+def computeSubSeqDistance(tree,dataset, CandidatesList,window_size):
     print('start computing df for dtree')
     # quantifico il num di candidati e in base a tale valore genero colonne per dfForDTree
     numberOfCandidates = 0
+
     for i in range(len(CandidatesList)):
         numberOfCandidates += len(CandidatesList['Motif'].loc[i])
         numberOfCandidates += len(CandidatesList['Discord'].loc[i])
+
     columnsList = np.arange(numberOfCandidates)
     columnsList2 = list()
     lastAttribute = ['TsIndex', 'class']
@@ -227,8 +243,12 @@ def computeSubSeqDistance(dataset, CandidatesList,window_size):
                 TsContainingCandidateShapelet = np.array(dataset.iloc[j].values)  # Ts contenente candidato shapelet
                 Dp = distanceProfile.massDistanceProfile(TsContainingCandidateShapelet, int(startingIndex), window_size,TsToCompare)
                 minValueFromDProfile = min(Dp[0])  # Dp[0] contiene il Dp effettivo
+                # if(math.isnan(minValueFromDProfile)):
+                #     print(Dp[0])
+                #     print(minValueFromDProfile)
                 dfForDTree[prefix + str(counter)].iloc[i] = minValueFromDProfile
                 counter += 1
+
         for j in range(len(CandidatesList)):
             numDiscord = len(CandidatesList['Discord'].iloc[j])
             # scandisco e calcolo distanza dai discord
@@ -237,9 +257,12 @@ def computeSubSeqDistance(dataset, CandidatesList,window_size):
                 startingIndex = l1[k]  # indice di inizio del motif
                 TsContainingCandidateShapelet = np.array(dataset.iloc[j].values)  # Ts contenente candidato shapelet
                 Dp = distanceProfile.massDistanceProfile(TsContainingCandidateShapelet, int(startingIndex), window_size,
-                                                         TsToCompare)
+                                                             TsToCompare)
                 minValueFromDProfile = min(Dp[0])  # Dp[0] contiene il Dp effettivo
                 dfForDTree[prefix + str(counter)].iloc[i] = minValueFromDProfile
+                # if (math.isnan(minValueFromDProfile)):
+                #     print(Dp[0])
+                #     print(minValueFromDProfile)
                 counter += 1
 
     # print(counter)
@@ -314,6 +337,55 @@ def computeSubSeqDistanceForTest(datasetTest, datasetTrain, attributeList, Candi
 
     return dfForDTreeTest,TsAndStartingPositionList  # columnsList2 restituito per generare poi dFrame in "Split" (struttura dframe)
 
+
+
+#dopo aver calcolato dfTrain, recupero la sottosequenza di ogni candidato shapelet
+def retireveCandidatesSubSeq(CandidatesList, dataset,window_size,numCandidatesExtracted):
+
+
+    #genero colonne
+    columnsList=list(['idTs','startingPosition','M/D'])
+    prefix='att'
+    for i in range(window_size):
+        columnsList.append(prefix + str(i))
+    candDf=pd.DataFrame(columns=columnsList,index=range(numCandidatesExtracted))
+
+
+    for j in range(len(CandidatesList)):
+        numMotif = len(CandidatesList['Motif'].iloc[j])
+        #scandisco e inserisco prima tutte le subseq dei motif
+        for k in range(numMotif):
+            print(j+k)
+            print(k)
+            print('\n')
+            l1 = CandidatesList['Motif'].iloc[j]  # lista di indice i in motifDiscordList
+            startingIndex = int(l1[k])  # indice di inizio del motif
+            TsContainingCandidateShapelet = np.array(dataset.iloc[j].values)  # Ts contenente candidato shapelet
+            subSeqCandidate=TsContainingCandidateShapelet[startingIndex:startingIndex+window_size]
+            candDf.iloc[j+k]['idTs']=j
+            candDf.iloc[j+k]['startingPosition'] = startingIndex
+            candDf.iloc[j+k]['M/D'] = 0
+            for z in range(window_size):
+                candDf.iloc[j+k]['att'+str(z)] = subSeqCandidate[z]
+
+
+
+    for j in range(len(CandidatesList)):
+        numDiscord = len(CandidatesList['Discord'].iloc[j])
+        # scandisco e recuper subseq dei discord
+        for k in range(numDiscord):
+            print(len(CandidatesList)+j+k)
+            l1 = CandidatesList['Discord'].iloc[j]  # lista di indice i in motifDiscordList
+            startingIndex = l1[k]  # indice di inizio del motif
+            TsContainingCandidateShapelet = np.array(dataset.iloc[j].values)  # Ts contenente candidato shapelet
+            subSeqCandidate = TsContainingCandidateShapelet[startingIndex:startingIndex + window_size]
+            candDf.iloc[len(CandidatesList)+j+k]['idTs'] = j
+            candDf.iloc[len(CandidatesList)+j+k]['startingPosition'] = startingIndex
+            candDf.iloc[len(CandidatesList)+j+k]['M/D'] = 1
+            for z in range(window_size):
+                candDf.iloc[len(CandidatesList)+j+k]['att' + str(z)] = subSeqCandidate[z]
+
+    return candDf
 
 #FUNZIONI PER PLOTTING DEI DATI
 
