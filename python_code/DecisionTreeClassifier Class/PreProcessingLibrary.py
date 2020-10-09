@@ -20,6 +20,7 @@ from sklearn.metrics import accuracy_score, f1_score, classification_report
 from sklearn.metrics import roc_curve, auc, roc_auc_score
 import math
 from scipy.spatial.distance import euclidean
+from kCandidatesSearch import runKMeans
 
 
 # LIBRERIA PER TUTTE LE FUNZIONI DI PRE PROCESSING DEI DATI
@@ -145,6 +146,21 @@ def candidateFilter(CandidatesList):
 
 
 
+#conto dopo aver selezionato i medoidi, il num di motif e discords
+def countNumberOfCandidates(CandidatesListTrain):
+
+    numMotifs=0
+    numDiscords=0
+    for index, row in CandidatesListTrain.iterrows():
+        numMotifs+=len(row['Motif'])
+        numDiscords += len(row['Discord'])
+
+    return numMotifs,numDiscords
+
+
+
+
+
 # riceve la lista di candidati e genera una lista della stessa dimensione di booleani
 def buildCandidatesUsedList(CandidatesList, numberOfMotif, numberOfDiscord):
     CandidatesUsedList = pd.DataFrame(columns=['Used'], index=range(0, numberOfMotif + numberOfDiscord))
@@ -210,9 +226,9 @@ def computeSubSeqDistance(tree,dataset, CandidatesList,window_size):
     # quantifico il num di candidati e in base a tale valore genero colonne per dfForDTree
     numberOfCandidates = 0
 
-    for i in range(len(CandidatesList)):
-        numberOfCandidates += len(CandidatesList['Motif'].loc[i])
-        numberOfCandidates += len(CandidatesList['Discord'].loc[i])
+    for index, row in CandidatesList.iterrows():
+        numberOfCandidates += len(row['Motif'])
+        numberOfCandidates += len(row['Discord'])
 
     columnsList = np.arange(numberOfCandidates)
     columnsList2 = list()
@@ -234,13 +250,13 @@ def computeSubSeqDistance(tree,dataset, CandidatesList,window_size):
         dfForDTree['class'].iloc[i] = classValue
         counter = 0
         # raccolgo i candidati di una riga
-        for j in range(len(CandidatesList)):
-            numMotif = len(CandidatesList['Motif'].iloc[j])
+        for index, row in CandidatesList.iterrows():
+            numMotif = len(row['Motif'])
             # scandisco e calcolo distanza dai motif
             for k in range(numMotif):
-                l1 = CandidatesList['Motif'].iloc[j]  # lista di indice i in motifDiscordList
+                l1 = row['Motif']  # lista di indice i in motifDiscordList
                 startingIndex = l1[k]  # indice di inizio del motif
-                TsContainingCandidateShapelet = np.array(dataset.iloc[j].values)  # Ts contenente candidato shapelet
+                TsContainingCandidateShapelet = np.array(dataset.iloc[index].values)  # Ts contenente candidato shapelet JCONTROLLARE
                 Dp = distanceProfile.massDistanceProfile(TsContainingCandidateShapelet, int(startingIndex), window_size,TsToCompare)
                 minValueFromDProfile = min(Dp[0])  # Dp[0] contiene il Dp effettivo
                 # if(math.isnan(minValueFromDProfile)):
@@ -249,13 +265,13 @@ def computeSubSeqDistance(tree,dataset, CandidatesList,window_size):
                 dfForDTree[prefix + str(counter)].iloc[i] = minValueFromDProfile
                 counter += 1
 
-        for j in range(len(CandidatesList)):
-            numDiscord = len(CandidatesList['Discord'].iloc[j])
+        for index, row in CandidatesList.iterrows():
+            numDiscord = len(row['Discord'])
             # scandisco e calcolo distanza dai discord
             for k in range(numDiscord):
-                l1 = CandidatesList['Discord'].iloc[j]  # lista di indice i in motifDiscordList
+                l1 = row['Discord']  # lista di indice i in motifDiscordList
                 startingIndex = l1[k]  # indice di inizio del motif
-                TsContainingCandidateShapelet = np.array(dataset.iloc[j].values)  # Ts contenente candidato shapelet
+                TsContainingCandidateShapelet = np.array(dataset.iloc[index].values)  # Ts contenente candidato shapelet
                 Dp = distanceProfile.massDistanceProfile(TsContainingCandidateShapelet, int(startingIndex), window_size,
                                                              TsToCompare)
                 minValueFromDProfile = min(Dp[0])  # Dp[0] contiene il Dp effettivo
@@ -298,35 +314,35 @@ def computeSubSeqDistanceForTest(datasetTest, datasetTrain, attributeList, Candi
         for z in range(len(attributeList)):
             candidateIndex = attributeList[z]
             counter = 0
-            for j in range(len(CandidatesList)):
-                numMotif = len(CandidatesList['Motif'].iloc[j])
+            for index, row in CandidatesList.iterrows():
+                numMotif = len(row['Motif'])
                 for k in range(numMotif):
                     if (counter == candidateIndex):
-                        l1 = CandidatesList['Motif'].iloc[j]  # lista di indice i in motifDiscordList
+                        l1 = row['Motif']  # lista di indice i in motifDiscordList
                         startingIndex = l1[k]  # indice di inizio del motif
                         TsContainingCandidateShapelet = np.array(
-                            datasetTrain.iloc[j].values)  # Ts contenente candidato shapelet
+                            datasetTrain.iloc[index].values)  # Ts contenente candidato shapelet
                         Dp = distanceProfile.massDistanceProfile(TsContainingCandidateShapelet, int(startingIndex),
                                                                  window_size, TsToCompare)
                         minValueFromDProfile = min(Dp[0])  # Dp[0] contiene il Dp effettivo
                         dfForDTreeTest[prefix + str(counter)].iloc[i] = minValueFromDProfile
                         if(booleanForTsAndStartingPos==True):
-                            TsAndStartingPositionList.append([j,startingIndex])
+                            TsAndStartingPositionList.append([index,startingIndex])
                     counter += 1
-            for j in range(len(CandidatesList)):
-                numDiscord = len(CandidatesList['Discord'].iloc[j])
+            for index, row in CandidatesList.iterrows():
+                numDiscord = len(row['Discord'])
                 for k in range(numDiscord):
                     if (counter == candidateIndex):
-                        l1 = CandidatesList['Discord'].iloc[j]  # lista di indice i in motifDiscordList
+                        l1 = row['Discord']  # lista di indice i in motifDiscordList
                         startingIndex = l1[k]  # indice di inizio del motif
                         TsContainingCandidateShapelet = np.array(
-                            datasetTrain.iloc[j].values)  # Ts contenente candidato shapelet
+                            datasetTrain.iloc[index].values)  # Ts contenente candidato shapelet
                         Dp = distanceProfile.massDistanceProfile(TsContainingCandidateShapelet, int(startingIndex),
                                                                  window_size, TsToCompare)
                         minValueFromDProfile = min(Dp[0])  # Dp[0] contiene il Dp effettivo
                         dfForDTreeTest[prefix + str(counter)].iloc[i] = minValueFromDProfile
                         if (booleanForTsAndStartingPos == True):
-                            TsAndStartingPositionList.append([j, startingIndex])
+                            TsAndStartingPositionList.append([index, startingIndex])
                     counter += 1
 
         booleanForTsAndStartingPos = False #setto a false e smetto di raccogliere informazioni
@@ -340,7 +356,7 @@ def computeSubSeqDistanceForTest(datasetTest, datasetTrain, attributeList, Candi
 
 
 #dopo aver calcolato dfTrain, recupero la sottosequenza di ogni candidato shapelet
-def retireveCandidatesSubSeq(CandidatesList, dataset,window_size,numCandidatesExtracted):
+def retireveCandidatesSubSeq(CandidatesList, dataset,window_size,numberOfMotifTrain, numberOfDiscordTrain):
 
 
     #genero colonne
@@ -348,44 +364,80 @@ def retireveCandidatesSubSeq(CandidatesList, dataset,window_size,numCandidatesEx
     prefix='att'
     for i in range(window_size):
         columnsList.append(prefix + str(i))
-    candDf=pd.DataFrame(columns=columnsList,index=range(numCandidatesExtracted))
+    candDfMotifs=pd.DataFrame(columns=columnsList,index=range(numberOfMotifTrain))
+    candDfDiscords = pd.DataFrame(columns=columnsList, index=range(numberOfDiscordTrain))
 
-
+    counter=0
     for j in range(len(CandidatesList)):
         numMotif = len(CandidatesList['Motif'].iloc[j])
         #scandisco e inserisco prima tutte le subseq dei motif
         for k in range(numMotif):
-            print(j+k)
-            print(k)
-            print('\n')
             l1 = CandidatesList['Motif'].iloc[j]  # lista di indice i in motifDiscordList
             startingIndex = int(l1[k])  # indice di inizio del motif
             TsContainingCandidateShapelet = np.array(dataset.iloc[j].values)  # Ts contenente candidato shapelet
             subSeqCandidate=TsContainingCandidateShapelet[startingIndex:startingIndex+window_size]
-            candDf.iloc[j+k]['idTs']=j
-            candDf.iloc[j+k]['startingPosition'] = startingIndex
-            candDf.iloc[j+k]['M/D'] = 0
+            candDfMotifs.iloc[counter]['idTs']=j
+            candDfMotifs.iloc[counter]['startingPosition'] = startingIndex
+            candDfMotifs.iloc[counter]['M/D'] = 0
             for z in range(window_size):
-                candDf.iloc[j+k]['att'+str(z)] = subSeqCandidate[z]
+                candDfMotifs.iloc[counter]['att'+str(z)] = subSeqCandidate[z]
+            counter+=1
 
 
-
+    counter=0
     for j in range(len(CandidatesList)):
         numDiscord = len(CandidatesList['Discord'].iloc[j])
         # scandisco e recuper subseq dei discord
         for k in range(numDiscord):
-            print(len(CandidatesList)+j+k)
             l1 = CandidatesList['Discord'].iloc[j]  # lista di indice i in motifDiscordList
             startingIndex = l1[k]  # indice di inizio del motif
             TsContainingCandidateShapelet = np.array(dataset.iloc[j].values)  # Ts contenente candidato shapelet
             subSeqCandidate = TsContainingCandidateShapelet[startingIndex:startingIndex + window_size]
-            candDf.iloc[len(CandidatesList)+j+k]['idTs'] = j
-            candDf.iloc[len(CandidatesList)+j+k]['startingPosition'] = startingIndex
-            candDf.iloc[len(CandidatesList)+j+k]['M/D'] = 1
+            candDfDiscords.iloc[counter]['idTs'] = j
+            candDfDiscords.iloc[counter]['startingPosition'] = startingIndex
+            candDfDiscords.iloc[counter]['M/D'] = 1
             for z in range(window_size):
-                candDf.iloc[len(CandidatesList)+j+k]['att' + str(z)] = subSeqCandidate[z]
+                candDfDiscords.iloc[counter]['att' + str(z)] = subSeqCandidate[z]
+            counter+=1
 
-    return candDf
+    print('subseq dei candidati estratti (rispettivamente motifs e poi discords)')
+    #subseq dei candidati estratti (rispettivamente motifs e poi discords)
+    print(candDfMotifs)
+    print(candDfDiscords)
+
+    #indici all interno di candDfMotifs & candDfDiscords dei candidati scelti come medoidi
+    CandidateMedoidsMotifs = runKMeans(candDfMotifs)
+    CandidateMedoidsDiscords = runKMeans(candDfDiscords)
+    print('indici all interno di candDfMotifs & candDfDiscords dei candidati scelti come medoidi (rispettivamente motifs e poi discords) ')
+    print(CandidateMedoidsMotifs)
+    print(CandidateMedoidsDiscords)
+
+
+    #riduco candDfMotifs & candDfDiscords mantenendo solo i candidati scelti
+    candDfMotifs = candDfMotifs.iloc[CandidateMedoidsMotifs]
+    candDfDiscords = candDfDiscords.iloc[CandidateMedoidsDiscords]
+    candDfMotifs.reset_index(drop=True, inplace=True)
+    candDfDiscords.reset_index(drop=True, inplace=True)
+
+    print('candDfMotifs & candDfDiscords mantenendo solo i candidati scelti')
+    print(candDfMotifs)
+    print(candDfDiscords)
+
+    #prendo l'id delle Ts di appartenenza dei candidati, cosi capisco quali candidati contenuti in CandidatesListTrain devo mantenere
+    idTsCandidateMotifs = candDfMotifs['idTs'].values
+    idTsCandidateDiscords = candDfDiscords['idTs'].values
+
+    #calcolo la loro unione
+    ChosenCandidates = list(set(idTsCandidateMotifs) | set(idTsCandidateDiscords))
+    print('indice delle Ts a cui appartengono i candidati da mantenere (scleti come medoidi) dentro CandidatesListTrain ')
+    print(ChosenCandidates)
+
+    #genero nuova lista candidati / finale
+    CandidatesList = CandidatesList.iloc[ChosenCandidates]
+    print('candidati rimasti/ più significativi-distintivi ')
+    print(CandidatesList)
+
+    return CandidatesList
 
 #FUNZIONI PER PLOTTING DEI DATI
 

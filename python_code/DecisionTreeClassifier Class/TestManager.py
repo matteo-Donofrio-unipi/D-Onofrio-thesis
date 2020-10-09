@@ -11,13 +11,15 @@ from datetime import datetime
 def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
 
     first = True  # ESTRAZIONE DATASET TRAINING
-    second = False  # CALCOLO ALBERO DECISIONE
-    third = False  # ESTRAZIONE DATASET TEST
-    quarter = False  # PREDIZIONE E RISULTATO
+    second = True  # CALCOLO ALBERO DECISIONE
+    third = True  # ESTRAZIONE DATASET TEST
+    quarter = True  # PREDIZIONE E RISULTATO
     fifth = False  # GRAFICA DI SERIE TEMPORALI E MATRIX PROFILE DEI CANDIDATI SCELTI
 
+#METTERE K HYPER PARAMETRO CENTROIDI COME PARAMETRO DI TREE
 
-    PercentageTrainingSet = 0.1  # % se voglio usare una percentuale di Training Set
+
+    PercentageTrainingSet = 0.3  # % se voglio usare una percentuale di Training Set
     PercentageValidationSet = 0.25  # % set rispetto alla dim del Training Set
     writeOnCsv = True
 
@@ -108,15 +110,20 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
             dfTrain, tree.window_size, tree.k, verbose=1)
         print('dfTrain: \n' + str(dfTrain))
 
-        candDf=retireveCandidatesSubSeq(CandidatesListTrain, dfTrain,tree.window_size,len(CandidatesUsedListTrain))
-        print('CANDDF')
-        print(candDf)
+        CandidatesListTrain=retireveCandidatesSubSeq(CandidatesListTrain, dfTrain,tree.window_size,numberOfMotifTrain, numberOfDiscordTrain)
+
+        numberOfMotifTrain, numberOfDiscordTrain=countNumberOfCandidates(CandidatesListTrain)
+
+        CandidatesUsedListTrain=CandidatesUsedListTrain.iloc[:numberOfMotifTrain+numberOfDiscordTrain]
+
+        print(CandidatesUsedListTrain)
 
 
-        # dfForDTree = computeSubSeqDistance(tree,dfTrain, CandidatesListTrain, tree.window_size)
-        # if (verbose == True):
-        #     print('dfTrain: \n'+str(dfTrain))
-        #     print('dfForDTree: \n'+str(dfForDTree))
+
+        dfForDTree = computeSubSeqDistance(tree,dfTrain, CandidatesListTrain, tree.window_size)
+        if (verbose == True):
+            print('dfTrain: \n'+str(dfTrain))
+            print('dfForDTree: \n'+str(dfForDTree))
 
         print("--- %s seconds after getting DATA STRUCTURES" % (time.time() - start_time))
 

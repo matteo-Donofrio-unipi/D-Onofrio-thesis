@@ -5,26 +5,29 @@ import pandas as pd
 from scipy.spatial.distance import pdist, squareform
 
 
-def runKMeans():
+def runKMeans(dataset):
 
+    #columnsList=list(['idTs','startingPosition','M/D']) LISTA DELLE PRIME 3 COLONNE BASE DI DATASET
+    #DA QUESTE DEVO ESTRARRE TUTTE LE SUCCESSIVE
 
-    X = load_iris().data
-    df=pd.DataFrame(X,columns=['att1','att2','att3','att4'])
-    print(df)
-    kmeans = KMeans(n_clusters=10, random_state=0)
+    numColumnsDataset=list(dataset.columns)
+    numColumnsDataset=numColumnsDataset[3::]
+    X=dataset[numColumnsDataset]
+    #calcolo kmeans tra candidati
+    kmeans = KMeans(n_clusters=4, random_state=0)
     kmeans.fit(X)
 
     centroids = kmeans.cluster_centers_
 
-
+    #per ogni centroide, estraggo medoide (record nel cluster piu vicino al centroide )
     medoids = list()
     for label in np.unique(kmeans.labels_):
         X_cluster = X[kmeans.labels_ == label]
+        X_cluster.reset_index(inplace=True)
         dist = pdist(X_cluster)
         index = np.argmin(np.sum(squareform(dist), axis=0))
-        medoids.append(X_cluster[index])
-    medoids = np.array(medoids)
+        medoids.append(X_cluster.iloc[index]['index'])
+    #medoids = np.array(medoids)
 
-    print('\n')
-    print(medoids)
 
+    return medoids

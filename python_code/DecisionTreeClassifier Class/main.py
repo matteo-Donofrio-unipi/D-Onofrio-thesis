@@ -3,8 +3,8 @@ from kCandidatesSearch import runKMeans
 def main():
     datasetName = 'ItalyPowerDemand'
     nameFile = datasetName + 'TestResults.csv'
-    useValidationSet = False
-    usePercentageTrainingSet = True
+    useValidationSet = True
+    usePercentageTrainingSet = False
 
     executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile)
 
