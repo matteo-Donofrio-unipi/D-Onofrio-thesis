@@ -19,14 +19,14 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
 #METTERE K HYPER PARAMETRO CENTROIDI COME PARAMETRO DI TREE
 
 
-    PercentageTrainingSet = 0.3  # % se voglio usare una percentuale di Training Set
-    PercentageValidationSet = 0.25  # % set rispetto alla dim del Training Set
+    PercentageTrainingSet = 0.05  # % se voglio usare una percentuale di Training Set
+    PercentageValidationSet = 0.3  # % set rispetto alla dim del Training Set
     writeOnCsv = True
 
 
     #genero albero (VUOTO) e avvio timer
     le = LabelEncoder()
-    tree= Tree(candidatesGroup=0,maxDepth=4,minSamplesLeaf=50,removeUsedCandidate=1,window_size=5,k=2,warningDetected=False,verbose=1) # K= NUM DI MOTIF/DISCORD ESTRATTI
+    tree= Tree(candidatesGroup=0,maxDepth=3,minSamplesLeaf=50,removeUsedCandidate=0,window_size=15,k=1,n_clusters=100,warningDetected=False,verbose=1) # K= NUM DI MOTIF/DISCORD ESTRATTI
 
     start_time = time.time()
 
@@ -110,13 +110,15 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
             dfTrain, tree.window_size, tree.k, verbose=1)
         print('dfTrain: \n' + str(dfTrain))
 
-        CandidatesListTrain=retireveCandidatesSubSeq(CandidatesListTrain, dfTrain,tree.window_size,numberOfMotifTrain, numberOfDiscordTrain)
+        CandidatesListTrain=retireveCandidatesSubSeq(tree,CandidatesListTrain, dfTrain,tree.window_size,numberOfMotifTrain, numberOfDiscordTrain)
 
         numberOfMotifTrain, numberOfDiscordTrain=countNumberOfCandidates(CandidatesListTrain)
+        print('numberOfMotif: %d, numberOfDiscord: %d \n' % (numberOfMotifTrain, numberOfDiscordTrain))
 
         CandidatesUsedListTrain=CandidatesUsedListTrain.iloc[:numberOfMotifTrain+numberOfDiscordTrain]
 
         print(CandidatesUsedListTrain)
+
 
 
 
@@ -153,7 +155,7 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
 
         tree.attributeList=sorted(tree.attributeList) #ordino attributi per rendere più efficiente 'computeSubSeqDistanceForTest'
         tree.attributeList=np.unique(tree.attributeList)
-        dfForDTreeTest,TsAndStartingPositionList=computeSubSeqDistanceForTest(dfTest,dfTrain,tree.attributeList,CandidatesListTrain,numberOfMotifTrain,numberOfDiscordTrain,tree.window_size)
+        dfForDTreeTest,TsAndStartingPositionList=computeSubSeqDistanceForTest(tree,dfTest,dfTrain,tree.attributeList,CandidatesListTrain,numberOfMotifTrain,numberOfDiscordTrain,tree.window_size)
         if(verbose==True):
             print(dfForDTreeTest)
             print(TsAndStartingPositionList)

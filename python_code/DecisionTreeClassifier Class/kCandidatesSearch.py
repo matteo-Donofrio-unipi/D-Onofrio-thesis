@@ -5,7 +5,7 @@ import pandas as pd
 from scipy.spatial.distance import pdist, squareform
 
 
-def runKMeans(dataset):
+def runKMeans(dataset,n_clusters):
 
     #columnsList=list(['idTs','startingPosition','M/D']) LISTA DELLE PRIME 3 COLONNE BASE DI DATASET
     #DA QUESTE DEVO ESTRARRE TUTTE LE SUCCESSIVE
@@ -14,7 +14,7 @@ def runKMeans(dataset):
     numColumnsDataset=numColumnsDataset[3::]
     X=dataset[numColumnsDataset]
     #calcolo kmeans tra candidati
-    kmeans = KMeans(n_clusters=4, random_state=0)
+    kmeans = KMeans(n_clusters=n_clusters, random_state=0)
     kmeans.fit(X)
 
     centroids = kmeans.cluster_centers_
