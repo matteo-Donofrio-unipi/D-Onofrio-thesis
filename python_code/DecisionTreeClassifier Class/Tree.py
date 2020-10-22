@@ -309,6 +309,9 @@ class Tree:
         attributeValue = returnList[1]
         Dleft = returnList[2]
         Dright = returnList[3]
+        print('DLEFT---DRIGHT-- \n')
+        print(Dleft,Dright)
+        print('\n')
         self.attributeList.append(indexChosenAttribute)
         root = Node(indexChosenAttribute)
         numPattern = len(dfForDTree)

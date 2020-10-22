@@ -261,6 +261,7 @@ def getDataStructures(tree,df,window_size,k,verbose):
 # per ogni Ts calcolo Dprofile con ogni candidato e inserisco la distanza minima con candidato i-esimo nella colonna i-esima
 def computeSubSeqDistance(tree,dataset, CandidatesList,window_size):
     print('start computing df for dtree')
+
     # quantifico il num di candidati e in base a tale valore genero colonne per dfForDTree
     numberOfCandidates = 0
 
@@ -301,9 +302,6 @@ def computeSubSeqDistance(tree,dataset, CandidatesList,window_size):
                     Dp = distanceProfile.massDistanceProfile(TsContainingCandidateShapelet, int(startingIndex),
                                                               window_size, TsToCompare)
                 minValueFromDProfile = min(Dp[0])  # Dp[0] contiene il Dp effettivo
-                # if(math.isnan(minValueFromDProfile)):
-                #     print(Dp[0])
-                #     print(minValueFromDProfile)
                 dfForDTree[prefix + str(counter)].iloc[i] = minValueFromDProfile
                 counter += 1
 
@@ -322,13 +320,10 @@ def computeSubSeqDistance(tree,dataset, CandidatesList,window_size):
                                                              window_size, TsToCompare)
                 minValueFromDProfile = min(Dp[0])  # Dp[0] contiene il Dp effettivo
                 dfForDTree[prefix + str(counter)].iloc[i] = minValueFromDProfile
-                # if (math.isnan(minValueFromDProfile)):
-                #     print(Dp[0])
-                #     print(minValueFromDProfile)
                 counter += 1
 
     # print(counter)
-    return dfForDTree  # columnsList2 restituito per generare poi dFrame in "Split" (struttura dframe)
+    return dfForDTree
 
 
 
@@ -412,6 +407,7 @@ def computeSubSeqDistanceForTest(tree,datasetTest, datasetTrain, attributeList, 
 #dopo aver calcolato dfTrain, recupero la sottosequenza di ogni candidato shapelet
 def retireveCandidatesSubSeq(tree,CandidatesList, dataset,window_size,numberOfMotifTrain, numberOfDiscordTrain):
 
+    verboseretireveCandidatesSubSeq=False
 
     #genero colonne
     columnsList=list(['idTs','startingPosition','M/D'])
@@ -454,54 +450,74 @@ def retireveCandidatesSubSeq(tree,CandidatesList, dataset,window_size,numberOfMo
                 candDfDiscords.iloc[counter]['att' + str(z)] = subSeqCandidate[z]
             counter+=1
 
-    print('subseq dei candidati estratti (rispettivamente motifs e poi discords)')
-    #subseq dei candidati estratti (rispettivamente motifs e poi discords)
-    print(candDfMotifs)
-    print(candDfDiscords)
+    if(verboseretireveCandidatesSubSeq):
+        print('subseq dei candidati estratti (rispettivamente motifs e poi discords)')
+        #subseq dei candidati estratti (rispettivamente motifs e poi discords)
+        print(candDfMotifs)
+        print(candDfDiscords)
 
     EmptyDiscords = False
+    CandidateMedoidsMotifs=[]
+    CandidateMedoidsDiscords=[]
 
     if (len(candDfDiscords) == 0):
         EmptyDiscords=True
 
-    #indici all interno di candDfMotifs & candDfDiscords dei candidati scelti come medoidi
-    print('indici all interno di candDfMotifs & candDfDiscords dei candidati scelti come medoidi (rispettivamente motifs e poi discords) ')
-    CandidateMedoidsMotifs = runKMeans(candDfMotifs,tree.n_clusters)
-    print(CandidateMedoidsMotifs)
 
-    if(EmptyDiscords==False):
+    # indici all interno di candDfMotifs & candDfDiscords dei candidati scelti come medoidi
+    CandidateMedoidsMotifs = runKMeans(candDfMotifs, tree.n_clusters)
+    if(verboseretireveCandidatesSubSeq):
+        print('indici all interno di candDfMotifs & candDfDiscords dei candidati scelti come medoidi (rispettivamente motifs e poi discords) ')
+        print(CandidateMedoidsMotifs)
+
+    if(EmptyDiscords==False and numberOfDiscordTrain>tree.n_clusters):
         CandidateMedoidsDiscords = runKMeans(candDfDiscords,tree.n_clusters)
-        print(CandidateMedoidsDiscords)
+        if (verboseretireveCandidatesSubSeq):
+            print(CandidateMedoidsDiscords)
 
 
     #riduco candDfMotifs & candDfDiscords mantenendo solo i candidati scelti
     candDfMotifs = candDfMotifs.iloc[CandidateMedoidsMotifs]
     candDfMotifs.reset_index(drop=True, inplace=True)
-    if (EmptyDiscords == False):
+    if (EmptyDiscords == False and numberOfDiscordTrain>tree.n_clusters):
         candDfDiscords = candDfDiscords.iloc[CandidateMedoidsDiscords]
         candDfDiscords.reset_index(drop=True, inplace=True)
 
-    print('candDfMotifs & candDfDiscords mantenendo solo i candidati scelti')
-    print(candDfMotifs)
-    if (EmptyDiscords == False):
-        print(candDfDiscords)
+    if (verboseretireveCandidatesSubSeq):
+        print('candDfMotifs & candDfDiscords mantenendo solo i candidati scelti')
+        print(candDfMotifs)
+    if (EmptyDiscords == False and numberOfDiscordTrain>tree.n_clusters):
+        if (verboseretireveCandidatesSubSeq):
+            print(candDfDiscords)
 
     #prendo l'id delle Ts di appartenenza dei candidati, cosi capisco quali candidati contenuti in CandidatesListTrain devo mantenere
     idTsCandidateMotifs = candDfMotifs['idTs'].values
-    if (EmptyDiscords == False):
+    if (EmptyDiscords == False and numberOfDiscordTrain>tree.n_clusters):
         idTsCandidateDiscords = candDfDiscords['idTs'].values
     else:
         idTsCandidateDiscords=[]
 
-    #calcolo la loro unione
-    ChosenCandidates = list(set(idTsCandidateMotifs) | set(idTsCandidateDiscords))
-    print('indice delle Ts a cui appartengono i candidati da mantenere (scleti come medoidi) dentro CandidatesListTrain ')
-    print(ChosenCandidates)
+    #determino i candidati da mantenere tra quelli estratti dal k-means, in base al CandidatesGroup scelto
+    if(tree.candidatesGroup==2):
+        ChosenCandidates = list(set(idTsCandidateMotifs) | set(idTsCandidateDiscords))
+        # la loro unione potrebbe essere > tree.n_clusters (#medoidi scelti) quindi ne prendo solo tree.n_clusters
+        ChosenCandidates = ChosenCandidates[:tree.n_clusters]
+        # ora ho ridotto avendo CANDIDATI PROVENIENTI DA tree.n_clusters TS DIFFERENTI, MA POSSONO ESSERE ANCORA > tree.n_clusters
+
+    elif(tree.candidatesGroup==0 or EmptyDiscords == True):
+        ChosenCandidates=idTsCandidateMotifs #se ho scelto i motifs oppure non ci sono candidati discord estratti, mantengo i candidati medoidi scelti analizzando solo i candidati motifs
+    else:
+        ChosenCandidates = idTsCandidateDiscords #analogo per i discords
+
+    if (verboseretireveCandidatesSubSeq):
+        print('indice delle Ts a cui appartengono i candidati da mantenere (scleti come medoidi) dentro CandidatesListTrain ')
+        print(ChosenCandidates)
 
     #genero nuova lista candidati / finale
     CandidatesList = CandidatesList.iloc[ChosenCandidates]
-    print('candidati rimasti/ più significativi-distintivi ')
-    print(CandidatesList)
+    if (verboseretireveCandidatesSubSeq):
+        print('candidati rimasti/ più significativi-distintivi ')
+        print(CandidatesList)
 
     return CandidatesList
 
