@@ -7,7 +7,7 @@ from scipy.spatial.distance import pdist, squareform
 
 def runKMeans(dataset,n_clusters):
 
-    #columnsList=list(['idTs','startingPosition','M/D']) LISTA DELLE PRIME 3 COLONNE BASE DI DATASET
+    #columnsList=list(['idTs','IdCandidate,'startingPosition','M/D']) LISTA DELLE PRIME 4 COLONNE BASE DI DATASET
     #DA QUESTE DEVO ESTRARRE TUTTE LE SUCCESSIVE
 
 
@@ -31,4 +31,5 @@ def runKMeans(dataset,n_clusters):
     #medoids = np.array(medoids)
 
 
+    #retituisco gli indici, di dataset, che sono stati scelti
     return medoids

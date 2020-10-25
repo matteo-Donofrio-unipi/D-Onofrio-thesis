@@ -18,15 +18,18 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score, f1_score, classification_report
 from sklearn.metrics import roc_curve, auc, roc_auc_score
+from PreProcessingLibrary2 import applyClusteringToCandidates, computeSubSeqDistance,reduceNumberCandidates,computeSubSeqDistance3
+
 
 class Tree:
-    def __init__(self,candidatesGroup,maxDepth,minSamplesLeaf,removeUsedCandidate,window_size,k,n_clusters,warningDetected,verbose):
+    def __init__(self,candidatesGroup,maxDepth,minSamplesLeaf,removeUsedCandidate,window_size,k,useClustering,n_clusters,warningDetected, verbose ):
         self.candidatesGroup=candidatesGroup
         self.maxDepth=maxDepth
         self.minSamplesLeaf=minSamplesLeaf
         self.removeUsedCandidate=removeUsedCandidate
         self.window_size=window_size
         self.k=k
+        self.useClustering=useClustering
         self.n_clusters=n_clusters
         self.warningDetected=warningDetected
         self.verbose=verbose
@@ -60,17 +63,15 @@ class Tree:
     # SPLIT SLAVE
     # effettua lo split del dataset sul attributo e valore fornito
     def split(self,dataset, attribute, value):
+
         columnsList = dataset.columns.values
         dizLeft = pd.DataFrame(columns=columnsList)
         dizRight = pd.DataFrame(columns=columnsList)
         attribute=str(attribute)
-        value=str(value)
+        #value=str(value)
 
-        q1=attribute+'<'+value
-        q2=attribute+'>='+value
-
-        dizLeft= dataset.query(q1)
-        dizRight= dataset.query(q2)
+        dizLeft=dataset[dataset[int(attribute)] < value]
+        dizRight = dataset[dataset[int(attribute)] >= value]
 
         dizLeft = dizLeft.reset_index(drop=True)
         dizRight = dizRight.reset_index(drop=True)
@@ -83,7 +84,7 @@ class Tree:
 
     # riceve dframe con mutual_information(gain) e in base al candidatesGroup scelto, determina il miglior attributo su cui splittare
     # che non è stato ancora utilizzato
-    def getBestIndexAttribute(self,vecMutualInfo, CandidatesUsedListTrain, numberOfMotif, numberOfDiscord):
+    def getBestIndexAttribute(self,vecMutualInfo, CandidatesUsedListTrain):
         # ordino i candidati in base a gain decrescente
 
         vecMutualInfo = vecMutualInfo.sort_values(by='gain', ascending=False)
@@ -95,7 +96,7 @@ class Tree:
 
         # cicla fin quando trova candidato libero con gain maggiore
         while (bestIndexAttribute == -1 and i < len(vecMutualInfo)):
-            attributeToVerify = int(vecMutualInfo.iloc[i]['attribute'])
+            attributeToVerify = int(vecMutualInfo.iloc[i]['IdCandidate'])
             if (CandidatesUsedListTrain.iloc[attributeToVerify]['Used'] == False):
                 bestIndexAttribute = attributeToVerify
                 splitValue = vecMutualInfo.iloc[i]['splitValue']
@@ -111,29 +112,19 @@ class Tree:
 
 
 
-    def computeMutualInfo(self,datasetForMutual, numberOfMotif, numberOfDiscord):
+    def computeMutualInfo(self,datasetForMutual):
         # cerca attributo, il cui relativo best split value massimizza l'information gain nello split
 
-        # definisco lista di indici inserire nella colonna 'attribute'
-        if (self.candidatesGroup == 0):
-            candidatesIndex = range(numberOfMotif)
-            numAttributes = numberOfMotif
-        elif (self.candidatesGroup == 1):
-            candidatesIndex = range(numberOfMotif, numberOfMotif + numberOfDiscord)
-            numAttributes = numberOfDiscord
-        else:
-            candidatesIndex = range(numberOfMotif + numberOfDiscord)
-            numAttributes = numberOfMotif + numberOfDiscord
 
         columns = datasetForMutual.columns
-        dframe = pd.DataFrame(columns=['attribute', 'splitValue', 'gain'],
-                              index=range(len(columns) - 1))  # -1 cosi non prendo attr=class
+        dframe = pd.DataFrame(columns=['IdCandidate', 'splitValue', 'gain'],
+                              index=range(len(columns) - 2))  # -1 cosi non prendo attr=class e TsIndex
         entropyParent = self.computeEntropy(datasetForMutual)
 
         # per ogni attributo, ordino il dframe sul suo valore
         # scandisco poi la y e appena cambia il valore di class effettuo uno split, memorizzando il best gain
 
-        for i in range(len(columns) - 1):  # scandisco tutti gli attributi tranne 'class'
+        for i in range(len(columns) - 2):  # scandisco tutti gli attributi tranne 'class'
             bestGain = -1
             bestvalueForSplit = 0
             previousClass = -1  # deve essere settato ad un valore non presente nei class value
@@ -162,63 +153,47 @@ class Tree:
             dframe.iloc[i]['splitValue'] = bestvalueForSplit
             dframe.iloc[i]['gain'] = bestGain
 
-        dframe['attribute'] = candidatesIndex
+        dframe['IdCandidate'] = columns[:-2]
 
         return dframe
 
     # SPLIT INTERMEDIO
     # dato il dataset, cerca il miglior attributo e relativo valore (optimal split point) su cui splittare
     # restituiendo il dataset splittato e i valori trovati
-    def findBestAttributeValue(self,dataset, CandidatesUsedListTrain, numberOfMotif, numberOfDiscord,verbose):
+    def findBestSplit(self,dfForDTree, verbose=False):
 
         # cerca e restituisce attributo migliore su cui splittaree relativo valore ottimale (optimal split point)
         # CANDIDATE GROUP permette di scegliere se usare come candidati 0=motifs 1=discord 2=entrambi
         bestGain = 0
         actualGain = 0
         bestvalueForSplit = 0
-        y = dataset['class'].values
-        y = y.astype('int')
-        entropyParent = self.computeEntropy(dataset)
+        entropyParent = self.computeEntropy(dfForDTree)
 
         # trovo best Attribute
-        numAttributes = len(dataset.columns.values)
-        numAttributes -= 2  # tolgo i due attributi TsIndex e class dal Dframe
-        datasetForMutual = pd.DataFrame()
-
-        # preparo il Dframe da passare a mutual_info_classif, settando se scegliere tra motifs/discord/entrambi
-
-        if (self.candidatesGroup == 0):  # solo motifs
-            datasetForMutual = dataset.iloc[:, np.r_[:numberOfMotif]].copy()
-        elif (self.candidatesGroup == 1):
-            datasetForMutual = dataset.iloc[:, np.r_[numberOfMotif:numberOfMotif + numberOfDiscord]].copy()
-        else:
-            datasetForMutual = dataset.iloc[:, np.r_[:numAttributes]].copy()
-
-        datasetForMutual['class'] = y
 
         # calcolo gain e miglior valore di split per ogni attributo
 
-        vecMutualInfo = self.computeMutualInfo(datasetForMutual, numberOfMotif, numberOfDiscord)
+        vecMutualInfo = self.computeMutualInfo(dfForDTree)
         if (verbose == True):
             print('vec mutual info calcolato: ')
             print(vecMutualInfo)
-        # se rimuovo candidati, faccio scegliere migliore non ancora utilizzato
 
+        # se rimuovo candidati, faccio scegliere migliore non ancora utilizzato
         if (self.removeUsedCandidate == 1):
             indexBestAttribute, bestValueForSplit = self.getBestIndexAttribute(vecMutualInfo,
-                                                                          CandidatesUsedListTrain, numberOfMotif,
-                                                                          numberOfDiscord)
+                                                                          self.OriginalCandidatesUsedListTrain)
         else:  # se non rimuovo candidati, mi basta prendere il primo
             vecMutualInfo = vecMutualInfo.sort_values(by='gain', ascending=False)
-            indexBestAttribute = vecMutualInfo.iloc[0]['attribute']
+            indexBestAttribute = vecMutualInfo.iloc[0]['IdCandidate']
             bestValueForSplit = vecMutualInfo.iloc[0]['splitValue']
             print('gain: ' + str(vecMutualInfo.iloc[0]['gain']))  # stampo gain
+
         if (verbose == True):
             print('BEST attribute | value')
             print(indexBestAttribute, bestValueForSplit)
 
         splitValue = bestValueForSplit
-        Dleft, Dright = self.split(dataset, 'cand'+str(indexBestAttribute), bestValueForSplit)
+        Dleft, Dright = self.split(dfForDTree,str(indexBestAttribute), bestValueForSplit)
 
         return [indexBestAttribute, splitValue, Dleft, Dright]
 
@@ -229,8 +204,7 @@ class Tree:
 
     # VERSIONE CHE RIMUOVE I CANDIDATI QUANDO VENGONO SCELTI
 
-    def buildTree(self,actualNode, dataset, depth, CandidatesUsedListTrain,
-                  numberOfMotif, numberOfDiscord, verbose):
+    def buildTree(self,actualNode, dataset, depth,verbose):
         # caso base: num pattern < soglia minima || profondità massima raggiunta => genero foglia con media delle classi
         # DATASET HA SEMPRE ALMENO UN PATTERN
         boolValue = self.checkIfIsLeaf(dataset)
@@ -253,8 +227,7 @@ class Tree:
             # caso ricorsivo in cui si può splittare
         else:
 
-            returnList = self.findBestAttributeValue(dataset, CandidatesUsedListTrain, numberOfMotif,
-                                                numberOfDiscord, verbose)
+            returnList = self.findBestSplit(dataset,verbose)
             indexChosenAttribute = returnList[0]
             attributeValue = returnList[1]
             Dleft = returnList[2]
@@ -273,18 +246,70 @@ class Tree:
             nodeInfo.append(numPattern)
             nodeInfo.append(entropy)
             actualNode.data = nodeInfo
-            actualNode.value = (indexChosenAttribute)
+            actualNode.value = (int(indexChosenAttribute))
+
+
+            print('DLEFT & DRIGHT INIZIALMENTE')
+            print(Dleft)
+            print(Dright)
+
+            # effettuo clustering
+            TsIndexLeft = Dleft['TsIndex']  # TsIndex contenute in Dleft
+
+            CandidatesListLeft = self.OriginalCandidatesListTrain['IdTs'].isin(
+                TsIndexLeft)  # mi dice quali TsIndex in OriginalCandidatesListTrain sono contenuti in Dleft
+
+            CandidateToCluster = self.OriginalCandidatesListTrain[
+                CandidatesListLeft]  # estraggo i candidati da OriginalCandidatesListTrain, che sono generati dalle Ts in Dleft
+            CandidateToCluster = CandidateToCluster.reset_index(drop=True)
+
+            indexChoosenMedoids = reduceNumberCandidates(self, CandidateToCluster,
+                                                         returnOnlyIndex=True)  # indici di OriginalCandidatesListTrain conteneti candidati da mantenere
+
+            CandidateToCluster = CandidateToCluster.iloc[indexChoosenMedoids]
+
+            # print('CANDIDATI SELEZIONATI left')
+            # print(CandidateToCluster)
+
+            # riduco l'insieme dei candidati da considerare, lasciando solo quelli generati dalle Ts contentue in Dleft
+            Dleft = computeSubSeqDistance3(self, TsIndexLeft, CandidateToCluster, self.window_size)
+
+            # RIPETO PER DRIGHT------------------------------------------------------
+
+            TsIndexRight = Dright['TsIndex']  # TsIndex contenute in Dleft
+
+            CandidatesListRight = self.OriginalCandidatesListTrain['IdTs'].isin(
+                TsIndexRight)  # mi dice quali TsIndex in OriginalCandidatesListTrain sono contenuti in Dleft
+
+            CandidateToCluster = self.OriginalCandidatesListTrain[
+                CandidatesListRight]  # estraggo i candidati da OriginalCandidatesListTrain, che sono generati dalle Ts in Dleft
+            CandidateToCluster = CandidateToCluster.reset_index(drop=True)
+
+            indexChoosenMedoids = reduceNumberCandidates(self, CandidateToCluster,
+                                                         returnOnlyIndex=True)  # indici di OriginalCandidatesListTrain conteneti candidati da mantenere
+
+            CandidateToCluster = CandidateToCluster.iloc[indexChoosenMedoids]
+
+            # print('CANDIDATI SELEZIONATI right')
+            # print(CandidateToCluster)
+
+            # riduco l'insieme dei candidati da considerare, lasciando solo quelli generati dalle Ts contentue in Dleft
+            Dright = computeSubSeqDistance3(self, TsIndexRight, CandidateToCluster, self.window_size)
+
+            print('DLEFT & DRIGHT DOPO IL CLUSTERING')
+            print(Dleft)
+            print(Dright)
+
+
 
             # se possibile richiamo ricorsivamente sul nodo dx e sx figlio
             if (len(Dleft) > 0):
-                actualNode.left = Node(indexChosenAttribute)
-                self.buildTree(actualNode.left, Dleft, depth + 1,
-                          CandidatesUsedListTrain, numberOfMotif, numberOfDiscord, verbose)
+                actualNode.left = Node(int(indexChosenAttribute))
+                self.buildTree(actualNode.left, Dleft, depth + 1, verbose)
 
             if (len(Dright) > 0):
-                actualNode.right = Node(indexChosenAttribute)
-                self.buildTree(actualNode.right, Dright, depth + 1,
-                          CandidatesUsedListTrain, numberOfMotif, numberOfDiscord, verbose)
+                actualNode.right = Node(int(indexChosenAttribute))
+                self.buildTree(actualNode.right, Dright, depth + 1, verbose)
 
 
 
@@ -304,19 +329,15 @@ class Tree:
 
     # effettua il primo passo dell'algo di generazione dell'albero, richiama ricorsivamente sui figli
     # VERSIONE CHE NON RIMUOVE I CANDIDATI QUANDO VENGONO SCELTI
-    def fit(self,dfForDTree, CandidatesUsedListTrain, numberOfMotif,numberOfDiscord, verbose):
+    def fit(self,dfForDTree,verbose):
         # inizio algo per nodo radice
-        returnList = self.findBestAttributeValue(dfForDTree, CandidatesUsedListTrain, numberOfMotif,
-                                            numberOfDiscord, verbose)
+        returnList = self.findBestSplit(dfForDTree,False)
         indexChosenAttribute = returnList[0]
         attributeValue = returnList[1]
         Dleft = returnList[2]
         Dright = returnList[3]
-        print('DLEFT---DRIGHT-- \n')
-        print(Dleft,Dright)
-        print('\n')
-        self.attributeList.append(indexChosenAttribute)
-        root = Node(indexChosenAttribute)
+        self.attributeList.append(int(indexChosenAttribute))
+        root = Node(int(indexChosenAttribute))
         numPattern = len(dfForDTree)
         entropy = self.computeEntropy(dfForDTree)
 
@@ -328,16 +349,69 @@ class Tree:
         nodeInfo.append(entropy)
         root.data = nodeInfo
 
-        root.left = Node(indexChosenAttribute)
-        root.right = Node(indexChosenAttribute)
+        root.left = Node(int(indexChosenAttribute))
+        root.right = Node(int(indexChosenAttribute))
+
+        print('DLEFT & DRIGHT INIZIALMENTE')
+        print(Dleft)
+        print(Dright)
+
+
+
+        #effettuo clustering
+        TsIndexLeft = Dleft['TsIndex']  # TsIndex contenute in Dleft
+
+        CandidatesListLeft = self.OriginalCandidatesListTrain['IdTs'].isin(
+            TsIndexLeft)  # mi dice quali TsIndex in OriginalCandidatesListTrain sono contenuti in Dleft
+
+        CandidateToCluster = self.OriginalCandidatesListTrain[
+            CandidatesListLeft]  # estraggo i candidati da OriginalCandidatesListTrain, che sono generati dalle Ts in Dleft
+        CandidateToCluster = CandidateToCluster.reset_index(drop=True)
+
+        indexChoosenMedoids = reduceNumberCandidates(self, CandidateToCluster,
+                                                     returnOnlyIndex=True)  # indici di OriginalCandidatesListTrain conteneti candidati da mantenere
+
+        CandidateToCluster = CandidateToCluster.iloc[indexChoosenMedoids]
+
+        # print('CANDIDATI SELEZIONATI left')
+        # print(CandidateToCluster)
+
+        # riduco l'insieme dei candidati da considerare, lasciando solo quelli generati dalle Ts contentue in Dleft
+        Dleft = computeSubSeqDistance3(self, TsIndexLeft, CandidateToCluster, self.window_size)
+
+
+
+        #RIPETO PER DRIGHT------------------------------------------------------
+
+        TsIndexRight = Dright['TsIndex']  # TsIndex contenute in Dleft
+
+        CandidatesListRight = self.OriginalCandidatesListTrain['IdTs'].isin(
+            TsIndexRight)  # mi dice quali TsIndex in OriginalCandidatesListTrain sono contenuti in Dleft
+
+        CandidateToCluster = self.OriginalCandidatesListTrain[
+            CandidatesListRight]  # estraggo i candidati da OriginalCandidatesListTrain, che sono generati dalle Ts in Dleft
+        CandidateToCluster = CandidateToCluster.reset_index(drop=True)
+
+        indexChoosenMedoids = reduceNumberCandidates(self,CandidateToCluster,returnOnlyIndex=True)  # indici di OriginalCandidatesListTrain conteneti candidati da mantenere
+
+        CandidateToCluster = CandidateToCluster.iloc[indexChoosenMedoids]
+
+        # print('CANDIDATI SELEZIONATI right')
+        # print(CandidateToCluster)
+
+        # riduco l'insieme dei candidati da considerare, lasciando solo quelli generati dalle Ts contentue in Dleft
+        Dright = computeSubSeqDistance3(self, TsIndexRight, CandidateToCluster, self.window_size)
+
+        print('DLEFT & DRIGHT DOPO IL CLUSTERING')
+        print(Dleft)
+        print(Dright)
+
 
         # chiamata ricorsiva
         if (len(Dleft) > 0):
-            self.buildTree(root.left, Dleft, 1, CandidatesUsedListTrain,
-                      numberOfMotif, numberOfDiscord, verbose)
+            self.buildTree(root.left, Dleft, 1, verbose)
         if (len(Dright) > 0):
-            self.buildTree(root.right, Dright, 1, CandidatesUsedListTrain,
-                      numberOfMotif, numberOfDiscord, verbose)
+            self.buildTree(root.right, Dright, 1, verbose)
         Tree.Root = root
 
 

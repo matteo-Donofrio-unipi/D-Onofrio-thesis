@@ -11,7 +11,7 @@ from datetime import datetime
 def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
 
     first = True  # ESTRAZIONE DATASET TRAINING
-    second = False  # CALCOLO ALBERO DECISIONE
+    second = True  # CALCOLO ALBERO DECISIONE
     third = False  # ESTRAZIONE DATASET TEST
     quarter = False  # PREDIZIONE E RISULTATO
     fifth = False  # GRAFICA DI SERIE TEMPORALI E MATRIX PROFILE DEI CANDIDATI SCELTI
@@ -19,14 +19,14 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
 #METTERE K HYPER PARAMETRO CENTROIDI COME PARAMETRO DI TREE
 
 
-    PercentageTrainingSet = 0.05  # % se voglio usare una percentuale di Training Set
+    PercentageTrainingSet = 1  # % se voglio usare una percentuale di Training Set
     PercentageValidationSet = 0.1  # % set rispetto alla dim del Training Set
     writeOnCsv = True
 
 
     #genero albero (VUOTO) e avvio timer
     le = LabelEncoder()
-    tree= Tree(candidatesGroup=0,maxDepth=3,minSamplesLeaf=5,removeUsedCandidate=0,window_size=5,k=2,n_clusters=20,warningDetected=False,verbose=1) # K= NUM DI MOTIF/DISCORD ESTRATTI
+    tree= Tree(candidatesGroup=0,maxDepth=3,minSamplesLeaf=5,removeUsedCandidate=0,window_size=5,k=2,useClustering=True,n_clusters=20,warningDetected=False,verbose=1) # K= NUM DI MOTIF/DISCORD ESTRATTI
 
     start_time = time.time()
 
@@ -58,12 +58,12 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
 
             #estraggo val set e rimuovo record estratti da training set
             dfVal=dfTrain.iloc[selectedRecordsForValidation]
-            dfTrainNew=dfTrain.drop(index=selectedRecordsForValidation)
+            dfTrain=dfTrain.drop(index=selectedRecordsForValidation)
 
 
             print('Patter Lenght: ' + str(patternLenght) + '\n')
 
-            print('Final Train set shape : ' + str(dfTrainNew.shape))
+            print('Final Train set shape : ' + str(dfTrain.shape))
             print('Final Validation set shape : '+ str(dfVal.shape)+'\n')
 
             num_classes = le.fit_transform(dfVal['target'])
@@ -76,9 +76,9 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
             print(np.unique(num_classes, return_counts=True))
             print('\n')
 
-            print('dfTrain: \n'+str(dfTrainNew))
-            print(dfTrainNew.isnull().sum().sum())
-            print(dfTrainNew.isnull().values.any())
+            print('dfTrain: \n'+str(dfTrain))
+            print(dfTrain.isnull().sum().sum())
+            print(dfTrain.isnull().values.any())
             print('dfVal: \n'+str(dfVal))
 
 
@@ -94,9 +94,9 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
             patternLenght = len(dfTrain.iloc[0]) - 1
 
 
-            dfTrainNew = dfTrain.iloc[selectedRecords].copy()
+            dfTrain = dfTrain.iloc[selectedRecords].copy()
 
-            print('Final Train set shape : ' + str(dfTrainNew.shape)+'\n')
+            print('Final Train set shape : ' + str(dfTrain.shape)+'\n')
 
             num_classes = le.fit_transform(dfTrain['target'])
             print('Final class distribution in Training set : ')
@@ -106,27 +106,42 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
             print('PATT LENGHT: ' + str(patternLenght))
 
         # genero strtutture dati utilizzate effettivamente
+        tree.dfTrain = dfTrain
         mpTrain, OriginalCandidatesListTrain, numberOfMotifTrain, numberOfDiscordTrain  = getDataStructures(tree,
-            dfTrainNew, tree.window_size, tree.k, verbose=1)
+            dfTrain, tree.window_size, tree.k, verbose=1)
+
+        if(tree.candidatesGroup==0):
+            OriginalCandidatesListTrain=OriginalCandidatesListTrain[OriginalCandidatesListTrain['M/D']==0]
+        if (tree.candidatesGroup == 1):
+            OriginalCandidatesListTrain = OriginalCandidatesListTrain[OriginalCandidatesListTrain['M/D'] == 1]
+
+        OriginalCandidatesListTrain.reset_index(drop=True)
+
+        tree.OriginalCandidatesUsedListTrain = buildCandidatesUsedList(OriginalCandidatesListTrain)
+        tree.OriginalCandidatesListTrain=OriginalCandidatesListTrain
+        print('OriginalCandidatesUsedListTrain: \n')
+        print(tree.OriginalCandidatesUsedListTrain)
+
+        print('OriginalCandidatesListTrain: \n')
+        print(tree.OriginalCandidatesListTrain)
 
 
-        CandidatesListTrain=retireveCandidatesSubSeq(tree,OriginalCandidatesListTrain, dfTrainNew,tree.window_size,numberOfMotifTrain, numberOfDiscordTrain)
+        #OriginalCandidatesListTrain VIENE MANTENUTO PER TUTTO L'ALGORITMO, DA ESSO AD OGNI SPLIT PRENDO CANDIDATI NECESSARI
+
+
+
+        #PREPARO STRUTTURE DATI PER LA PRIMA ITERAZIONE DI FIT
+        CandidatesListTrain = reduceNumberCandidates(tree, OriginalCandidatesListTrain,returnOnlyIndex=False)
         print('candidati rimasti/ più significativi-distintivi ')
         print(CandidatesListTrain)
 
-        numberOfMotifTrain, numberOfDiscordTrain=countNumberOfCandidates(CandidatesListTrain)
-        print('numberOfMotif: %d, numberOfDiscord: %d \n' % (numberOfMotifTrain, numberOfDiscordTrain))
-
-        CandidatesUsedListTrain=buildCandidatesUsedList(CandidatesListTrain)
-
-        print(CandidatesUsedListTrain)
-
-        TsIndexList=dfTrainNew['TsIndex'].values
+        #computeSubSeqDistance calcola distanze tra TsIndexList e CandidatesListTrain fornite
+        TsIndexList=dfTrain['TsIndex'].values #inizialmente tutto DfTrain ( prima iterazione )
 
 
-        dfForDTree = computeSubSeqDistance(tree,dfTrainNew,TsIndexList, CandidatesListTrain, tree.window_size)
+        dfForDTree = computeSubSeqDistance(tree,TsIndexList, CandidatesListTrain, tree.window_size)
         if (verbose == True):
-            print('dfTrain: \n'+str(dfTrainNew))
+            print('dfTrain: \n'+str(dfTrain))
             print('dfForDTree: \n'+str(dfForDTree))
 
         print("--- %s seconds after getting DATA STRUCTURES" % (time.time() - start_time))
@@ -136,7 +151,7 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
         verbose = True
         #COSTRUISCO DECISION TREE
         #------
-        tree.fit(dfForDTree,CandidatesUsedListTrain,numberOfMotifTrain,numberOfDiscordTrain,verbose=True)
+        tree.fit(dfForDTree,verbose=True)
         if(verbose==True):
             print(tree.attributeList)
             print(tree.Root)
