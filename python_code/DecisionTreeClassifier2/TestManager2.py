@@ -12,8 +12,8 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
 
     first = True  # ESTRAZIONE DATASET TRAINING
     second = True  # CALCOLO ALBERO DECISIONE
-    third = False  # ESTRAZIONE DATASET TEST
-    quarter = False  # PREDIZIONE E RISULTATO
+    third = True  # ESTRAZIONE DATASET TEST
+    quarter = True  # PREDIZIONE E RISULTATO
     fifth = False  # GRAFICA DI SERIE TEMPORALI E MATRIX PROFILE DEI CANDIDATI SCELTI
 
 #METTERE K HYPER PARAMETRO CENTROIDI COME PARAMETRO DI TREE
@@ -26,7 +26,7 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
 
     #genero albero (VUOTO) e avvio timer
     le = LabelEncoder()
-    tree= Tree(candidatesGroup=2,maxDepth=3,minSamplesLeaf=5,removeUsedCandidate=0,window_size=5,k=2,useClustering=True,n_clusters=20,warningDetected=False,verbose=1) # K= NUM DI MOTIF/DISCORD ESTRATTI
+    tree= Tree(candidatesGroup=0,maxDepth=3,minSamplesLeaf=5,removeUsedCandidate=0,window_size=5,k=2,useClustering=True,n_clusters=20,warningDetected=False,verbose=1) # K= NUM DI MOTIF/DISCORD ESTRATTI
 
     start_time = time.time()
 
@@ -169,13 +169,24 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
         else:
             dfTest = computeLoadedDataset(X_test, y_test)
 
+        print('DF TEST')
+        print(dfTest)
 
         tree.attributeList=sorted(tree.attributeList) #ordino attributi per rendere più efficiente 'computeSubSeqDistanceForTest'
         tree.attributeList=np.unique(tree.attributeList)
-        dfForDTreeTest,TsAndStartingPositionList=computeSubSeqDistanceForTest(tree,dfTest,dfTrain,tree.attributeList,CandidatesListTrain,numberOfMotifTrain,numberOfDiscordTrain,tree.window_size)
+
+        CandidatesListMatched = tree.OriginalCandidatesListTrain['IdCandidate'].isin(
+            tree.attributeList)  # mi dice quali TsIndex in OriginalCandidatesListTrain sono contenuti in Dleft
+
+        CandidatesListTest = tree.OriginalCandidatesListTrain[
+            CandidatesListMatched]  # estraggo i candidati da OriginalCandidatesListTrain, che sono generati dalle Ts in Dleft
+
+        print('TEST PART')
+        print(CandidatesListTest)
+
+        dfForDTreeTest=computeSubSeqDistanceForTest(tree,dfTest,CandidatesListTest,tree.window_size)
         if(verbose==True):
             print(dfForDTreeTest)
-            print(TsAndStartingPositionList)
 
 
 

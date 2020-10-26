@@ -313,42 +313,37 @@ def computeSubSeqDistance(tree, TsIndexList ,CandidatesList,window_size):
 
 
 
-def computeSubSeqDistance3(tree, TsIndexList ,CandidatesList,window_size):
 
-    columnsList = CandidatesList['IdCandidate'].values
-    columnsList=columnsList.astype(np.intc)
-    lastAttribute = ['TsIndex', 'class']
-    columnsList=np.append(columnsList,'TsIndex')
-    columnsList = np.append(columnsList, 'class')
 
-    for i in range(len(columnsList)-2):
-        columnsList[i]=columnsList[i].astype(np.intc)
 
-    print('COLUMNSLIST TYPE 3 ')
-    print(type(columnsList))
-    print(type(columnsList[0]))
-    dfForDTree = pd.DataFrame(columns=columnsList, index=range(0, len(TsIndexList)))
+#realizzata differentemente perche chiamata una sola volta su DframeTest
+def computeSubSeqDistanceForTest(tree,datasetTest, CandidatesListTest,window_size):
+    # quantifico il num di candidati usati dall'albero e in base a tale valore genero colonne per dfForDTree
+    columnsList = CandidatesListTest['IdCandidate'].values
+    columnsList = columnsList.astype(int)
+    dfForDTreeTest = pd.DataFrame(columns=columnsList, index=range(0, len(datasetTest)))
+    dfForDTreeTest['class'] = None
 
-    for i in range(len(TsIndexList)):
-        # acquisisco la Ts di cui calcolare distanza
-        TsIndexValue=TsIndexList[i]
 
-        TsToCompare=np.array(tree.dfTrain[tree.dfTrain['TsIndex']==TsIndexValue].values)
+    # per ogni Ts, scandisco ogni candidato e calcolo la distanza minore
+    for i in range(len(datasetTest)):
+        # acquisisco la Ts
+        TsToCompare = np.array(datasetTest.iloc[i].values)
+        classValue = TsToCompare[len(TsToCompare) - 2]  # la classe è sempre il penultimo attributo
+        TsToCompare = TsToCompare[:len(TsToCompare) - 3]  # la serie è ottenuta rimuovendo i due ultimi attributi
+        #I VALORI (-1, -2) SONO DIVERSI DA QUELLI USATI IN COMPUTE NORMALE, PERCHE QUI NON PASSO LA STRUTTURA A GETDATASTRUCTURES => NON AGGIUNGO COLONNA TS INDEX
 
-        TsToCompare=TsToCompare[0]
-        classValue = TsToCompare[len(TsToCompare)-2] #la classe è sempre il penultimo attributo
-        TsToCompare = TsToCompare[:len(TsToCompare)-3] #la serie è ottenuta rimuovendo i due ultimi attributi
+        dfForDTreeTest['class'].iloc[i] = classValue
+        counter = 0 #scandisco candidate list (prima motif poi discord) incrementando counter -> cosi prenderò il candidato counter-esimo
+        # scandisco e calcolo distanza dai candidati
 
-        dfForDTree['TsIndex'].iloc[i] = TsIndexValue
-        dfForDTree['class'].iloc[i] = classValue
-
-        for j in range (len(CandidatesList)):
-            IdCandidate=CandidatesList.iloc[j]['IdCandidate']
-            IdTsCandidate=CandidatesList.iloc[j]['IdTs']
-            startingPosition=CandidatesList.iloc[j]['startingPosition']
+        for z in range(len(CandidatesListTest)):
+            IdCandidate = CandidatesListTest.iloc[z]['IdCandidate']
+            IdTsCandidate = CandidatesListTest.iloc[z]['IdTs']
+            startingPosition = CandidatesListTest.iloc[z]['startingPosition']
 
             TsContainingCandidate = np.array(tree.dfTrain[tree.dfTrain['TsIndex'] == IdTsCandidate].values)
-            TsContainingCandidate=TsContainingCandidate[0]
+            TsContainingCandidate = TsContainingCandidate[0]
             TsContainingCandidate = TsContainingCandidate[:len(TsContainingCandidate) - 3]
 
             if (tree.warningDetected):
@@ -357,81 +352,23 @@ def computeSubSeqDistance3(tree, TsIndexList ,CandidatesList,window_size):
             else:
                 Dp = distanceProfile.massDistanceProfile(TsContainingCandidate, int(startingPosition),
                                                          window_size, TsToCompare)
+
+
+
             minValueFromDProfile = min(Dp[0])  # Dp[0] contiene il Dp effettivo
-            dfForDTree[int(IdCandidate)].iloc[i] = minValueFromDProfile
+            dfForDTreeTest[int(IdCandidate)].iloc[i] = minValueFromDProfile
 
+    le = LabelEncoder()
+    num_classes = le.fit_transform(dfForDTreeTest['class'])
+    dfForDTreeTest['class'] = num_classes
 
-
-    return dfForDTree
-
-
-# per ogni Ts calcolo Dprofile con ogni candidato e inserisco la distanza minima con candidato i-esimo nella colonna i-esima
-def computeSubSeqDistance2(tree,dataset, CandidatesList,window_size,numberOfCandidates):
-    print('start computing df for dtree')
-
-    # quantifico il num di candidati e in base a tale valore genero colonne per dfForDTree
-
-    columnsList = np.arange(numberOfCandidates)
-    columnsList2 = list()
-    lastAttribute = ['TsIndex', 'class']
-    prefix = 'cand'
-    for i in columnsList:
-        columnsList2.append(prefix + str(i))
-    columnsList2.append('TsIndex')
-    columnsList2.append('class')
-    dfForDTree = pd.DataFrame(columns=columnsList2, index=range(0, len(dataset)))
-
-    # per ogni Ts, scandisco ogni candidato e calcolo la distanza minore
-    for i in range(len(dataset)):
-        # acquisisco la Ts
-        TsToCompare = np.array(dataset.iloc[i].values)
-        classValue = TsToCompare[len(TsToCompare)-2] #la classe è sempre il penultimo attributo
-        TsToCompare = TsToCompare[:len(TsToCompare)-3] #la serie è ottenuta rimuovendo i due ultimi attributi
-        dfForDTree['TsIndex'].iloc[i] = i
-        dfForDTree['class'].iloc[i] = classValue
-        counter = 0
-        # raccolgo i candidati di una riga
-        for index, row in CandidatesList.iterrows():
-            numMotif = len(row['Motif'])
-            # scandisco e calcolo distanza dai motif
-            for k in range(numMotif):
-                l1 = row['Motif']  # lista di indice i in motifDiscordList
-                startingIndex = l1[k]  # indice di inizio del motif
-                TsContainingCandidateShapelet = np.array(dataset.iloc[index].values)  # Ts contenente candidato shapelet JCONTROLLARE
-                if(tree.warningDetected):
-                    Dp = distanceProfile.naiveDistanceProfile(TsContainingCandidateShapelet, int(startingIndex), window_size,TsToCompare)
-                else:
-                    Dp = distanceProfile.massDistanceProfile(TsContainingCandidateShapelet, int(startingIndex),
-                                                              window_size, TsToCompare)
-                minValueFromDProfile = min(Dp[0])  # Dp[0] contiene il Dp effettivo
-                dfForDTree[prefix + str(counter)].iloc[i] = minValueFromDProfile
-                counter += 1
-
-        for index, row in CandidatesList.iterrows():
-            numDiscord = len(row['Discord'])
-            # scandisco e calcolo distanza dai discord
-            for k in range(numDiscord):
-                l1 = row['Discord']  # lista di indice i in motifDiscordList
-                startingIndex = l1[k]  # indice di inizio del motif
-                TsContainingCandidateShapelet = np.array(dataset.iloc[index].values)  # Ts contenente candidato shapelet
-                if (tree.warningDetected):
-                    Dp = distanceProfile.naiveDistanceProfile(TsContainingCandidateShapelet, int(startingIndex),
-                                                              window_size, TsToCompare)
-                else:
-                    Dp = distanceProfile.massDistanceProfile(TsContainingCandidateShapelet, int(startingIndex),
-                                                             window_size, TsToCompare)
-                minValueFromDProfile = min(Dp[0])  # Dp[0] contiene il Dp effettivo
-                dfForDTree[prefix + str(counter)].iloc[i] = minValueFromDProfile
-                counter += 1
-
-    # print(counter)
-    return dfForDTree
+    return dfForDTreeTest  # columnsList2 restituito per generare poi dFrame in "Split" (struttura dframe)
 
 
 
 
-def computeSubSeqDistanceForTest(tree,datasetTest, datasetTrain, attributeList, CandidatesList, numberOfMotif,
-                                 numberOfDiscord,window_size):
+
+def computeSubSeqDistanceForTest2(tree,datasetTest, attributeList, CandidatesList,window_size):
     # quantifico il num di candidati usati dall'albero e in base a tale valore genero colonne per dfForDTree
     columnsList2 = list()
     prefix = 'cand'
@@ -503,6 +440,9 @@ def computeSubSeqDistanceForTest(tree,datasetTest, datasetTrain, attributeList, 
     dfForDTreeTest['class'] = num_classes
 
     return dfForDTreeTest,TsAndStartingPositionList  # columnsList2 restituito per generare poi dFrame in "Split" (struttura dframe)
+
+
+
 
 
 

@@ -18,7 +18,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score, f1_score, classification_report
 from sklearn.metrics import roc_curve, auc, roc_auc_score
-from PreProcessingLibrary2 import applyClusteringToCandidates, computeSubSeqDistance,reduceNumberCandidates,computeSubSeqDistance3
+from PreProcessingLibrary2 import applyClusteringToCandidates, computeSubSeqDistance,reduceNumberCandidates
 
 
 class Tree:
@@ -432,7 +432,7 @@ class Tree:
     def predict(self,testDataset, root):
         # preparo dataset
         numAttributes = len(testDataset.columns.values)
-        numAttributes -= 2  # per prendere solo gli attributi utili a xTest
+        numAttributes -= 1  # per prendere solo gli attributi utili a xTest
         yTest = testDataset.iloc[:]['class'].values
         yPredicted = np.zeros(len(yTest))
         xTest = testDataset.iloc[:, np.r_[:numAttributes]]
@@ -454,7 +454,7 @@ class Tree:
             return int(node.data[0])
         else:
             # caso ricorsivo
-            attr = 'cand' + str(node.value)
+            attr = int(node.value)
             if (pattern[attr] < node.data[0]):
                 return self.treeExplorer(pattern, node.left)
             else:
