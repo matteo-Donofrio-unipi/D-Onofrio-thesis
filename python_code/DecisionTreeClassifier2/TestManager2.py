@@ -26,7 +26,7 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
 
     #genero albero (VUOTO) e avvio timer
     le = LabelEncoder()
-    tree= Tree(candidatesGroup=0,maxDepth=3,minSamplesLeaf=5,removeUsedCandidate=0,window_size=5,k=2,useClustering=True,n_clusters=20,warningDetected=False,verbose=1) # K= NUM DI MOTIF/DISCORD ESTRATTI
+    tree= Tree(candidatesGroup=2,maxDepth=3,minSamplesLeaf=5,removeUsedCandidate=0,window_size=5,k=2,useClustering=True,n_clusters=20,warningDetected=False,verbose=1) # K= NUM DI MOTIF/DISCORD ESTRATTI
 
     start_time = time.time()
 

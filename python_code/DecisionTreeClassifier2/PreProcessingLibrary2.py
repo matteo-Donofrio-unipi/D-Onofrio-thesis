@@ -268,13 +268,10 @@ def getDataStructures(tree,df,window_size,k,verbose):
 def computeSubSeqDistance(tree, TsIndexList ,CandidatesList,window_size):
 
     columnsList = CandidatesList['IdCandidate'].values
-    lastAttribute = ['TsIndex', 'class']
-    columnsList=np.append(columnsList,'TsIndex')
-    columnsList = np.append(columnsList, 'class')
-    print('COLUMNSLIST TYPE')
-    print(type(columnsList))
-    print(type(columnsList[0]))
+    columnsList = columnsList.astype(int)
     dfForDTree = pd.DataFrame(columns=columnsList, index=range(0, len(TsIndexList)))
+    dfForDTree['TsIndex'] = None
+    dfForDTree['class'] = None
 
 
     for i in range(len(TsIndexList)):
@@ -718,7 +715,11 @@ def reduceNumberCandidates(tree,CandidatesList,returnOnlyIndex):
 
     if(tree.n_clusters>= len(CandidatesList) or len(CandidatesList)==0):
         print('Nessun clustering necessario su CandidatesList')
-        return CandidatesList
+        print('len CandidatesList: %s num cluster: %s \n' % (len(CandidatesList),tree.n_clusters))
+        if(returnOnlyIndex):
+            return np.arange(0,len(CandidatesList))
+        else:
+            return CandidatesList
 
 
     verboseretireveCandidatesSubSeq=False

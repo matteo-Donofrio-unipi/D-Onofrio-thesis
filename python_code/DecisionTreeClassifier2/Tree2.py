@@ -232,9 +232,6 @@ class Tree:
             attributeValue = returnList[1]
             Dleft = returnList[2]
             Dright = returnList[3]
-            print('DLEFT---DRIGHT-- \n')
-            print(Dleft, Dright)
-            print('\n')
             numPattern = len(dataset)
             entropy = self.computeEntropy(dataset)
             self.attributeList.append(indexChosenAttribute)
@@ -247,7 +244,6 @@ class Tree:
             nodeInfo.append(entropy)
             actualNode.data = nodeInfo
             actualNode.value = (int(indexChosenAttribute))
-
 
             print('DLEFT & DRIGHT INIZIALMENTE')
             print(Dleft)
@@ -268,11 +264,11 @@ class Tree:
 
             CandidateToCluster = CandidateToCluster.iloc[indexChoosenMedoids]
 
-            # print('CANDIDATI SELEZIONATI left')
-            # print(CandidateToCluster)
+            print('CANDIDATI RIMASTI IN BUILD')
+            print(CandidateToCluster)
 
             # riduco l'insieme dei candidati da considerare, lasciando solo quelli generati dalle Ts contentue in Dleft
-            Dleft = computeSubSeqDistance3(self, TsIndexLeft, CandidateToCluster, self.window_size)
+            Dleft = computeSubSeqDistance(self, TsIndexLeft, CandidateToCluster, self.window_size)
 
             # RIPETO PER DRIGHT------------------------------------------------------
 
@@ -290,11 +286,11 @@ class Tree:
 
             CandidateToCluster = CandidateToCluster.iloc[indexChoosenMedoids]
 
-            # print('CANDIDATI SELEZIONATI right')
-            # print(CandidateToCluster)
+            print('CANDIDATI RIMASTI IN BUILD')
+            print(CandidateToCluster)
 
             # riduco l'insieme dei candidati da considerare, lasciando solo quelli generati dalle Ts contentue in Dleft
-            Dright = computeSubSeqDistance3(self, TsIndexRight, CandidateToCluster, self.window_size)
+            Dright = computeSubSeqDistance(self, TsIndexRight, CandidateToCluster, self.window_size)
 
             print('DLEFT & DRIGHT DOPO IL CLUSTERING')
             print(Dleft)
@@ -366,6 +362,7 @@ class Tree:
 
         CandidateToCluster = self.OriginalCandidatesListTrain[
             CandidatesListLeft]  # estraggo i candidati da OriginalCandidatesListTrain, che sono generati dalle Ts in Dleft
+
         CandidateToCluster = CandidateToCluster.reset_index(drop=True)
 
         indexChoosenMedoids = reduceNumberCandidates(self, CandidateToCluster,
@@ -373,11 +370,13 @@ class Tree:
 
         CandidateToCluster = CandidateToCluster.iloc[indexChoosenMedoids]
 
+        print('CANDIDATI RIMASTI IN FIT')
+        print(CandidateToCluster)
         # print('CANDIDATI SELEZIONATI left')
         # print(CandidateToCluster)
 
         # riduco l'insieme dei candidati da considerare, lasciando solo quelli generati dalle Ts contentue in Dleft
-        Dleft = computeSubSeqDistance3(self, TsIndexLeft, CandidateToCluster, self.window_size)
+        Dleft = computeSubSeqDistance(self, TsIndexLeft, CandidateToCluster, self.window_size)
 
 
 
@@ -396,11 +395,11 @@ class Tree:
 
         CandidateToCluster = CandidateToCluster.iloc[indexChoosenMedoids]
 
-        # print('CANDIDATI SELEZIONATI right')
-        # print(CandidateToCluster)
+        print('CANDIDATI RIMASTI IN FIT')
+        print(CandidateToCluster)
 
         # riduco l'insieme dei candidati da considerare, lasciando solo quelli generati dalle Ts contentue in Dleft
-        Dright = computeSubSeqDistance3(self, TsIndexRight, CandidateToCluster, self.window_size)
+        Dright = computeSubSeqDistance(self, TsIndexRight, CandidateToCluster, self.window_size)
 
         print('DLEFT & DRIGHT DOPO IL CLUSTERING')
         print(Dleft)
