@@ -19,7 +19,7 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
 #METTERE K HYPER PARAMETRO CENTROIDI COME PARAMETRO DI TREE
 
 
-    PercentageTrainingSet = 1  # % se voglio usare una percentuale di Training Set
+    PercentageTrainingSet = 0.05  # % se voglio usare una percentuale di Training Set
     PercentageValidationSet = 0.1  # % set rispetto alla dim del Training Set
     writeOnCsv = True
 
@@ -110,6 +110,8 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
         mpTrain, OriginalCandidatesListTrain, numberOfMotifTrain, numberOfDiscordTrain  = getDataStructures(tree,
             dfTrain, tree.window_size, tree.k, verbose=1)
 
+
+        #sfoltisco i candidati in base al gruppo di candidati scelti
         if(tree.candidatesGroup==0):
             OriginalCandidatesListTrain=OriginalCandidatesListTrain[OriginalCandidatesListTrain['M/D']==0]
         if (tree.candidatesGroup == 1):
@@ -117,6 +119,7 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
 
         OriginalCandidatesListTrain.reset_index(drop=True)
 
+        #aggiungo lista candidati e lista candidati usati, ORIGINALI, in tree
         tree.OriginalCandidatesUsedListTrain = buildCandidatesUsedList(OriginalCandidatesListTrain)
         tree.OriginalCandidatesListTrain=OriginalCandidatesListTrain
         print('OriginalCandidatesUsedListTrain: \n')
@@ -131,14 +134,15 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
 
 
         #PREPARO STRUTTURE DATI PER LA PRIMA ITERAZIONE DI FIT
+        #applico clustering a insieme di candidati iniziali
         CandidatesListTrain = reduceNumberCandidates(tree, OriginalCandidatesListTrain,returnOnlyIndex=False)
         print('candidati rimasti/ più significativi-distintivi ')
         print(CandidatesListTrain)
 
-        #computeSubSeqDistance calcola distanze tra TsIndexList e CandidatesListTrain fornite
+
         TsIndexList=dfTrain['TsIndex'].values #inizialmente tutto DfTrain ( prima iterazione )
 
-
+        # computeSubSeqDistance calcola distanze tra lista di Ts e lista di candidati fornite
         dfForDTree = computeSubSeqDistance(tree,TsIndexList, CandidatesListTrain, tree.window_size)
         if (verbose == True):
             print('dfTrain: \n'+str(dfTrain))
@@ -150,7 +154,6 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
     if(second==True):
         verbose = True
         #COSTRUISCO DECISION TREE
-        #------
         tree.fit(dfForDTree,verbose=True)
         if(verbose==True):
             print(tree.attributeList)
@@ -178,13 +181,13 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
         CandidatesListMatched = tree.OriginalCandidatesListTrain['IdCandidate'].isin(
             tree.attributeList)  # mi dice quali TsIndex in OriginalCandidatesListTrain sono contenuti in Dleft
 
-        CandidatesListTest = tree.OriginalCandidatesListTrain[
+        tree.dTreeAttributes = tree.OriginalCandidatesListTrain[
             CandidatesListMatched]  # estraggo i candidati da OriginalCandidatesListTrain, che sono generati dalle Ts in Dleft
 
-        print('TEST PART')
-        print(CandidatesListTest)
+        print('Attributi selezionati dal Decision Tree')
+        print(tree.dTreeAttributes)
 
-        dfForDTreeTest=computeSubSeqDistanceForTest(tree,dfTest,CandidatesListTest,tree.window_size)
+        dfForDTreeTest=computeSubSeqDistanceForTest(tree,dfTest,tree.dTreeAttributes)
         if(verbose==True):
             print(dfForDTreeTest)
 

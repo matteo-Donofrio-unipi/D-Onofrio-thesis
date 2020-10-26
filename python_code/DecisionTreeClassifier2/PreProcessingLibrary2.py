@@ -60,6 +60,7 @@ def retrieve_all(tree,Ts,window_size,k):  # fornita la Ts calcola e restituisce 
 
     if(tree.warningDetected==True):
         mp, mpi = matrixProfile.naiveMP(dfMP[0].values, window_size)
+
     else:
         mp, mpi = matrixProfile.stomp(dfMP[0].values, window_size)
 
@@ -317,7 +318,7 @@ def computeSubSeqDistance(tree, TsIndexList ,CandidatesList,window_size):
 
 
 #realizzata differentemente perche chiamata una sola volta su DframeTest
-def computeSubSeqDistanceForTest(tree,datasetTest, CandidatesListTest,window_size):
+def computeSubSeqDistanceForTest(tree,datasetTest, CandidatesListTest):
     # quantifico il num di candidati usati dall'albero e in base a tale valore genero colonne per dfForDTree
     columnsList = CandidatesListTest['IdCandidate'].values
     columnsList = columnsList.astype(int)
@@ -348,10 +349,10 @@ def computeSubSeqDistanceForTest(tree,datasetTest, CandidatesListTest,window_siz
 
             if (tree.warningDetected):
                 Dp = distanceProfile.naiveDistanceProfile(TsContainingCandidate, int(startingPosition),
-                                                          window_size, TsToCompare)
+                                                          tree.window_size, TsToCompare)
             else:
                 Dp = distanceProfile.massDistanceProfile(TsContainingCandidate, int(startingPosition),
-                                                         window_size, TsToCompare)
+                                                         tree.window_size, TsToCompare)
 
 
 
@@ -363,288 +364,6 @@ def computeSubSeqDistanceForTest(tree,datasetTest, CandidatesListTest,window_siz
     dfForDTreeTest['class'] = num_classes
 
     return dfForDTreeTest  # columnsList2 restituito per generare poi dFrame in "Split" (struttura dframe)
-
-
-
-
-
-def computeSubSeqDistanceForTest2(tree,datasetTest, attributeList, CandidatesList,window_size):
-    # quantifico il num di candidati usati dall'albero e in base a tale valore genero colonne per dfForDTree
-    columnsList2 = list()
-    prefix = 'cand'
-    TsAndStartingPositionList=list() #contiene le coppie (Ts, startingPosition) per tenere traccia degli shaplet ottenuti
-    booleanForTsAndStartingPos=True #dopo aver raccolto dati nel primo giro, lo setto a false e mi fermo (altrimenti raccolgo stessi dati)
-    for i in attributeList:
-        columnsList2.append(prefix + str(i))
-    columnsList2.append('TsIndex')
-    columnsList2.append('class')
-    dfForDTreeTest = pd.DataFrame(columns=columnsList2, index=range(0, len(datasetTest)))
-
-    # per ogni Ts, scandisco ogni candidato e calcolo la distanza minore
-    for i in range(len(datasetTest)):
-        # acquisisco la Ts
-        TsToCompare = np.array(datasetTest.iloc[i].values)
-        classValue = TsToCompare[len(TsToCompare) - 1]  # la classe è sempre il penultimo attributo
-        TsToCompare = TsToCompare[:len(TsToCompare) - 2]  # la serie è ottenuta rimuovendo i due ultimi attributi
-        #I VALORI (-1, -2) SONO DIVERSI DA QUELLI USATI IN COMPUTE NORMALE, PERCHE QUI NON PASSO LA STRUTTURA A GETDATASTRUCTURES => NON AGGIUNGO COLONNA TS INDEX
-        dfForDTreeTest['TsIndex'].iloc[i] = i
-        dfForDTreeTest['class'].iloc[i] = classValue
-        counter = 0 #scandisco candidate list (prima motif poi discord) incrementando counter -> cosi prenderò il candidato counter-esimo
-        # scandisco e calcolo distanza dai candidati
-        for z in range(len(attributeList)):
-            candidateIndex = attributeList[z]
-            counter = 0
-            for index, row in CandidatesList.iterrows():
-                numMotif = len(row['Motif'])
-                for k in range(numMotif):
-                    if (counter == candidateIndex):
-                        l1 = row['Motif']  # lista di indice i in motifDiscordList
-                        startingIndex = l1[k]  # indice di inizio del motif
-                        TsContainingCandidateShapelet = np.array(
-                            datasetTrain.iloc[index].values)  # Ts contenente candidato shapelet
-                        if (tree.warningDetected):
-                            Dp = distanceProfile.naiveDistanceProfile(TsContainingCandidateShapelet, int(startingIndex),
-                                                                      window_size, TsToCompare)
-                        else:
-                            Dp = distanceProfile.massDistanceProfile(TsContainingCandidateShapelet, int(startingIndex),
-                                                                     window_size, TsToCompare)
-                        minValueFromDProfile = min(Dp[0])  # Dp[0] contiene il Dp effettivo
-                        dfForDTreeTest[prefix + str(counter)].iloc[i] = minValueFromDProfile
-                        if(booleanForTsAndStartingPos==True):
-                            TsAndStartingPositionList.append([index,startingIndex])
-                    counter += 1
-            for index, row in CandidatesList.iterrows():
-                numDiscord = len(row['Discord'])
-                for k in range(numDiscord):
-                    if (counter == candidateIndex):
-                        l1 = row['Discord']  # lista di indice i in motifDiscordList
-                        startingIndex = l1[k]  # indice di inizio del motif
-                        TsContainingCandidateShapelet = np.array(
-                            datasetTrain.iloc[index].values)  # Ts contenente candidato shapelet
-                        if (tree.warningDetected):
-                            Dp = distanceProfile.naiveDistanceProfile(TsContainingCandidateShapelet, int(startingIndex),
-                                                                      window_size, TsToCompare)
-                        else:
-                            Dp = distanceProfile.massDistanceProfile(TsContainingCandidateShapelet, int(startingIndex),
-                                                                     window_size, TsToCompare)
-                        minValueFromDProfile = min(Dp[0])  # Dp[0] contiene il Dp effettivo
-                        dfForDTreeTest[prefix + str(counter)].iloc[i] = minValueFromDProfile
-                        if (booleanForTsAndStartingPos == True):
-                            TsAndStartingPositionList.append([index, startingIndex])
-                    counter += 1
-
-        booleanForTsAndStartingPos = False #setto a false e smetto di raccogliere informazioni
-
-    le = LabelEncoder()
-    num_classes = le.fit_transform(dfForDTreeTest['class'])
-    dfForDTreeTest['class'] = num_classes
-
-    return dfForDTreeTest,TsAndStartingPositionList  # columnsList2 restituito per generare poi dFrame in "Split" (struttura dframe)
-
-
-
-
-
-
-#dopo aver calcolato dfTrain, recupero la sottosequenza di ogni candidato shapelet
-def retireveCandidatesSubSeq(tree,CandidatesList, dataset,window_size,numberOfMotifTrain, numberOfDiscordTrain):
-
-    if(tree.n_clusters>= len(CandidatesList)):
-        print('Nessun clustering necessario su CandidatesList')
-        return CandidatesList
-
-    verboseretireveCandidatesSubSeq=False
-
-    if(tree.useClustering):
-
-        #genero colonne
-        columnsList=list(['idTs','IdCandidate','startingPosition','M/D'])
-        prefix='att'
-        for i in range(window_size):
-            columnsList.append(prefix + str(i))
-        candDfMotifs=pd.DataFrame(columns=columnsList,index=range(numberOfMotifTrain))
-        candDfDiscords = pd.DataFrame(columns=columnsList, index=range(numberOfDiscordTrain))
-
-        CandidatesListM=CandidatesList[CandidatesList['M/D']==0]
-        counter=0
-        for j in range(len(CandidatesListM)):#CANDIDATI CON MOTIF
-            #scandisco e inserisco prima tutte le subseq dei motif
-            startingIndex = CandidatesListM.iloc[j]['startingPosition']  # indice di inizio del motif
-            indexTsContainingCandidateShapelet=CandidatesListM.iloc[j]['IdTs']
-
-            TsContainingCandidateShapelet=dataset[dataset['TsIndex']==indexTsContainingCandidateShapelet]
-            TsContainingCandidateShapelet=TsContainingCandidateShapelet.values
-            TsContainingCandidateShapelet=TsContainingCandidateShapelet[0][:-2]
-
-            subSeqCandidate=TsContainingCandidateShapelet[startingIndex:startingIndex+window_size]
-
-            candDfMotifs.iloc[counter]['idTs']=CandidatesListM.iloc[j]['IdTs']
-            candDfMotifs.iloc[counter]['IdCandidate']=CandidatesListM.iloc[j]['IdCandidate']
-            candDfMotifs.iloc[counter]['startingPosition'] = startingIndex
-            candDfMotifs.iloc[counter]['M/D'] = 0
-            for z in range(window_size):
-                candDfMotifs.iloc[counter]['att'+str(z)] = subSeqCandidate[z]
-            counter+=1
-
-        CandidatesListD = CandidatesList[CandidatesList['M/D'] == 1]
-        counter=0
-        for j in range(len(CandidatesListD)):
-            startingIndex = CandidatesListD.iloc[j]['startingPosition']   # indice di inizio del motif
-            indexTsContainingCandidateShapelet = CandidatesListD.iloc[j]['IdTs']
-
-            TsContainingCandidateShapelet = dataset[dataset['TsIndex'] == indexTsContainingCandidateShapelet]
-            TsContainingCandidateShapelet = TsContainingCandidateShapelet.values
-            TsContainingCandidateShapelet = TsContainingCandidateShapelet[0][:-2]
-
-            subSeqCandidate = TsContainingCandidateShapelet[startingIndex:startingIndex + window_size]
-
-            candDfDiscords.iloc[counter]['idTs'] = CandidatesListD.iloc[j]['IdTs']
-            candDfDiscords.iloc[counter]['IdCandidate'] = CandidatesListD.iloc[j]['IdCandidate']
-            candDfDiscords.iloc[counter]['startingPosition'] = startingIndex
-            candDfDiscords.iloc[counter]['M/D'] = 1
-            for z in range(window_size):
-                candDfDiscords.iloc[counter]['att' + str(z)] = subSeqCandidate[z]
-            counter+=1
-
-        if(verboseretireveCandidatesSubSeq):
-            print('subseq dei candidati estratti (rispettivamente motifs e poi discords)')
-            #subseq dei candidati estratti (rispettivamente motifs e poi discords)
-            print(candDfMotifs)
-            print(candDfDiscords)
-
-        EmptyDiscords = False
-        CandidateMedoidsMotifs=[]
-        CandidateMedoidsDiscords=[]
-
-        if (len(candDfDiscords) == 0):
-            EmptyDiscords=True
-
-
-        # indici all interno di candDfMotifs & candDfDiscords dei candidati scelti come medoidi
-        CandidateMedoidsMotifs = runKMeans(candDfMotifs, tree.n_clusters)
-        if(verboseretireveCandidatesSubSeq):
-            print('indici all interno di candDfMotifs & candDfDiscords dei candidati scelti come medoidi (rispettivamente motifs e poi discords) ')
-            print(CandidateMedoidsMotifs)
-
-        if(EmptyDiscords==False and numberOfDiscordTrain>tree.n_clusters):
-            CandidateMedoidsDiscords = runKMeans(candDfDiscords,tree.n_clusters)
-            if (verboseretireveCandidatesSubSeq):
-                print(CandidateMedoidsDiscords)
-
-
-        #riduco candDfMotifs & candDfDiscords mantenendo solo i candidati scelti
-        candDfMotifs = candDfMotifs.iloc[CandidateMedoidsMotifs]
-        candDfMotifs.reset_index(drop=True, inplace=True)
-        if (EmptyDiscords == False and numberOfDiscordTrain>tree.n_clusters):
-            candDfDiscords = candDfDiscords.iloc[CandidateMedoidsDiscords]
-            candDfDiscords.reset_index(drop=True, inplace=True)
-
-        if (verboseretireveCandidatesSubSeq):
-            print('candDfMotifs & candDfDiscords mantenendo solo i candidati scelti')
-            print(candDfMotifs)
-        if (EmptyDiscords == False and numberOfDiscordTrain>tree.n_clusters):
-            if (verboseretireveCandidatesSubSeq):
-                print(candDfDiscords)
-
-        #prendo l'id dei candidati da mantenere
-        idTsCandidateMotifs = candDfMotifs['IdCandidate'].values
-        if (EmptyDiscords == False and numberOfDiscordTrain>tree.n_clusters):
-            idTsCandidateDiscords = candDfDiscords['IdCandidate'].values
-        else:
-            idTsCandidateDiscords=[]
-
-        #determino i candidati da mantenere tra quelli estratti dal k-means, in base al CandidatesGroup scelto
-        if(tree.candidatesGroup==2):
-            ChosenCandidates = list(set(idTsCandidateMotifs) | set(idTsCandidateDiscords))
-            # la loro unione potrebbe essere > tree.n_clusters (#medoidi scelti) quindi ne prendo solo tree.n_clusters
-            ChosenCandidates = ChosenCandidates[:tree.n_clusters]
-            # ora ho ridotto avendo CANDIDATI PROVENIENTI DA tree.n_clusters TS DIFFERENTI, MA POSSONO ESSERE ANCORA > tree.n_clusters
-
-        elif(tree.candidatesGroup==0 or EmptyDiscords == True):
-            ChosenCandidates=idTsCandidateMotifs #se ho scelto i motifs oppure non ci sono candidati discord estratti, mantengo i candidati medoidi scelti analizzando solo i candidati motifs
-        else:
-            ChosenCandidates = idTsCandidateDiscords #analogo per i discords
-
-        if (verboseretireveCandidatesSubSeq):
-            print('indice dei candidati da mantenere (scleti come medoidi) dentro CandidatesListTrain ')
-            print(ChosenCandidates)
-
-        #genero nuova lista candidati / finale
-        CandidatesList = CandidatesList.iloc[ChosenCandidates]
-        CandidatesList.reset_index(drop=True,inplace=True)
-
-    else: #se tree.useClustering == False
-        if(tree.candidatesGroup==0):
-            CandidatesList = CandidatesList[CandidatesList['M/D'] == 0]
-        elif(tree.candidatesGroup==1):
-            CandidatesList = CandidatesList[CandidatesList['M/D'] == 1]
-
-    return CandidatesList
-
-
-
-
-
-
-
-#dopo aver calcolato dfTrain, recupero la sottosequenza di ogni candidato shapelet
-def applyClusteringToCandidates(tree,CandidatesList):
-
-    if(tree.n_clusters>= len(CandidatesList) or len(CandidatesList)==0):
-        print('Nessun clustering necessario su CandidatesList')
-        return CandidatesList
-
-
-    verboseretireveCandidatesSubSeq=True
-
-    columnsList = list(['IdTs', 'IdCandidate', 'startingPosition', 'M/D'])
-    prefix = 'att'
-    for i in range(tree.window_size):
-        columnsList.append(prefix + str(i))
-    CandidatesSubSeq = pd.DataFrame(columns=columnsList, index=range(len(CandidatesList)))
-
-    counter = 0
-    for j in range(len(CandidatesList)):  # CANDIDATI
-        startingIndex = CandidatesList.iloc[j]['startingPosition']  # indice di inizio del motif
-        indexTsContainingCandidateShapelet = CandidatesList.iloc[j]['IdTs']
-
-        TsContainingCandidateShapelet = tree.dfTrain[tree.dfTrain['TsIndex'] == indexTsContainingCandidateShapelet]
-        TsContainingCandidateShapelet = TsContainingCandidateShapelet.values
-        TsContainingCandidateShapelet = TsContainingCandidateShapelet[0][:-2]
-
-        subSeqCandidate = TsContainingCandidateShapelet[startingIndex:startingIndex + tree.window_size]
-
-
-
-        CandidatesSubSeq.iloc[counter]['IdTs'] = CandidatesList.iloc[j]['IdTs']
-        CandidatesSubSeq.iloc[counter]['IdCandidate'] = CandidatesList.iloc[j]['IdCandidate']
-        CandidatesSubSeq.iloc[counter]['startingPosition'] = startingIndex
-        CandidatesSubSeq.iloc[counter]['M/D'] = CandidatesList.iloc[j]['M/D']
-        for z in range(tree.window_size):
-            CandidatesSubSeq.iloc[counter]['att' + str(z)] = subSeqCandidate[z]
-        counter += 1
-
-
-
-
-    if(verboseretireveCandidatesSubSeq):
-        print('subseq dei candidati estratti')
-        #subseq dei candidati estratti (rispettivamente motifs e poi discords)
-        print(CandidatesSubSeq)
-
-
-    CandidateMedoids=[]
-
-
-    # indici all interno di candDfMotifs & candDfDiscords dei candidati scelti come medoidi
-    CandidateMedoids = runKMeans(CandidatesSubSeq, tree.n_clusters)
-    if(verboseretireveCandidatesSubSeq):
-        print('indici all interno di CandidatesList scelti come medoidi ')
-        print(CandidateMedoids)
-
-
-
-    return CandidateMedoids
 
 
 

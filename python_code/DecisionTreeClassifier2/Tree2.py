@@ -18,7 +18,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score, f1_score, classification_report
 from sklearn.metrics import roc_curve, auc, roc_auc_score
-from PreProcessingLibrary2 import applyClusteringToCandidates, computeSubSeqDistance,reduceNumberCandidates
+from PreProcessingLibrary2 import  computeSubSeqDistance,reduceNumberCandidates
 
 
 class Tree:
@@ -253,7 +253,7 @@ class Tree:
             TsIndexLeft = Dleft['TsIndex']  # TsIndex contenute in Dleft
 
             CandidatesListLeft = self.OriginalCandidatesListTrain['IdTs'].isin(
-                TsIndexLeft)  # mi dice quali TsIndex in OriginalCandidatesListTrain sono contenuti in Dleft
+                TsIndexLeft)  # setta a True gli indici dei candidati che sono stati generati dalle Ts contenute in Dleft
 
             CandidateToCluster = self.OriginalCandidatesListTrain[
                 CandidatesListLeft]  # estraggo i candidati da OriginalCandidatesListTrain, che sono generati dalle Ts in Dleft
@@ -262,12 +262,12 @@ class Tree:
             indexChoosenMedoids = reduceNumberCandidates(self, CandidateToCluster,
                                                          returnOnlyIndex=True)  # indici di OriginalCandidatesListTrain conteneti candidati da mantenere
 
-            CandidateToCluster = CandidateToCluster.iloc[indexChoosenMedoids]
+            CandidateToCluster = CandidateToCluster.iloc[indexChoosenMedoids] #candidati da mantenere
 
             print('CANDIDATI RIMASTI IN BUILD')
             print(CandidateToCluster)
 
-            # riduco l'insieme dei candidati da considerare, lasciando solo quelli generati dalle Ts contentue in Dleft
+            # calcolo distanze tra Ts in Dleft e candidati scelti
             Dleft = computeSubSeqDistance(self, TsIndexLeft, CandidateToCluster, self.window_size)
 
             # RIPETO PER DRIGHT------------------------------------------------------
@@ -275,21 +275,21 @@ class Tree:
             TsIndexRight = Dright['TsIndex']  # TsIndex contenute in Dleft
 
             CandidatesListRight = self.OriginalCandidatesListTrain['IdTs'].isin(
-                TsIndexRight)  # mi dice quali TsIndex in OriginalCandidatesListTrain sono contenuti in Dleft
+                TsIndexRight)  # # setta a True gli indici dei candidati che sono stati generati dalle Ts contenute in Dright
 
             CandidateToCluster = self.OriginalCandidatesListTrain[
-                CandidatesListRight]  # estraggo i candidati da OriginalCandidatesListTrain, che sono generati dalle Ts in Dleft
+                CandidatesListRight]   # estraggo i candidati da OriginalCandidatesListTrain, che sono generati dalle Ts in Dright
             CandidateToCluster = CandidateToCluster.reset_index(drop=True)
 
             indexChoosenMedoids = reduceNumberCandidates(self, CandidateToCluster,
                                                          returnOnlyIndex=True)  # indici di OriginalCandidatesListTrain conteneti candidati da mantenere
 
-            CandidateToCluster = CandidateToCluster.iloc[indexChoosenMedoids]
+            CandidateToCluster = CandidateToCluster.iloc[indexChoosenMedoids] #candidati da mantenere
 
             print('CANDIDATI RIMASTI IN BUILD')
             print(CandidateToCluster)
 
-            # riduco l'insieme dei candidati da considerare, lasciando solo quelli generati dalle Ts contentue in Dleft
+            #calcolo distanze tra Ts in Dright e candidati scelti
             Dright = computeSubSeqDistance(self, TsIndexRight, CandidateToCluster, self.window_size)
 
             print('DLEFT & DRIGHT DOPO IL CLUSTERING')
@@ -358,7 +358,7 @@ class Tree:
         TsIndexLeft = Dleft['TsIndex']  # TsIndex contenute in Dleft
 
         CandidatesListLeft = self.OriginalCandidatesListTrain['IdTs'].isin(
-            TsIndexLeft)  # mi dice quali TsIndex in OriginalCandidatesListTrain sono contenuti in Dleft
+            TsIndexLeft)  #  setta a True gli indici dei candidati che sono stati generati dalle Ts contenute in Dleft
 
         CandidateToCluster = self.OriginalCandidatesListTrain[
             CandidatesListLeft]  # estraggo i candidati da OriginalCandidatesListTrain, che sono generati dalle Ts in Dleft
@@ -372,10 +372,8 @@ class Tree:
 
         print('CANDIDATI RIMASTI IN FIT')
         print(CandidateToCluster)
-        # print('CANDIDATI SELEZIONATI left')
-        # print(CandidateToCluster)
 
-        # riduco l'insieme dei candidati da considerare, lasciando solo quelli generati dalle Ts contentue in Dleft
+        #calcolo distanze tra Ts in Dleft e candidati scelti
         Dleft = computeSubSeqDistance(self, TsIndexLeft, CandidateToCluster, self.window_size)
 
 
@@ -385,7 +383,7 @@ class Tree:
         TsIndexRight = Dright['TsIndex']  # TsIndex contenute in Dleft
 
         CandidatesListRight = self.OriginalCandidatesListTrain['IdTs'].isin(
-            TsIndexRight)  # mi dice quali TsIndex in OriginalCandidatesListTrain sono contenuti in Dleft
+            TsIndexRight) #  setta a True gli indici dei candidati che sono stati generati dalle Ts contenute in Dright
 
         CandidateToCluster = self.OriginalCandidatesListTrain[
             CandidatesListRight]  # estraggo i candidati da OriginalCandidatesListTrain, che sono generati dalle Ts in Dleft
@@ -398,7 +396,7 @@ class Tree:
         print('CANDIDATI RIMASTI IN FIT')
         print(CandidateToCluster)
 
-        # riduco l'insieme dei candidati da considerare, lasciando solo quelli generati dalle Ts contentue in Dleft
+        #calcolo distanze tra Ts in Dleft e candidati scelti
         Dright = computeSubSeqDistance(self, TsIndexRight, CandidateToCluster, self.window_size)
 
         print('DLEFT & DRIGHT DOPO IL CLUSTERING')
