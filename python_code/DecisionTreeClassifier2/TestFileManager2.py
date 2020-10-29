@@ -39,7 +39,7 @@ def readCsv(fileName):
 
 
 def WriteCsv(fileName,row):
-    fields = ['Candidates', 'Max depth', 'Min samples', 'Window size', 'Remove candi', 'k', '% Training set', 'Accuracy','Time']
+    fields = ['Candidates', 'Max depth', 'Min samples', 'Window size', 'Remove candi', 'k', 'useValidationSet' ,'% Training set', 'NumCluster(Medoids)' ,'Accuracy','Time']
     writeFileds=False
     if(os.path.isfile(fileName)==False):
         writeFileds=True
@@ -55,7 +55,7 @@ def WriteCsv(fileName,row):
 
 
 def PlotValues(fileName):
-    errorBarPlot=False
+    errorBarPlot=True
     # initializing the titles and rows list
     fields = []
     rows = []
@@ -64,8 +64,10 @@ def PlotValues(fileName):
     MinSamples = list()
     WindowSize = list()
     RemoveCanddates = list()
+    useValidationSet=list()
     k = list()
     PercentageTrainingSet = list()
+    NumClusterMedoid=list()
     Time = list()
     Accuracy = list()
 
@@ -86,18 +88,20 @@ def PlotValues(fileName):
             MinSamples.append(row[2])
             WindowSize.append(row[3])
             RemoveCanddates.append(row[4])
-            k.append(row[5])
-            PercentageTrainingSet.append(row[6])
-            Accuracy.append(row[7])
-            if(row[8]!=None):
-                Time.append(row[8])
+            useValidationSet.append(row[5])
+            k.append(row[6])
+            PercentageTrainingSet.append(row[7])
+            NumClusterMedoid.append(row[8])
+            Accuracy.append(row[9])
+            if(row[10]!=None):
+                Time.append(row[10])
             else:
                 Time.append(0)
         # get total number of rows
 
         dfResults = pd.DataFrame(
-        columns=['Candidates', 'MaxDepth', 'MinSamples', 'WindowSize', 'RemoveCanddates', 'k',
-        'PercentageTrainingSet', 'Accuracy', 'Time'], index=range(csvreader.line_num-1))
+        columns=['Candidates', 'MaxDepth', 'MinSamples', 'WindowSize', 'RemoveCanddates', 'k', 'useValidationSet'
+        'PercentageTrainingSet', 'NumClusterMedoid', 'Accuracy', 'Time'], index=range(csvreader.line_num-1))
 
         # get total number of rows
     print("Total no. of rows: %d" % (csvreader.line_num))
@@ -111,7 +115,9 @@ def PlotValues(fileName):
     dfResults['WindowSize'] = WindowSize
     dfResults['RemoveCanddates'] = RemoveCanddates
     dfResults['k'] = k
+    dfResults['useValidationSet']=useValidationSet
     dfResults['PercentageTrainingSet'] = PercentageTrainingSet
+    dfResults['NumClusterMedoid']=NumClusterMedoid
     dfResults['Accuracy'] = Accuracy
     dfResults['Time'] = Time
 
@@ -123,6 +129,15 @@ def PlotValues(fileName):
     mean=list()
     stdevList=list()
 
+    dfResults = dfResults.sort_values(by='Candidates', ascending=True)
+    print(dfResults['Candidates'])
+
+    plt.plot(dfResults['Candidates'], dfResults['Accuracy'], 'or')
+    plt.xlabel('Candidates')
+    plt.ylabel('Accuracy')
+    plt.show()
+
+
     dfResults = dfResults.sort_values(by='MaxDepth', ascending=True)
     print(dfResults['WindowSize'])
 
@@ -131,11 +146,19 @@ def PlotValues(fileName):
     plt.ylabel('Accuracy')
     plt.show()
 
-    dfResults = dfResults.sort_values(by='PercentageTrainingSet', ascending=True)
+    dfResults = dfResults.sort_values(by='WindowSize', ascending=True)
     print(dfResults)
 
-    plt.plot(dfResults['PercentageTrainingSet'], dfResults['Accuracy'], 'or')
-    plt.xlabel('% Training Set')
+    plt.plot(dfResults['WindowSize'], dfResults['Accuracy'], 'or')
+    plt.xlabel('WindowSize')
+    plt.ylabel('Accuracy')
+    plt.show()
+
+    dfResults = dfResults.sort_values(by='NumClusterMedoid', ascending=True)
+    print(dfResults)
+
+    plt.plot(dfResults['NumClusterMedoid'], dfResults['Accuracy'], 'or')
+    plt.xlabel('NumClusterMedoid ')
     plt.ylabel('Accuracy')
     plt.show()
 

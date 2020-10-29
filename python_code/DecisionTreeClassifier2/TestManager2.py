@@ -14,19 +14,19 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
     second = True  # CALCOLO ALBERO DECISIONE
     third = True  # ESTRAZIONE DATASET TEST
     quarter = True  # PREDIZIONE E RISULTATO
-    fifth = False  # GRAFICA DI SERIE TEMPORALI E MATRIX PROFILE DEI CANDIDATI SCELTI
+    fifth = True  # GRAFICA DI SERIE TEMPORALI E MATRIX PROFILE DEI CANDIDATI SCELTI
 
 #METTERE K HYPER PARAMETRO CENTROIDI COME PARAMETRO DI TREE
 
 
-    PercentageTrainingSet = 0.05  # % se voglio usare una percentuale di Training Set
-    PercentageValidationSet = 0.1  # % set rispetto alla dim del Training Set
+    PercentageTrainingSet = 1  # % se voglio usare una percentuale di Training Set
+    PercentageValidationSet = 0.3  # % set rispetto alla dim del Training Set
     writeOnCsv = True
 
 
     #genero albero (VUOTO) e avvio timer
     le = LabelEncoder()
-    tree= Tree(candidatesGroup=0,maxDepth=3,minSamplesLeaf=5,removeUsedCandidate=0,window_size=5,k=2,useClustering=True,n_clusters=20,warningDetected=False,verbose=1) # K= NUM DI MOTIF/DISCORD ESTRATTI
+    tree= Tree(candidatesGroup=0,maxDepth=3,minSamplesLeaf=50,removeUsedCandidate=0,window_size=5,k=1,useClustering=True,n_clusters=10,warningDetected=False,verbose=1) # K= NUM DI MOTIF/DISCORD ESTRATTI
 
     start_time = time.time()
 
@@ -221,7 +221,7 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
         elif(usePercentageTrainingSet):
             percentage=PercentageTrainingSet
 
-        row=[group,tree.maxDepth,tree.minSamplesLeaf,tree.window_size,tree.removeUsedCandidate,tree.k,percentage,round(aS,2),round(totalTime,2)]
+        row=[group,tree.maxDepth,tree.minSamplesLeaf,tree.window_size,tree.removeUsedCandidate,tree.k,useValidationSet,percentage,tree.n_clusters,round(aS,2),round(totalTime,2)]
         print('Classification Report %s' % cR)
         print('Accuracy %s' % aS)
         print('F1-score %s' % f1)
@@ -234,19 +234,26 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
     if(fifth==True):
 
         #ESTRAGGO TUTTO DI NUOVO PERCHE LE TS USATE PRIMA HANNO VALORI AGGIUNTI
-        diz = {'Motif': [], 'Discord': []}
-        PreProcessedTs = pd.DataFrame(diz)
+        for i in range(len(tree.dTreeAttributes)):
+            idTs=tree.dTreeAttributes.iloc[i]['IdTs']
+            idCandidate=tree.dTreeAttributes.iloc[i]['IdCandidate']
+            sp = tree.dTreeAttributes.iloc[i]['startingPosition']
+            md=tree.dTreeAttributes.iloc[i]['M/D']
+            ts = np.array(tree.dfTrain[tree.dfTrain['TsIndex'] == idTs].values)
+            ts=ts[0]
+            ts = ts[:len(ts) - 2]
 
-        for i in range(len(dfTrain)):
-            for j in range(len(TsAndStartingPositionList)):
-                if(TsAndStartingPositionList[j][0] == i):
-                    Ts = np.array(dfTrain.iloc[i].values)
-                    print('TS ID:' + str(i))
-                    print('TS CLASS:' + str(dfTrain.iloc[i]['target']))
-                    mp, mot, motif_dist, dis = retrieve_all2(Ts,tree.window_size,tree.k)
-                    print('CANDIDATE START IN : '+str(TsAndStartingPositionList[j][1]))
-                    plot_all(Ts, mp, mot, motif_dist, dis, tree.window_size)
-                    PreProcessedTs.loc[i] = mot, dis
+
+            tupla=retrieve_all(tree,ts,tree.window_size,tree.k)
+
+            mp, mot, motif_dist, dis =tupla
+
+            print('IdTs:  %d' % idTs)
+            print('IDCandidate:  %d' % idCandidate)
+            print('starting position:  %d ' % sp)
+            print('M/D: %d ' % md)
+
+            plot_all(ts, mp, mot, motif_dist, dis, tree.window_size)
 
 
 

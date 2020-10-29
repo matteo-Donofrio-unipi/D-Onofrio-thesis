@@ -97,11 +97,13 @@ class Tree:
         # cicla fin quando trova candidato libero con gain maggiore
         while (bestIndexAttribute == -1 and i < len(vecMutualInfo)):
             attributeToVerify = int(vecMutualInfo.iloc[i]['IdCandidate'])
-            if (CandidatesUsedListTrain.iloc[attributeToVerify]['Used'] == False):
+            indexAttr = CandidatesUsedListTrain.index[CandidatesUsedListTrain['IdCandidate'] == attributeToVerify]
+            indexAttr=indexAttr[0]
+            if (CandidatesUsedListTrain.iloc[indexAttr]['Used']==False):
                 bestIndexAttribute = attributeToVerify
                 splitValue = vecMutualInfo.iloc[i]['splitValue']
                 CandidatesUsedListTrain.iloc[
-                    attributeToVerify] = True  # settando a true il candidato scelto, non sarà usato in seguito
+                    indexAttr] = True  # settando a true il candidato scelto, non sarà usato in seguito
                 print('gain: ' + str(vecMutualInfo.iloc[i]['gain']))
             else:
                 i += 1

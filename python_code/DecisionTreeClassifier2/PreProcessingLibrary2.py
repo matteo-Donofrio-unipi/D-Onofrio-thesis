@@ -283,7 +283,7 @@ def computeSubSeqDistance(tree, TsIndexList ,CandidatesList,window_size):
 
         TsToCompare=TsToCompare[0]
         classValue = TsToCompare[len(TsToCompare)-2] #la classe è sempre il penultimo attributo
-        TsToCompare = TsToCompare[:len(TsToCompare)-3] #la serie è ottenuta rimuovendo i due ultimi attributi
+        TsToCompare = TsToCompare[:len(TsToCompare)-2] #la serie è ottenuta rimuovendo i due ultimi attributi
 
         dfForDTree['TsIndex'].iloc[i] = TsIndexValue
         dfForDTree['class'].iloc[i] = classValue
@@ -295,7 +295,7 @@ def computeSubSeqDistance(tree, TsIndexList ,CandidatesList,window_size):
 
             TsContainingCandidate = np.array(tree.dfTrain[tree.dfTrain['TsIndex'] == IdTsCandidate].values)
             TsContainingCandidate=TsContainingCandidate[0]
-            TsContainingCandidate = TsContainingCandidate[:len(TsContainingCandidate) - 3]
+            TsContainingCandidate = TsContainingCandidate[:len(TsContainingCandidate) - 2]
 
             if (tree.warningDetected):
                 Dp = distanceProfile.naiveDistanceProfile(TsContainingCandidate, int(startingPosition),
@@ -331,7 +331,7 @@ def computeSubSeqDistanceForTest(tree,datasetTest, CandidatesListTest):
         # acquisisco la Ts
         TsToCompare = np.array(datasetTest.iloc[i].values)
         classValue = TsToCompare[len(TsToCompare) - 2]  # la classe è sempre il penultimo attributo
-        TsToCompare = TsToCompare[:len(TsToCompare) - 3]  # la serie è ottenuta rimuovendo i due ultimi attributi
+        TsToCompare = TsToCompare[:len(TsToCompare) - 2]  # la serie è ottenuta rimuovendo i due ultimi attributi
         #I VALORI (-1, -2) SONO DIVERSI DA QUELLI USATI IN COMPUTE NORMALE, PERCHE QUI NON PASSO LA STRUTTURA A GETDATASTRUCTURES => NON AGGIUNGO COLONNA TS INDEX
 
         dfForDTreeTest['class'].iloc[i] = classValue
@@ -345,7 +345,7 @@ def computeSubSeqDistanceForTest(tree,datasetTest, CandidatesListTest):
 
             TsContainingCandidate = np.array(tree.dfTrain[tree.dfTrain['TsIndex'] == IdTsCandidate].values)
             TsContainingCandidate = TsContainingCandidate[0]
-            TsContainingCandidate = TsContainingCandidate[:len(TsContainingCandidate) - 3]
+            TsContainingCandidate = TsContainingCandidate[:len(TsContainingCandidate) - 2]
 
             if (tree.warningDetected):
                 Dp = distanceProfile.naiveDistanceProfile(TsContainingCandidate, int(startingPosition),

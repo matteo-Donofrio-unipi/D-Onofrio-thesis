@@ -1,0 +1,4 @@
+Candidates,Max depth,Min samples,Window size,Remove candi,k,% Training set,NumCluster(Medoids),Accuracy,Time
+Discords,5,100,5,0,1,0.3,50,0.65,21.11
+Motifs,3,20,5,0,2,0.3,50,0.8,35.96
+Motifs,4,20,5,0,2,0.3,50,0.8,37.18
