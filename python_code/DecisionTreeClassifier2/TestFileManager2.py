@@ -164,15 +164,16 @@ def PlotValues(fileName):
 
     if(errorBarPlot):
 
+        dfResults = dfResults.sort_values(by='PercentageTrainingSet', ascending=True)
 
         actualP=dfResults.iloc[0]['PercentageTrainingSet']
         actualMean=list()
         actualMean.append(dfResults.iloc[0]['Accuracy'])
 
         for i in range (len(dfResults)):
-            if(i==0):
+            if(i==0 or dfResults.iloc[i]['useValidationSet']==True):
                 continue
-            if(dfResults.iloc[i]['PercentageTrainingSet']==actualP and i!=(len(dfResults)-1)):
+            if(dfResults.iloc[i]['PercentageTrainingSet']==actualP):
                 actualMean.append(dfResults.iloc[i]['Accuracy'])
                 actualP=dfResults.iloc[i]['PercentageTrainingSet']
                 continue
@@ -181,15 +182,25 @@ def PlotValues(fileName):
                 if(len(actualMean)>1):
                     stdevList.append(statistics.stdev(actualMean))
                 else:
-                    stdevList.append(0.1)
+                    stdevList.append(0) #default case
                 actualMean.clear()
                 actualMean.append(dfResults.iloc[i]['Accuracy'])
                 actualP = dfResults.iloc[i]['PercentageTrainingSet']
 
+        #computo ultinmo step
+        mean.append(sum(actualMean) / len(actualMean))
+        if (len(actualMean) > 1):
+            stdevList.append(statistics.stdev(actualMean))
+        else:
+            stdevList.append(0)  # default case
+
+
         print(mean)
         print(stdevList)
 
-
+        percentage=dfResults['PercentageTrainingSet'].values
+        percentage=np.unique(percentage)
+        print(percentage)
 
         plt.errorbar(percentage, mean, yerr=stdevList, fmt='.k')
         plt.xlabel('% Training Set')

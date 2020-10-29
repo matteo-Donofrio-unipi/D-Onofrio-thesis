@@ -14,19 +14,19 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
     second = True  # CALCOLO ALBERO DECISIONE
     third = True  # ESTRAZIONE DATASET TEST
     quarter = True  # PREDIZIONE E RISULTATO
-    fifth = True  # GRAFICA DI SERIE TEMPORALI E MATRIX PROFILE DEI CANDIDATI SCELTI
+    fifth = False  # GRAFICA DI SERIE TEMPORALI E MATRIX PROFILE DEI CANDIDATI SCELTI
 
 #METTERE K HYPER PARAMETRO CENTROIDI COME PARAMETRO DI TREE
 
 
-    PercentageTrainingSet = 1  # % se voglio usare una percentuale di Training Set
+    PercentageTrainingSet = 0.3   # % se voglio usare una percentuale di Training Set
     PercentageValidationSet = 0.3  # % set rispetto alla dim del Training Set
     writeOnCsv = True
 
 
     #genero albero (VUOTO) e avvio timer
     le = LabelEncoder()
-    tree= Tree(candidatesGroup=0,maxDepth=3,minSamplesLeaf=50,removeUsedCandidate=0,window_size=5,k=1,useClustering=True,n_clusters=10,warningDetected=False,verbose=1) # K= NUM DI MOTIF/DISCORD ESTRATTI
+    tree= Tree(candidatesGroup=0,maxDepth=3,minSamplesLeaf=10,removeUsedCandidate=0,window_size=15,k=2,useClustering=True,n_clusters=20,warningDetected=False,verbose=1) # K= NUM DI MOTIF/DISCORD ESTRATTI
 
     start_time = time.time()
 
@@ -47,7 +47,7 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
 
 
             dimValidationSet = int(len(X_train) * PercentageValidationSet)  # dim of new SubSet of X_train
-            selectedRecordsForValidation=sample_without_replacement(len(X_train), dimValidationSet,random_state=0) #always same records selected
+            selectedRecordsForValidation=sample_without_replacement(len(X_train), dimValidationSet)
             print('selectedRecordsForValidation: '+str(selectedRecordsForValidation)+'\n')
 
             # inserisco in df Training set con relative label
