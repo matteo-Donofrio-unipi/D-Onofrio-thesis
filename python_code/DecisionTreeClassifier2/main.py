@@ -1,7 +1,7 @@
 from TestManager2 import executeTest, plotTs, plotTestResults
 from kCandidatesSearch2 import runKMeans
 def main():
-    datasetName = 'ECG200'
+    datasetName = 'ItalyPowerDemand'
     nameFile = datasetName + 'TestResults.csv'
     useValidationSet = False
     usePercentageTrainingSet = True

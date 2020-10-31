@@ -39,7 +39,7 @@ def readCsv(fileName):
 
 
 def WriteCsv(fileName,row):
-    fields = ['Candidates', 'Max depth', 'Min samples', 'Window size', 'Remove candi', 'k', 'useValidationSet' ,'% Training set', 'NumCluster(Medoids)' ,'Accuracy','Time']
+    fields = ['Candidates', 'Max depth', 'Min samples', 'Window size', 'Remove candi', 'k', 'useValidationSet' ,'% Training set', 'useClustering','NumCluster(Medoids)' ,'Accuracy','Time']
     writeFileds=False
     if(os.path.isfile(fileName)==False):
         writeFileds=True
@@ -67,6 +67,7 @@ def PlotValues(fileName):
     useValidationSet=list()
     k = list()
     PercentageTrainingSet = list()
+    useClustering=list()
     NumClusterMedoid=list()
     Time = list()
     Accuracy = list()
@@ -91,17 +92,18 @@ def PlotValues(fileName):
             useValidationSet.append(row[5])
             k.append(row[6])
             PercentageTrainingSet.append(row[7])
-            NumClusterMedoid.append(row[8])
-            Accuracy.append(row[9])
-            if(row[10]!=None):
-                Time.append(row[10])
+            useClustering.append(row[8])
+            NumClusterMedoid.append(row[9])
+            Accuracy.append(row[10])
+            if(row[11]!=None):
+                Time.append(row[11])
             else:
                 Time.append(0)
         # get total number of rows
 
         dfResults = pd.DataFrame(
         columns=['Candidates', 'MaxDepth', 'MinSamples', 'WindowSize', 'RemoveCanddates', 'k', 'useValidationSet'
-        'PercentageTrainingSet', 'NumClusterMedoid', 'Accuracy', 'Time'], index=range(csvreader.line_num-1))
+        'PercentageTrainingSet', 'useClustering', 'NumClusterMedoid', 'Accuracy', 'Time'], index=range(csvreader.line_num-1))
 
         # get total number of rows
     print("Total no. of rows: %d" % (csvreader.line_num))
@@ -117,6 +119,7 @@ def PlotValues(fileName):
     dfResults['k'] = k
     dfResults['useValidationSet']=useValidationSet
     dfResults['PercentageTrainingSet'] = PercentageTrainingSet
+    dfResults['useClustering'] = useClustering
     dfResults['NumClusterMedoid']=NumClusterMedoid
     dfResults['Accuracy'] = Accuracy
     dfResults['Time'] = Time

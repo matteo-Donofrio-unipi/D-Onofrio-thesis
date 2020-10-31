@@ -19,14 +19,14 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
 #METTERE K HYPER PARAMETRO CENTROIDI COME PARAMETRO DI TREE
 
 
-    PercentageTrainingSet = 0.3   # % se voglio usare una percentuale di Training Set
+    PercentageTrainingSet = 1 # % se voglio usare una percentuale di Training Set
     PercentageValidationSet = 0.3  # % set rispetto alla dim del Training Set
     writeOnCsv = True
 
 
     #genero albero (VUOTO) e avvio timer
     le = LabelEncoder()
-    tree= Tree(candidatesGroup=0,maxDepth=3,minSamplesLeaf=10,removeUsedCandidate=0,window_size=15,k=2,useClustering=True,n_clusters=20,warningDetected=False,verbose=1) # K= NUM DI MOTIF/DISCORD ESTRATTI
+    tree= Tree(candidatesGroup=0,maxDepth=4,minSamplesLeaf=20,removeUsedCandidate=0,window_size=10,k=2,useClustering=True,n_clusters=20,warningDetected=False,verbose=1) # K= NUM DI MOTIF/DISCORD ESTRATTI
 
     start_time = time.time()
 
@@ -135,8 +135,11 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
 
         #PREPARO STRUTTURE DATI PER LA PRIMA ITERAZIONE DI FIT
         #applico clustering a insieme di candidati iniziali
-        CandidatesListTrain = reduceNumberCandidates(tree, OriginalCandidatesListTrain,returnOnlyIndex=False)
-        print('candidati rimasti/ più significativi-distintivi ')
+        if(tree.useClustering):
+            CandidatesListTrain = reduceNumberCandidates(tree, OriginalCandidatesListTrain,returnOnlyIndex=False)
+            print('candidati rimasti/ più significativi-distintivi ')
+        else:
+            CandidatesListTrain=tree.OriginalCandidatesListTrain
         print(CandidatesListTrain)
 
 
@@ -221,15 +224,14 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
         elif(usePercentageTrainingSet):
             percentage=PercentageTrainingSet
 
-        row=[group,tree.maxDepth,tree.minSamplesLeaf,tree.window_size,tree.removeUsedCandidate,tree.k,useValidationSet,percentage,tree.n_clusters,round(aS,2),round(totalTime,2)]
-        print('Classification Report %s' % cR)
+        row=[group,tree.maxDepth,tree.minSamplesLeaf,tree.window_size,tree.removeUsedCandidate,tree.k,useValidationSet,percentage,tree.useClustering,tree.n_clusters,round(aS,2),round(totalTime,2)]
+        print('Classification Report  \n%s ' % cR)
         print('Accuracy %s' % aS)
         print('F1-score %s' % f1)
         print(" %s seconds END OF EXECUTION" % totalTime)
 
         if(writeOnCsv):
             WriteCsv(nameFile, row)
-
 
     if(fifth==True):
 

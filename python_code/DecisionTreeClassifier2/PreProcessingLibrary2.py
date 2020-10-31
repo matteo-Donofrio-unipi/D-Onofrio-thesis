@@ -201,7 +201,7 @@ def countNumberOfCandidates(CandidatesListTrain):
 
 # riceve la lista di candidati e genera una lista della stessa dimensione di booleani
 def buildCandidatesUsedList(CandidatesList):
-    CandidatesUsedList = pd.DataFrame(columns=['IdCandidate','Used'], index=range(len(CandidatesList)))
+    CandidatesUsedList = pd.DataFrame(columns=['IdCandidate','Used'], index=CandidatesList["IdCandidate"].values)
     boolList = [False] * (len(CandidatesList))
     CandidatesUsedList['Used'] = boolList
     CandidatesUsedList['IdCandidate']=CandidatesList['IdCandidate'].values

@@ -31,9 +31,14 @@ class Tree:
         self.k=k
         self.useClustering=useClustering
         self.n_clusters=n_clusters
+        self.OriginalCandidatesUsedListTrain=[]
         self.warningDetected=warningDetected
         self.verbose=verbose
         self.attributeList=list()
+
+
+    def modifyCandidateUsedList(self,newCand):
+        self.OriginalCandidatesUsedListTrain=newCand
 
     def printTree(self):
         print(self.candidatesGroup)
@@ -84,7 +89,7 @@ class Tree:
 
     # riceve dframe con mutual_information(gain) e in base al candidatesGroup scelto, determina il miglior attributo su cui splittare
     # che non è stato ancora utilizzato
-    def getBestIndexAttribute(self,vecMutualInfo, CandidatesUsedListTrain):
+    def getBestIndexAttribute(self,CandidatesUsedListTrain,vecMutualInfo):
         # ordino i candidati in base a gain decrescente
 
         vecMutualInfo = vecMutualInfo.sort_values(by='gain', ascending=False)
@@ -97,13 +102,15 @@ class Tree:
         # cicla fin quando trova candidato libero con gain maggiore
         while (bestIndexAttribute == -1 and i < len(vecMutualInfo)):
             attributeToVerify = int(vecMutualInfo.iloc[i]['IdCandidate'])
-            indexAttr = CandidatesUsedListTrain.index[CandidatesUsedListTrain['IdCandidate'] == attributeToVerify]
-            indexAttr=indexAttr[0]
-            if (CandidatesUsedListTrain.iloc[indexAttr]['Used']==False):
+            print('VEDIAMO')
+            print(attributeToVerify)
+            # indexAttr=CandidatesUsedListTrain[CandidatesUsedListTrain['IdCandidate'] == int(attributeToVerify)].index.values.tolist()
+            # indexAttr=indexAttr[0]
+            if (CandidatesUsedListTrain.loc[attributeToVerify]['Used']==False):
                 bestIndexAttribute = attributeToVerify
                 splitValue = vecMutualInfo.iloc[i]['splitValue']
-                CandidatesUsedListTrain.iloc[
-                    indexAttr] = True  # settando a true il candidato scelto, non sarà usato in seguito
+
+                CandidatesUsedListTrain.loc[CandidatesUsedListTrain["IdCandidate"]==attributeToVerify,"Used"] = True  # settando a true il candidato scelto, non sarà usato in seguito
                 print('gain: ' + str(vecMutualInfo.iloc[i]['gain']))
             else:
                 i += 1
@@ -182,8 +189,7 @@ class Tree:
 
         # se rimuovo candidati, faccio scegliere migliore non ancora utilizzato
         if (self.removeUsedCandidate == 1):
-            indexBestAttribute, bestValueForSplit = self.getBestIndexAttribute(vecMutualInfo,
-                                                                          self.OriginalCandidatesUsedListTrain)
+            indexBestAttribute, bestValueForSplit  = self.getBestIndexAttribute(self.OriginalCandidatesUsedListTrain,vecMutualInfo)
         else:  # se non rimuovo candidati, mi basta prendere il primo
             vecMutualInfo = vecMutualInfo.sort_values(by='gain', ascending=False)
             indexBestAttribute = vecMutualInfo.iloc[0]['IdCandidate']
@@ -251,52 +257,54 @@ class Tree:
             print(Dleft)
             print(Dright)
 
-            # effettuo clustering
-            TsIndexLeft = Dleft['TsIndex']  # TsIndex contenute in Dleft
+            if(self.useClustering):
 
-            CandidatesListLeft = self.OriginalCandidatesListTrain['IdTs'].isin(
-                TsIndexLeft)  # setta a True gli indici dei candidati che sono stati generati dalle Ts contenute in Dleft
+                # effettuo clustering
+                TsIndexLeft = Dleft['TsIndex']  # TsIndex contenute in Dleft
 
-            CandidateToCluster = self.OriginalCandidatesListTrain[
-                CandidatesListLeft]  # estraggo i candidati da OriginalCandidatesListTrain, che sono generati dalle Ts in Dleft
-            CandidateToCluster = CandidateToCluster.reset_index(drop=True)
+                CandidatesListLeft = self.OriginalCandidatesListTrain['IdTs'].isin(
+                    TsIndexLeft)  # setta a True gli indici dei candidati che sono stati generati dalle Ts contenute in Dleft
 
-            indexChoosenMedoids = reduceNumberCandidates(self, CandidateToCluster,
-                                                         returnOnlyIndex=True)  # indici di OriginalCandidatesListTrain conteneti candidati da mantenere
+                CandidateToCluster = self.OriginalCandidatesListTrain[
+                    CandidatesListLeft]  # estraggo i candidati da OriginalCandidatesListTrain, che sono generati dalle Ts in Dleft
+                CandidateToCluster = CandidateToCluster.reset_index(drop=True)
 
-            CandidateToCluster = CandidateToCluster.iloc[indexChoosenMedoids] #candidati da mantenere
+                indexChoosenMedoids = reduceNumberCandidates(self, CandidateToCluster,
+                                                             returnOnlyIndex=True)  # indici di OriginalCandidatesListTrain conteneti candidati da mantenere
 
-            print('CANDIDATI RIMASTI IN BUILD')
-            print(CandidateToCluster)
+                CandidateToCluster = CandidateToCluster.iloc[indexChoosenMedoids] #candidati da mantenere
 
-            # calcolo distanze tra Ts in Dleft e candidati scelti
-            Dleft = computeSubSeqDistance(self, TsIndexLeft, CandidateToCluster, self.window_size)
+                print('CANDIDATI RIMASTI IN BUILD')
+                print(CandidateToCluster)
 
-            # RIPETO PER DRIGHT------------------------------------------------------
+                # calcolo distanze tra Ts in Dleft e candidati scelti
+                Dleft = computeSubSeqDistance(self, TsIndexLeft, CandidateToCluster, self.window_size)
 
-            TsIndexRight = Dright['TsIndex']  # TsIndex contenute in Dleft
+                # RIPETO PER DRIGHT------------------------------------------------------
 
-            CandidatesListRight = self.OriginalCandidatesListTrain['IdTs'].isin(
-                TsIndexRight)  # # setta a True gli indici dei candidati che sono stati generati dalle Ts contenute in Dright
+                TsIndexRight = Dright['TsIndex']  # TsIndex contenute in Dleft
 
-            CandidateToCluster = self.OriginalCandidatesListTrain[
-                CandidatesListRight]   # estraggo i candidati da OriginalCandidatesListTrain, che sono generati dalle Ts in Dright
-            CandidateToCluster = CandidateToCluster.reset_index(drop=True)
+                CandidatesListRight = self.OriginalCandidatesListTrain['IdTs'].isin(
+                    TsIndexRight)  # # setta a True gli indici dei candidati che sono stati generati dalle Ts contenute in Dright
 
-            indexChoosenMedoids = reduceNumberCandidates(self, CandidateToCluster,
-                                                         returnOnlyIndex=True)  # indici di OriginalCandidatesListTrain conteneti candidati da mantenere
+                CandidateToCluster = self.OriginalCandidatesListTrain[
+                    CandidatesListRight]   # estraggo i candidati da OriginalCandidatesListTrain, che sono generati dalle Ts in Dright
+                CandidateToCluster = CandidateToCluster.reset_index(drop=True)
 
-            CandidateToCluster = CandidateToCluster.iloc[indexChoosenMedoids] #candidati da mantenere
+                indexChoosenMedoids = reduceNumberCandidates(self, CandidateToCluster,
+                                                             returnOnlyIndex=True)  # indici di OriginalCandidatesListTrain conteneti candidati da mantenere
 
-            print('CANDIDATI RIMASTI IN BUILD')
-            print(CandidateToCluster)
+                CandidateToCluster = CandidateToCluster.iloc[indexChoosenMedoids] #candidati da mantenere
 
-            #calcolo distanze tra Ts in Dright e candidati scelti
-            Dright = computeSubSeqDistance(self, TsIndexRight, CandidateToCluster, self.window_size)
+                print('CANDIDATI RIMASTI IN BUILD')
+                print(CandidateToCluster)
 
-            print('DLEFT & DRIGHT DOPO IL CLUSTERING')
-            print(Dleft)
-            print(Dright)
+                #calcolo distanze tra Ts in Dright e candidati scelti
+                Dright = computeSubSeqDistance(self, TsIndexRight, CandidateToCluster, self.window_size)
+
+                print('DLEFT & DRIGHT DOPO IL CLUSTERING')
+                print(Dleft)
+                print(Dright)
 
 
 
@@ -354,56 +362,56 @@ class Tree:
         print(Dleft)
         print(Dright)
 
+        if(self.useClustering):
+
+            #effettuo clustering
+            TsIndexLeft = Dleft['TsIndex']  # TsIndex contenute in Dleft
+
+            CandidatesListLeft = self.OriginalCandidatesListTrain['IdTs'].isin(
+                TsIndexLeft)  #  setta a True gli indici dei candidati che sono stati generati dalle Ts contenute in Dleft
+
+            CandidateToCluster = self.OriginalCandidatesListTrain[
+                CandidatesListLeft]  # estraggo i candidati da OriginalCandidatesListTrain, che sono generati dalle Ts in Dleft
+
+            CandidateToCluster = CandidateToCluster.reset_index(drop=True)
+
+            indexChoosenMedoids = reduceNumberCandidates(self, CandidateToCluster,
+                                                         returnOnlyIndex=True)  # indici di OriginalCandidatesListTrain conteneti candidati da mantenere
+
+            CandidateToCluster = CandidateToCluster.iloc[indexChoosenMedoids]
+
+            print('CANDIDATI RIMASTI IN FIT')
+            print(CandidateToCluster)
+
+            #calcolo distanze tra Ts in Dleft e candidati scelti
+            Dleft = computeSubSeqDistance(self, TsIndexLeft, CandidateToCluster, self.window_size)
 
 
-        #effettuo clustering
-        TsIndexLeft = Dleft['TsIndex']  # TsIndex contenute in Dleft
 
-        CandidatesListLeft = self.OriginalCandidatesListTrain['IdTs'].isin(
-            TsIndexLeft)  #  setta a True gli indici dei candidati che sono stati generati dalle Ts contenute in Dleft
+            #RIPETO PER DRIGHT------------------------------------------------------
 
-        CandidateToCluster = self.OriginalCandidatesListTrain[
-            CandidatesListLeft]  # estraggo i candidati da OriginalCandidatesListTrain, che sono generati dalle Ts in Dleft
+            TsIndexRight = Dright['TsIndex']  # TsIndex contenute in Dleft
 
-        CandidateToCluster = CandidateToCluster.reset_index(drop=True)
+            CandidatesListRight = self.OriginalCandidatesListTrain['IdTs'].isin(
+                TsIndexRight) #  setta a True gli indici dei candidati che sono stati generati dalle Ts contenute in Dright
 
-        indexChoosenMedoids = reduceNumberCandidates(self, CandidateToCluster,
-                                                     returnOnlyIndex=True)  # indici di OriginalCandidatesListTrain conteneti candidati da mantenere
+            CandidateToCluster = self.OriginalCandidatesListTrain[
+                CandidatesListRight]  # estraggo i candidati da OriginalCandidatesListTrain, che sono generati dalle Ts in Dleft
+            CandidateToCluster = CandidateToCluster.reset_index(drop=True)
 
-        CandidateToCluster = CandidateToCluster.iloc[indexChoosenMedoids]
+            indexChoosenMedoids = reduceNumberCandidates(self,CandidateToCluster,returnOnlyIndex=True)  # indici di OriginalCandidatesListTrain conteneti candidati da mantenere
 
-        print('CANDIDATI RIMASTI IN FIT')
-        print(CandidateToCluster)
+            CandidateToCluster = CandidateToCluster.iloc[indexChoosenMedoids]
 
-        #calcolo distanze tra Ts in Dleft e candidati scelti
-        Dleft = computeSubSeqDistance(self, TsIndexLeft, CandidateToCluster, self.window_size)
+            print('CANDIDATI RIMASTI IN FIT')
+            print(CandidateToCluster)
 
+            #calcolo distanze tra Ts in Dleft e candidati scelti
+            Dright = computeSubSeqDistance(self, TsIndexRight, CandidateToCluster, self.window_size)
 
-
-        #RIPETO PER DRIGHT------------------------------------------------------
-
-        TsIndexRight = Dright['TsIndex']  # TsIndex contenute in Dleft
-
-        CandidatesListRight = self.OriginalCandidatesListTrain['IdTs'].isin(
-            TsIndexRight) #  setta a True gli indici dei candidati che sono stati generati dalle Ts contenute in Dright
-
-        CandidateToCluster = self.OriginalCandidatesListTrain[
-            CandidatesListRight]  # estraggo i candidati da OriginalCandidatesListTrain, che sono generati dalle Ts in Dleft
-        CandidateToCluster = CandidateToCluster.reset_index(drop=True)
-
-        indexChoosenMedoids = reduceNumberCandidates(self,CandidateToCluster,returnOnlyIndex=True)  # indici di OriginalCandidatesListTrain conteneti candidati da mantenere
-
-        CandidateToCluster = CandidateToCluster.iloc[indexChoosenMedoids]
-
-        print('CANDIDATI RIMASTI IN FIT')
-        print(CandidateToCluster)
-
-        #calcolo distanze tra Ts in Dleft e candidati scelti
-        Dright = computeSubSeqDistance(self, TsIndexRight, CandidateToCluster, self.window_size)
-
-        print('DLEFT & DRIGHT DOPO IL CLUSTERING')
-        print(Dleft)
-        print(Dright)
+            print('DLEFT & DRIGHT DOPO IL CLUSTERING')
+            print(Dleft)
+            print(Dright)
 
 
         # chiamata ricorsiva
