@@ -18,7 +18,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score, f1_score, classification_report
 from sklearn.metrics import roc_curve, auc, roc_auc_score
-from PreProcessingLibrary2 import  computeSubSeqDistance,reduceNumberCandidates
+from PreProcessingLibrary2 import  computeSubSeqDistance,reduceNumberCandidates,plotDataAndShapelet
 
 
 class Tree:
@@ -445,11 +445,18 @@ class Tree:
         yPredicted = np.zeros(len(yTest))
         xTest = testDataset.iloc[:, np.r_[:numAttributes]]
 
+        self.printed = False  # DOPO PRIMA PRINT DEL PERCORSO SETTATO A TRUE, COSI STAMPO UNA VOLTA SOLA
+
         # effettuo predizione per ogni pattern
 
         for i in range(len(xTest)):
             pattern = xTest.iloc[i]
-            yPredicted[i] = self.treeExplorer(pattern, root)
+            if(self.printed==False):
+                yPredicted[i] = self.treeExplorerPrint(pattern, root)
+                self.printed=True #dopo la prima stampa, setto a false e smetto di stampare
+            else:
+                yPredicted[i] = self.treeExplorer(pattern, root) #non stampo piu
+
 
         yTest = yTest.astype(int)
         yPredicted = yPredicted.astype(int)
@@ -467,3 +474,47 @@ class Tree:
                 return self.treeExplorer(pattern, node.left)
             else:
                 return self.treeExplorer(pattern, node.right)
+
+    #setto booleano prima in modo da stampare solo 1 TS
+    def treeExplorerPrint(self,pattern, node):
+        # caso base, node è foglia
+        if (node.value == -1):
+            return int(node.data[0])
+        else:
+            # caso ricorsivo
+            attr = int(node.value)
+
+            if(self.printed==False):
+
+                idTsShapelet = self.dTreeAttributes[self.dTreeAttributes['IdCandidate'] == int(attr)]["IdTs"].values
+                idTsShapelet=idTsShapelet[0]
+
+                startingPosition = self.dTreeAttributes[self.dTreeAttributes['IdCandidate'] == int(attr)]["startingPosition"].values
+                startingPosition = startingPosition[0]
+
+
+                TsContainingShapelet = np.array(self.dfTrain[self.dfTrain['TsIndex'] == idTsShapelet].values)
+                TsContainingShapelet = TsContainingShapelet[0]
+                TsContainingShapelet = TsContainingShapelet[:len(TsContainingShapelet) - 2]
+
+
+                if (self.warningDetected):
+                    Dp = distanceProfile.naiveDistanceProfile(TsContainingShapelet, int(startingPosition),
+                                                              self.window_size, self.TsTestForPrint)
+                else:
+                    Dp = distanceProfile.massDistanceProfile(TsContainingShapelet, int(startingPosition),
+                                                             self.window_size, self.TsTestForPrint)
+
+                val, idx = min((val, idx) for (idx, val) in enumerate(Dp[0]))
+
+            if (pattern[attr] < node.data[0]):
+                plotDataAndShapelet(self.TsTestForPrint,
+                                    TsContainingShapelet[startingPosition:startingPosition + self.window_size], idx,-1,val,node.data[0],self.window_size)
+                return self.treeExplorerPrint(pattern, node.left)
+            else:
+                plotDataAndShapelet(self.TsTestForPrint,
+                                    TsContainingShapelet[startingPosition:startingPosition + self.window_size], idx, 1,val,node.data[0],self.window_size)
+                return self.treeExplorerPrint(pattern, node.right)
+
+
+

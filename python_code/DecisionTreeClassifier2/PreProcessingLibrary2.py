@@ -446,6 +446,27 @@ def reduceNumberCandidates(tree,CandidatesList,returnOnlyIndex):
 #FUNZIONI PER PLOTTING DEI DATI
 
 
+def plotDataAndShapelet(Ts,Shapelet,indexOnTs,value,dist,treshOld,window_size):
+    #value può essere -1 => distanza minore, vado a sx | 1 => distanza maggiore, vado a dx
+    fig, ax1 = plt.subplots(1, 1, sharex=True, figsize=(20, 15))
+
+    print('DENTRO PLOT')
+    print(Shapelet)
+    print(window_size)
+
+    if(value==-1):
+        c='g'
+    else:
+        c='r'
+    ax1.plot(np.arange(len(Ts)), Ts, label="Ts",color='b')  # stampo linespace su x e valori data su y (USATO SE NON STAMPO MOTIF/DIS)
+    ax1.set_xlabel('Ts', size=22)
+
+    ax1.plot(range(indexOnTs, indexOnTs + window_size), Shapelet, label='Shapelet', color=c ,linewidth=2)
+    ax1.legend(loc=1, prop={'size': 12})
+
+    ax1.set_title('Color: Green(if minor of Treshold) Red(major)\nDistance: %f \n Treshold: %f' % (dist,treshOld))
+
+    plt.show()
 
 def plotData(Ts):
     Ts.plot(figsize=(7, 7), legend=None, title='Time series')

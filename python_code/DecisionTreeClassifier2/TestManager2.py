@@ -200,6 +200,10 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
     if(quarter==True):
         # EFFETTUO PREDIZIONE E MISURO RISULTATO
         verbose = True
+
+        tree.TsTestForPrint = dfTest.iloc[0].values  # contiene la prima serie che viene classificata
+        tree.TsTestForPrint = tree.TsTestForPrint[:len(tree.TsTestForPrint) - 2]
+
         yTest, yPredicted = tree.predict(dfForDTreeTest, tree.Root)
 
         if (verbose == True):
