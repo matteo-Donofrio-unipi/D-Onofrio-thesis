@@ -14,7 +14,7 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
     second = True  # CALCOLO ALBERO DECISIONE
     third = True  # ESTRAZIONE DATASET TEST
     quarter = True  # PREDIZIONE E RISULTATO
-    fifth = False  # GRAFICA DI SERIE TEMPORALI E MATRIX PROFILE DEI CANDIDATI SCELTI
+    fifth = True  # GRAFICA DI SERIE TEMPORALI E MATRIX PROFILE DEI CANDIDATI SCELTI
 
 #METTERE K HYPER PARAMETRO CENTROIDI COME PARAMETRO DI TREE
 
@@ -26,7 +26,7 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
 
     #genero albero (VUOTO) e avvio timer
     le = LabelEncoder()
-    tree= Tree(candidatesGroup=0,maxDepth=4,minSamplesLeaf=20,removeUsedCandidate=0,window_size=10,k=2,useClustering=True,n_clusters=20,warningDetected=False,verbose=1) # K= NUM DI MOTIF/DISCORD ESTRATTI
+    tree= Tree(candidatesGroup=2,maxDepth=4,minSamplesLeaf=20,removeUsedCandidate=0,window_size=10,k=2,useClustering=True,n_clusters=20,warningDetected=False,verbose=1) # K= NUM DI MOTIF/DISCORD ESTRATTI
 
     start_time = time.time()
 
@@ -255,7 +255,7 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
             print('starting position:  %d ' % sp)
             print('M/D: %d ' % md)
 
-            plot_all(ts, mp, mot, motif_dist, dis, tree.window_size)
+            plot_all(ts, mp, mot, motif_dist, dis, sp, md,tree.window_size)
 
 
 

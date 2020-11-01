@@ -451,15 +451,17 @@ def plotData(Ts):
     Ts.plot(figsize=(7, 7), legend=None, title='Time series')
     plt.show()
 
-
-def plot_motifs(mtfs, labels, ax, data, window_size):
+#PLOTTA SU OGNI TS CONTENENTE SHAPELET, TUTTI I MOTIF E DISCORD TROVATI
+def plot_motifsAll(mtfs, labels, ax, data, sp,window_size):
     #data can be raw data or MP
     colori = 0
     colors = 'rmb'
     for ms,l in zip(mtfs,labels):
         c =colors[colori % len(colors)]
         starts = list(ms)
+        print(starts)
         ends = [min(s + window_size,len(data)-1) for s in starts]
+        print(ends)
         ax.plot(starts, data[starts],  c +'o',  label=l+'(Motif)')
         ax.plot(ends, data[ends],  c +'o', markerfacecolor='none')
         for nn in ms:
@@ -467,44 +469,74 @@ def plot_motifs(mtfs, labels, ax, data, window_size):
         colori += 1
 
     #ax.plot(a,'green', linewidth=1, label="data") COMMENTATO PERCHE PLOTTO I DATI INDIPENDENTEMENTE
-    ax.legend()
+    ax.legend(loc=1, prop={'size': 12})
 
 
-def plot_discords(dis, ax, data, window_size):
+
+
+#PLOTTA SU OGNI TS CONTENENTE SHAPELET, SOLO I MOTIF / DISCORD USATI DAL DTREE
+def plot_motifs(mtfs, labels, ax, data, sp,window_size):
+    #data can be raw data or MP
+    colori = 0
+    colors = 'rmb'
+    for ms,l in zip(mtfs,labels):
+        c =colors[colori % len(colors)]
+        starts = list(ms)
+        ends = [min(s + window_size,len(data)-1) for s in starts]
+
+        for i in range(len(list(ms))):
+            start=ms[i]
+            if(start==sp):
+                end=start+window_size
+                ax.plot(start, data[start],  c +'o',  label=l+'(Motif)')
+                ax.plot(end, data[end],  c +'o', markerfacecolor='none')
+                ax.plot(range(start,start+window_size),data[start:start+window_size], c , linewidth=2)
+                colori += 1
+
+    #ax.plot(a,'green', linewidth=1, label="data") COMMENTATO PERCHE PLOTTO I DATI INDIPENDENTEMENTE
+    ax.legend(loc=1, prop={'size': 12})
+
+
+def plot_discords(dis, ax, data, sp,window_size):
     # data can be raw data or Mp
     color = 'k'
     for start in dis:
-        end = start + window_size
-        ax.plot(start, data[start], color, label='Discord')
-        if(end >= len(data)):
-            end=len(data)-1
-        ax.plot(end, data[end], color, markerfacecolor='none')
+        if(start==sp):
+            end = start + window_size
+            ax.plot(start, data[start], color, label='Discord')
+            if(end >= len(data)):
+                end=len(data)-1
+            ax.plot(end, data[end], color, markerfacecolor='none')
 
-        ax.plot(range(start, start + window_size), data[start:start + window_size], color, linewidth=2)
+            ax.plot(range(start, start + window_size), data[start:start + window_size], color, linewidth=2)
 
     ax.legend(loc=1, prop={'size': 12})
 
 
-def plot_all(Ts, mp, mot, motif_dist, dis, window_size):
-    # genera e compara TS con MP, motifs e discords ottenuti
+def plot_all(Ts, mp, mot, motif_dist, dis, sp,MoD, window_size):
 
     # Append np.nan to Matrix profile to enable plotting against raw data (FILL DI 0 ALLA FINE PER RENDERE LE LUNGHEZZE UGUALI )
     mp_adj = np.append(mp, np.zeros(window_size - 1) + np.nan)
 
     # MODO 2 PER PLOTTARE (O-ORIENTED)
     # Plot dei dati
-    fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True, figsize=(20, 15))
+    #fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True, figsize=(20, 15))
+    fig, ax1 = plt.subplots(1, 1, sharex=True, figsize=(20, 15))
     ax1.plot(np.arange(len(Ts)), Ts, label="Ts",
              color='g')  # stampo linespace su x e valori data su y (USATO SE NON STAMPO MOTIF/DIS)
     ax1.set_ylabel('Ts', size=22)
-    plot_motifs(mot, [f"{md:.3f}" for md in motif_dist], ax1, Ts, window_size)  # sk
-    plot_discords(dis, ax1, Ts, window_size)
+    if(MoD==0):
+        plot_motifs(mot, [f"{md:.3f}" for md in motif_dist], ax1, Ts, sp,window_size)  # sk
+    else:
+        plot_discords(dis, ax1, Ts, sp,window_size)
 
-    # Plot della Matrix Profile
-    ax2.plot(np.arange(len(mp_adj)), mp_adj, label="Matrix Profile", color='green')
-    ax2.set_ylabel('Matrix Profile', size=22)
-    plot_motifs(mot, [f"{md:.3f}" for md in motif_dist], ax2, mp_adj, window_size)
-    plot_discords(dis, ax2, mp_adj, window_size)
+    #Plot della Matrix Profile
+    # ax2.plot(np.arange(len(mp_adj)), mp_adj, label="Matrix Profile", color='green')
+    # ax2.set_ylabel('Matrix Profile', size=22)
+    # if(MoD==0):
+    #     plot_motifs(mot, [f"{md:.3f}" for md in motif_dist], ax2, mp_adj, sp, window_size)
+    # else:
+    #     plot_discords(dis, ax2, mp_adj, sp,window_size)
 
     plt.show()
 
