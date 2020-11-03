@@ -26,7 +26,7 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
 
     #genero albero (VUOTO) e avvio timer
     le = LabelEncoder()
-    tree= Tree(candidatesGroup=2,maxDepth=4,minSamplesLeaf=20,removeUsedCandidate=0,window_size=10,k=2,useClustering=True,n_clusters=20,warningDetected=False,verbose=1) # K= NUM DI MOTIF/DISCORD ESTRATTI
+    tree= Tree(candidatesGroup=1,maxDepth=4,minSamplesLeaf=10,removeUsedCandidate=1,window_size=60,k=2,useClustering=True,n_clusters=20,warningDetected=False,verbose=1) # K= NUM DI MOTIF/DISCORD ESTRATTI
 
     start_time = time.time()
 
@@ -201,6 +201,7 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
         # EFFETTUO PREDIZIONE E MISURO RISULTATO
         verbose = True
 
+        #INSERISCO LA SERIE PER STAMPARLA DOPO CLASSIFICAZIONE
         tree.TsTestForPrint = dfTest.iloc[0].values  # contiene la prima serie che viene classificata
         tree.TsTestForPrint = tree.TsTestForPrint[:len(tree.TsTestForPrint) - 2]
 
@@ -259,7 +260,7 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
             print('starting position:  %d ' % sp)
             print('M/D: %d ' % md)
 
-            plot_all(ts, mp, mot, motif_dist, dis, sp, md,tree.window_size)
+            plot_all(ts, mp, mot, motif_dist, dis, sp, md,tree.window_size,idCandidate)
 
 
 

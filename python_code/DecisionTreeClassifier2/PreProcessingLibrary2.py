@@ -446,13 +446,58 @@ def reduceNumberCandidates(tree,CandidatesList,returnOnlyIndex):
 #FUNZIONI PER PLOTTING DEI DATI
 
 
-def plotDataAndShapelet(Ts,Shapelet,indexOnTs,value,dist,treshOld,window_size):
+def plotDataAndShapelet(tree):
+    #value può essere -1 => distanza minore, vado a sx | 1 => distanza maggiore, vado a dx
+    fig, ax1 = plt.subplots(1, 1, sharex=True, figsize=(20, 15))
+
+    print('DENTRO PLOT')
+    print(tree.ShapeletDf)
+
+
+    print('\n')
+    print(tree.Shapelet)
+
+    Ts = tree.TsTestForPrint
+    ax1.plot(np.arange(len(Ts)), Ts, label="Ts",color='b')  # stampo linespace su x e valori data su y (USATO SE NON STAMPO MOTIF/DIS)
+    ax1.set_xlabel('Ts', size=22)
+
+    for i in range(tree.counter):
+
+        idShapelet=tree.ShapeletDf.iloc[i]["IdShapelet"]
+        majorMinor = tree.ShapeletDf.iloc[i]["majorMinor"]
+        startingIndex = tree.ShapeletDf.iloc[i]["startingIndex"]
+
+        PrintedShapelet=tree.Shapelet[tree.Shapelet["IdShapelet"]==idShapelet]["Shapelet"].values
+        PrintedShapelet=PrintedShapelet[0]
+
+        if(majorMinor==-1):
+            c='g'
+        else:
+            c='r'
+
+        shapeletPlot=ax1.plot(range(startingIndex, startingIndex + tree.window_size),PrintedShapelet, label='Shapelet', color=c ,linewidth=2)
+        coordinates=shapeletPlot[0].get_data()
+        x=coordinates[0][0]
+        y=coordinates[1][0]
+        ax1.annotate(idShapelet, xy=(x, y), xytext=(x+0.3, y+0.3),fontsize=20)
+
+        #ax1.set_title('Color: Green(if minor of Treshold) Red(major)\nDistance: %f \n Treshold: %f' % (dist,treshOld))
+
+    plt.show()
+
+
+
+
+
+def plotDataAndShapelet2(Ts,Shapelet,indexOnTs,value,dist,treshOld,window_size):
     #value può essere -1 => distanza minore, vado a sx | 1 => distanza maggiore, vado a dx
     fig, ax1 = plt.subplots(1, 1, sharex=True, figsize=(20, 15))
 
     print('DENTRO PLOT')
     print(Shapelet)
     print(window_size)
+    print('indexoNts')
+    print(indexOnTs)
 
     if(value==-1):
         c='g'
@@ -496,7 +541,7 @@ def plot_motifsAll(mtfs, labels, ax, data, sp,window_size):
 
 
 #PLOTTA SU OGNI TS CONTENENTE SHAPELET, SOLO I MOTIF / DISCORD USATI DAL DTREE
-def plot_motifs(mtfs, labels, ax, data, sp,window_size):
+def plot_motifs(mtfs, labels, ax, data, sp,window_size,idCandidate):
     #data can be raw data or MP
     colori = 0
     colors = 'rmb'
@@ -512,13 +557,14 @@ def plot_motifs(mtfs, labels, ax, data, sp,window_size):
                 ax.plot(start, data[start],  c +'o',  label=l+'(Motif)')
                 ax.plot(end, data[end],  c +'o', markerfacecolor='none')
                 ax.plot(range(start,start+window_size),data[start:start+window_size], c , linewidth=2)
+                ax.set_title('Shapelet: '+str(idCandidate))
                 colori += 1
 
     #ax.plot(a,'green', linewidth=1, label="data") COMMENTATO PERCHE PLOTTO I DATI INDIPENDENTEMENTE
     ax.legend(loc=1, prop={'size': 12})
 
 
-def plot_discords(dis, ax, data, sp,window_size):
+def plot_discords(dis, ax, data, sp,window_size,idCandidate):
     # data can be raw data or Mp
     color = 'k'
     for start in dis:
@@ -530,11 +576,11 @@ def plot_discords(dis, ax, data, sp,window_size):
             ax.plot(end, data[end], color, markerfacecolor='none')
 
             ax.plot(range(start, start + window_size), data[start:start + window_size], color, linewidth=2)
-
+            ax.set_title('Shapelet: ' + str(idCandidate))
     ax.legend(loc=1, prop={'size': 12})
 
 
-def plot_all(Ts, mp, mot, motif_dist, dis, sp,MoD, window_size):
+def plot_all(Ts, mp, mot, motif_dist, dis, sp,MoD, window_size,idCandidate):
 
     # Append np.nan to Matrix profile to enable plotting against raw data (FILL DI 0 ALLA FINE PER RENDERE LE LUNGHEZZE UGUALI )
     mp_adj = np.append(mp, np.zeros(window_size - 1) + np.nan)
@@ -547,9 +593,9 @@ def plot_all(Ts, mp, mot, motif_dist, dis, sp,MoD, window_size):
              color='g')  # stampo linespace su x e valori data su y (USATO SE NON STAMPO MOTIF/DIS)
     ax1.set_ylabel('Ts', size=22)
     if(MoD==0):
-        plot_motifs(mot, [f"{md:.3f}" for md in motif_dist], ax1, Ts, sp,window_size)  # sk
+        plot_motifs(mot, [f"{md:.3f}" for md in motif_dist], ax1, Ts, sp,window_size,idCandidate)  # sk
     else:
-        plot_discords(dis, ax1, Ts, sp,window_size)
+        plot_discords(dis, ax1, Ts, sp,window_size,idCandidate)
 
     #Plot della Matrix Profile
     # ax2.plot(np.arange(len(mp_adj)), mp_adj, label="Matrix Profile", color='green')

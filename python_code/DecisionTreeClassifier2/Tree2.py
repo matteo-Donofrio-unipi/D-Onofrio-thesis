@@ -447,12 +447,25 @@ class Tree:
 
         self.printed = False  # DOPO PRIMA PRINT DEL PERCORSO SETTATO A TRUE, COSI STAMPO UNA VOLTA SOLA
 
+        #dizionario contenete shapelet e informazioni relative
+        self.ShapeletDf=pd.DataFrame(columns=['IdShapelet','distance','majorMinor','startingIndex'],index=range(0,len(self.dTreeAttributes)))
+
+        columnList=np.arange(0,self.window_size)
+        #self.Shapelet=pd.DataFrame(columns=columnList)
+        self.Shapelet = pd.DataFrame(columns=['IdShapelet','Shapelet'],index=range(0,len(self.dTreeAttributes)))
+
+        print('STRUTTURE')
+        print(self.ShapeletDf)
+        print(self.Shapelet)
+
+
         # effettuo predizione per ogni pattern
 
         for i in range(len(xTest)):
             pattern = xTest.iloc[i]
             if(self.printed==False):
-                yPredicted[i] = self.treeExplorerPrint(pattern, root)
+                yPredicted[i] = self.treeExplorerPrint(pattern, root,0)
+                plotDataAndShapelet(self)
                 self.printed=True #dopo la prima stampa, setto a false e smetto di stampare
             else:
                 yPredicted[i] = self.treeExplorer(pattern, root) #non stampo piu
@@ -475,8 +488,63 @@ class Tree:
             else:
                 return self.treeExplorer(pattern, node.right)
 
+        # setto booleano prima in modo da stampare solo 1 TS
+
+    def treeExplorerPrint(self, pattern, node,counter):
+        # caso base, node è foglia
+        if (node.value == -1):
+            return int(node.data[0])
+        else:
+            # caso ricorsivo
+            self.counter=counter+1 #+1 perche parte da 0 e voglio il numero effettivo
+            attr = int(node.value)
+
+            if (self.printed == False):
+
+                idTsShapelet = self.dTreeAttributes[self.dTreeAttributes['IdCandidate'] == int(attr)]["IdTs"].values
+                idTsShapelet = idTsShapelet[0]
+
+                startingPosition = self.dTreeAttributes[self.dTreeAttributes['IdCandidate'] == int(attr)][
+                    "startingPosition"].values
+                startingPosition = startingPosition[0]
+
+                TsContainingShapelet = np.array(self.dfTrain[self.dfTrain['TsIndex'] == idTsShapelet].values)
+                TsContainingShapelet = TsContainingShapelet[0]
+                TsContainingShapelet = TsContainingShapelet[:len(TsContainingShapelet) - 2]
+
+                if (self.warningDetected):
+                    Dp = distanceProfile.naiveDistanceProfile(TsContainingShapelet, int(startingPosition),
+                                                              self.window_size, self.TsTestForPrint)
+                else:
+                    Dp = distanceProfile.massDistanceProfile(TsContainingShapelet, int(startingPosition),
+                                                             self.window_size, self.TsTestForPrint)
+
+                val, idx = min((val, idx) for (idx, val) in enumerate(Dp[0]))
+
+                self.ShapeletDf.iloc[counter]['IdShapelet']=attr
+                self.ShapeletDf.iloc[counter]['distance'] = val
+                self.ShapeletDf.iloc[counter]['startingIndex'] = idx
+
+                self.Shapelet.iloc[counter]['IdShapelet']=attr
+                self.Shapelet.iloc[counter]['Shapelet']=TsContainingShapelet[idx:idx+self.window_size]
+
+
+
+
+
+            if (pattern[attr] < node.data[0]):
+                self.ShapeletDf.iloc[counter]['majorMinor'] = -1
+                counter += 1
+                return self.treeExplorerPrint(pattern, node.left,counter)
+            else:
+                self.ShapeletDf.iloc[counter]['majorMinor'] = 1
+                counter += 1
+                return self.treeExplorerPrint(pattern, node.right,counter)
+
+
+
     #setto booleano prima in modo da stampare solo 1 TS
-    def treeExplorerPrint(self,pattern, node):
+    def treeExplorerPrint2(self,pattern, node):
         # caso base, node è foglia
         if (node.value == -1):
             return int(node.data[0])
@@ -506,6 +574,8 @@ class Tree:
                                                              self.window_size, self.TsTestForPrint)
 
                 val, idx = min((val, idx) for (idx, val) in enumerate(Dp[0]))
+                print('DP')
+                print(Dp[0])
 
             if (pattern[attr] < node.data[0]):
                 plotDataAndShapelet(self.TsTestForPrint,
