@@ -1,8 +1,4 @@
-Candidates,Max depth,Min samples,Window size,Remove candi,k,% Training set,NumCluster(Medoids),Accuracy,Time
-Discords,5,50,5,0,1,0.3,50,0.67,9.84
-Discords,5,50,5,0,1,0.3,50,0.67,9.74
-Discords,5,50,5,0,1,0.3,50,0.67,9.67
-Discords,5,50,5,0,1,0.3,50,0.67,9.87
+Candidates,Max depth,Min samples,Window size,Remove candi,k,useValidationSet,% Training set,useClustering,NumCluster(Medoids),Accuracy,Time
 Motifs,3,10,5,1,2,True,0.3,True,40,0.4,17.37
 Motifs,3,10,10,0,2,True,0.3,True,40,0.67,17.6
 Motifs,3,10,10,0,2,True,0.3,True,40,0.8,17.06

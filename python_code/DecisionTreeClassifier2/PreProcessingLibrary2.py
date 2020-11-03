@@ -228,7 +228,8 @@ def getDataStructures(tree,df,window_size,k,verbose):
     counter=0 #incremental counter for candidates
     for i in range(len(df)):
         if(tree.warningDetected==True and i % 100 == 0):
-            print('computing Ts #: '+str(i))
+            if (verbose):
+                print('computing Ts #: '+str(i))
 
         Ts = np.array(df.iloc[i][:-2].values) #-2 perche rimuovo l'attributo target e index inserito precedentemente
 

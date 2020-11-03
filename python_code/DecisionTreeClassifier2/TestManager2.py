@@ -4,17 +4,20 @@ from TestFileManager2 import *
 import time
 from sklearn.utils.random import sample_without_replacement
 from tslearn.datasets import UCR_UEA_datasets
+from sklearn import tree as SkTree
 from pathlib import Path
 from datetime import datetime
+from pyts.transformation import ShapeletTransform
+
 
 #datasetNames = 'GunPoint,ItalyPowerDemand,ArrowHead,ECG200,ECG5000,ElectricDevices,PhalangesOutlinesCorrect'
-def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
+def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile,executeClassicDtree):
 
     first = True  # ESTRAZIONE DATASET TRAINING
     second = True  # CALCOLO ALBERO DECISIONE
-    third = True  # ESTRAZIONE DATASET TEST
-    quarter = True  # PREDIZIONE E RISULTATO
-    fifth = True  # GRAFICA DI SERIE TEMPORALI E MATRIX PROFILE DEI CANDIDATI SCELTI
+    third = False  # ESTRAZIONE DATASET TEST
+    quarter = False  # PREDIZIONE E RISULTATO
+    fifth = False  # GRAFICA DI SERIE TEMPORALI E MATRIX PROFILE DEI CANDIDATI SCELTI
 
 #METTERE K HYPER PARAMETRO CENTROIDI COME PARAMETRO DI TREE
 
@@ -26,21 +29,21 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
 
     #genero albero (VUOTO) e avvio timer
     le = LabelEncoder()
-    tree= Tree(candidatesGroup=1,maxDepth=4,minSamplesLeaf=10,removeUsedCandidate=1,window_size=60,k=2,useClustering=True,n_clusters=20,warningDetected=False,verbose=1) # K= NUM DI MOTIF/DISCORD ESTRATTI
+    tree= Tree(candidatesGroup=0,maxDepth=4,minSamplesLeaf=50,removeUsedCandidate=1,window_size=70,k=3,useClustering=True,n_clusters=10,warningDetected=False,verbose=0) # K= NUM DI MOTIF/DISCORD ESTRATTI
 
-    start_time = time.time()
 
 
 
 
     if(first==True):
-        verbose = True
+        verbose = False
 
 
         X_train, y_train, X_test, y_test = UCR_UEA_datasets().load_dataset(datasetName)
-        dimWholeTrainSet = len(X_train)
-        print('Initial Train set shape : ' + str(X_train.shape)+'\n')
-        print('Initial Test set shape : ' + str(X_test.shape) + '\n')
+
+        if(verbose):
+            print('Initial Train set shape : ' + str(X_train.shape)+'\n')
+            print('Initial Test set shape : ' + str(X_test.shape) + '\n')
 
         if(useValidationSet):
 
@@ -48,7 +51,7 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
 
             dimValidationSet = int(len(X_train) * PercentageValidationSet)  # dim of new SubSet of X_train
             selectedRecordsForValidation=sample_without_replacement(len(X_train), dimValidationSet)
-            print('selectedRecordsForValidation: '+str(selectedRecordsForValidation)+'\n')
+            #print('selectedRecordsForValidation: '+str(selectedRecordsForValidation)+'\n')
 
             # inserisco in df Training set con relative label
             dfTrain = computeLoadedDataset(X_train, y_train)
@@ -61,32 +64,39 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
             dfTrain=dfTrain.drop(index=selectedRecordsForValidation)
 
 
-            print('Patter Lenght: ' + str(patternLenght) + '\n')
+            if(verbose):
 
-            print('Final Train set shape : ' + str(dfTrain.shape))
-            print('Final Validation set shape : '+ str(dfVal.shape)+'\n')
+                print('Patter Lenght: ' + str(patternLenght) + '\n')
+                print('Final Train set shape : ' + str(dfTrain.shape))
+                print('Final Validation set shape : '+ str(dfVal.shape)+'\n')
 
             num_classes = le.fit_transform(dfVal['target'])
-            print('Final class distribution in Validation set : ')
-            print(np.unique(num_classes, return_counts=True))
-            print('\n')
+
+            if (verbose):
+                print('Final class distribution in Validation set : ')
+                print(np.unique(num_classes, return_counts=True))
+                print('\n')
 
             num_classes = le.fit_transform(dfTrain['target'])
-            print('Final class distribution in Training set : ')
-            print(np.unique(num_classes, return_counts=True))
-            print('\n')
 
-            print('dfTrain: \n'+str(dfTrain))
-            print(dfTrain.isnull().sum().sum())
-            print(dfTrain.isnull().values.any())
-            print('dfVal: \n'+str(dfVal))
+            if (verbose):
+                print('Final class distribution in Training set : ')
+                print(np.unique(num_classes, return_counts=True))
+                print('\n')
+
+                print('dfTrain: \n'+str(dfTrain))
+                print(dfTrain.isnull().sum().sum())
+                print(dfTrain.isnull().values.any())
+                print('dfVal: \n'+str(dfVal))
 
 
         if(usePercentageTrainingSet):
 
             dimSubTrainSet = int(len(X_train) * PercentageTrainingSet)  # dim of new SubSet of X_train
             selectedRecords = sample_without_replacement(len(X_train), dimSubTrainSet)  # random records selected
-            print('selectedRecords: '+str(selectedRecords))
+
+            if (verbose):
+                print('selectedRecords: '+str(selectedRecords))
 
             #inserisco in df Training set con relative label
             dfTrain = computeLoadedDataset(X_train, y_train)
@@ -96,19 +106,22 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
 
             dfTrain = dfTrain.iloc[selectedRecords].copy()
 
-            print('Final Train set shape : ' + str(dfTrain.shape)+'\n')
+            if (verbose):
+                print('Final Train set shape : ' + str(dfTrain.shape)+'\n')
 
             num_classes = le.fit_transform(dfTrain['target'])
-            print('Final class distribution in Training set : ')
-            print(np.unique(num_classes, return_counts=True))
-            print('\n')
 
-            print('PATT LENGHT: ' + str(patternLenght))
+            if (verbose):
+                print('Final class distribution in Training set : ')
+                print(np.unique(num_classes, return_counts=True))
+                print('\n')
+
+                print('PATT LENGHT: ' + str(patternLenght))
 
         # genero strtutture dati utilizzate effettivamente
         tree.dfTrain = dfTrain
         mpTrain, OriginalCandidatesListTrain, numberOfMotifTrain, numberOfDiscordTrain  = getDataStructures(tree,
-            dfTrain, tree.window_size, tree.k, verbose=1)
+            dfTrain, tree.window_size, tree.k, verbose)
 
 
         #sfoltisco i candidati in base al gruppo di candidati scelti
@@ -122,11 +135,12 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
         #aggiungo lista candidati e lista candidati usati, ORIGINALI, in tree
         tree.OriginalCandidatesUsedListTrain = buildCandidatesUsedList(OriginalCandidatesListTrain)
         tree.OriginalCandidatesListTrain=OriginalCandidatesListTrain
-        print('OriginalCandidatesUsedListTrain: \n')
-        print(tree.OriginalCandidatesUsedListTrain)
+        if (verbose):
+            print('OriginalCandidatesUsedListTrain: \n')
+            print(tree.OriginalCandidatesUsedListTrain)
 
-        print('OriginalCandidatesListTrain: \n')
-        print(tree.OriginalCandidatesListTrain)
+            print('OriginalCandidatesListTrain: \n')
+            print(tree.OriginalCandidatesListTrain)
 
 
         #OriginalCandidatesListTrain VIENE MANTENUTO PER TUTTO L'ALGORITMO, DA ESSO AD OGNI SPLIT PRENDO CANDIDATI NECESSARI
@@ -137,10 +151,12 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
         #applico clustering a insieme di candidati iniziali
         if(tree.useClustering):
             CandidatesListTrain = reduceNumberCandidates(tree, OriginalCandidatesListTrain,returnOnlyIndex=False)
-            print('candidati rimasti/ più significativi-distintivi ')
+            if (verbose):
+                print('candidati rimasti/ più significativi-distintivi ')
         else:
             CandidatesListTrain=tree.OriginalCandidatesListTrain
-        print(CandidatesListTrain)
+        if (verbose):
+            print(CandidatesListTrain)
 
 
         TsIndexList=dfTrain['TsIndex'].values #inizialmente tutto DfTrain ( prima iterazione )
@@ -151,19 +167,21 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
             print('dfTrain: \n'+str(dfTrain))
             print('dfForDTree: \n'+str(dfForDTree))
 
-        print("--- %s seconds after getting DATA STRUCTURES" % (time.time() - start_time))
+        #print("--- %s seconds after getting DATA STRUCTURES" % (time.time() - start_time))
 
 
     if(second==True):
-        verbose = True
+        verbose = False
         #COSTRUISCO DECISION TREE
-        tree.fit(dfForDTree,verbose=True)
+        start_time = time.time()
+        tree.fit(dfForDTree,verbose=False)
+        fitTime=time.time() - start_time
         if(verbose==True):
             print(tree.attributeList)
             print(tree.Root)
             tree.printAll(tree.Root)
 
-        print("--- %s seconds after building TREE" % (time.time() - start_time))
+        print("--- %s seconds after fitting" % (fitTime))
 
 
 
@@ -261,6 +279,162 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
             print('M/D: %d ' % md)
 
             plot_all(ts, mp, mot, motif_dist, dis, sp, md,tree.window_size,idCandidate)
+
+
+
+def executeShapeletTransform(datasetName):
+    from pyts.datasets import load_gunpoint
+    X_train, y_train, X_test, y_test = UCR_UEA_datasets().load_dataset(datasetName)
+    print(X_train.shape)
+    print(y_train.shape)
+    print(X_test.shape)
+    print(y_test.shape)
+
+    print('\n')
+
+    print(X_train)
+
+
+    X_train1, X_test, y_train, y_test = load_gunpoint(return_X_y=True)
+    print(X_train1.shape)
+    # print(y_train.shape)
+    # print(X_test.shape)
+    # print(y_test.shape)
+
+    # Shapelet transformation
+    # st = ShapeletTransform(window_sizes=[12],
+    #                        random_state=42, sort=True)
+    # X_new = st.fit_transform(X_train, y_train)
+    # X_test_new = st.transform(X_test)
+    #
+    # from sklearn.tree import DecisionTreeClassifier
+    #
+    # start_time = time.time()
+    #
+    # clf = DecisionTreeClassifier()
+    # clf.fit(X_new, y_train)
+    #
+    # timeToFit = time.time() - start_time
+    #
+    # print("--- %s seconds after fitting" % (timeToFit))
+    #
+    # y_pred = clf.predict(X_test_new)
+    #
+    # timeToTest = time.time() - start_time
+    #
+    # print(accuracy_score(y_pred, y_test))
+    #
+    # print("--- %s seconds after testing" % (timeToTest))
+
+
+
+def executeClassicDtree(datasetName):
+    tree = Tree(candidatesGroup=0, maxDepth=4, minSamplesLeaf=50, removeUsedCandidate=1, window_size=70, k=3,useClustering=True, n_clusters=10, warningDetected=False, verbose=0)  # K= NUM DI MOTIF/DISCORD ESTRATTI
+
+    verbose=False
+
+    le = LabelEncoder()
+    X_train, y_train, X_test, y_test = UCR_UEA_datasets().load_dataset(datasetName)
+
+    dfTrain = computeLoadedDataset(X_train, y_train)
+
+    tree.dfTrain = dfTrain
+    mpTrain, OriginalCandidatesListTrain, numberOfMotifTrain, numberOfDiscordTrain = getDataStructures(tree,
+                                                                                                       dfTrain,
+                                                                                                       tree.window_size,
+                                                                                                       tree.k, verbose=False)
+
+    # sfoltisco i candidati in base al gruppo di candidati scelti
+    if (tree.candidatesGroup == 0):
+        OriginalCandidatesListTrain = OriginalCandidatesListTrain[OriginalCandidatesListTrain['M/D'] == 0]
+    if (tree.candidatesGroup == 1):
+        OriginalCandidatesListTrain = OriginalCandidatesListTrain[OriginalCandidatesListTrain['M/D'] == 1]
+
+    OriginalCandidatesListTrain.reset_index(drop=True)
+
+    # aggiungo lista candidati e lista candidati usati, ORIGINALI, in tree
+    tree.OriginalCandidatesUsedListTrain = buildCandidatesUsedList(OriginalCandidatesListTrain)
+    tree.OriginalCandidatesListTrain = OriginalCandidatesListTrain
+    if (verbose):
+        print('OriginalCandidatesUsedListTrain: \n')
+        print(tree.OriginalCandidatesUsedListTrain)
+
+        print('OriginalCandidatesListTrain: \n')
+        print(tree.OriginalCandidatesListTrain)
+
+    # OriginalCandidatesListTrain VIENE MANTENUTO PER TUTTO L'ALGORITMO, DA ESSO AD OGNI SPLIT PRENDO CANDIDATI NECESSARI
+
+    # PREPARO STRUTTURE DATI PER LA PRIMA ITERAZIONE DI FIT
+    # applico clustering a insieme di candidati iniziali
+    if (tree.useClustering):
+        CandidatesListTrain = reduceNumberCandidates(tree, OriginalCandidatesListTrain, returnOnlyIndex=False)
+        if (verbose):
+            print('candidati rimasti/ più significativi-distintivi ')
+    else:
+        CandidatesListTrain = tree.OriginalCandidatesListTrain
+    if (verbose):
+        print(CandidatesListTrain)
+
+    TsIndexList = dfTrain['TsIndex'].values  # inizialmente tutto DfTrain ( prima iterazione )
+
+    # computeSubSeqDistance calcola distanze tra lista di Ts e lista di candidati fornite
+    dfForDTree = computeSubSeqDistance(tree, TsIndexList, CandidatesListTrain, tree.window_size)
+    if (verbose == True):
+        print('dfTrain: \n' + str(dfTrain))
+        print('dfForDTree: \n' + str(dfForDTree))
+
+
+
+
+
+    clf = DecisionTreeClassifier(criterion='entropy', max_depth=3,
+                                 min_samples_split=4,
+                                 min_samples_leaf=5)  # fissando random state ho sempre lo stesso valore e non ho ranodmicità nello split
+
+    print(dfForDTree)
+    y_train=dfForDTree['class']
+    del dfForDTree["class"]
+    del dfForDTree["TsIndex"]
+    print(dfForDTree)
+    print(dfForDTree.shape)
+    print(y_train)
+    y_train = y_train.astype('int')
+
+    clf.fit(dfForDTree, y_train)  # genera DTree allenato su tr set
+
+    #SkTree.plot_tree(clf, fontsize=10)
+
+    dfTest = computeLoadedDataset(X_test, y_test)
+
+    columns=dfForDTree.columns.values
+
+    columns=sorted(columns)
+
+    tree.attributeList=columns
+
+    CandidatesListMatched = tree.OriginalCandidatesListTrain['IdCandidate'].isin(
+        tree.attributeList)  # mi dice quali TsIndex in OriginalCandidatesListTrain sono contenuti in Dleft
+
+    tree.dTreeAttributes = tree.OriginalCandidatesListTrain[
+        CandidatesListMatched]
+
+    dfForDTreeTest = computeSubSeqDistanceForTest(tree, dfTest, tree.dTreeAttributes )
+
+    print(dfForDTreeTest)
+    y_test=dfForDTreeTest["class"].values
+
+    y_test=y_test.astype('int')
+
+    del dfForDTreeTest["class"]
+
+    y_predTest = clf.predict(dfForDTreeTest)
+
+    print(classification_report(y_test, y_predTest))
+    print('Accuracy %s' % accuracy_score(y_test, y_predTest))
+    print('F1-score %s' % f1_score(y_test, y_predTest, average=None))
+    confusion_matrix(y_test, y_predTest)
+
+
 
 
 

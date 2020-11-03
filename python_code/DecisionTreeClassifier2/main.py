@@ -1,17 +1,25 @@
-from TestManager2 import executeTest, plotTs, plotTestResults
+from TestManager2 import executeTest, plotTs, plotTestResults, plotComparison, buildTable,executeShapeletTransform, executeClassicDtree
 from kCandidatesSearch2 import runKMeans
 def main():
-    datasetName = 'ArrowHead'
+    datasetName = 'GunPoint'
     nameFile = datasetName + 'TestResults.csv'
     useValidationSet = False
     usePercentageTrainingSet = True
 
-    executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile)
+    #executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile)
 
+    #executeShapeletTransform(datasetName)
+
+    executeClassicDtree(datasetName)
 
     #plotTs(datasetName)
 
     #plotTestResults(nameFile)
+
+    #plotComparison(nameFile,datasetName,'WindowSize','PercentageTrainingSet')
+
+
+
 
 
 

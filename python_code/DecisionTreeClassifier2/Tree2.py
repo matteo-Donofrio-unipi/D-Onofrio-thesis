@@ -70,8 +70,6 @@ class Tree:
     def split(self,dataset, attribute, value):
 
         columnsList = dataset.columns.values
-        dizLeft = pd.DataFrame(columns=columnsList)
-        dizRight = pd.DataFrame(columns=columnsList)
         attribute=str(attribute)
         #value=str(value)
 
@@ -89,7 +87,7 @@ class Tree:
 
     # riceve dframe con mutual_information(gain) e in base al candidatesGroup scelto, determina il miglior attributo su cui splittare
     # che non è stato ancora utilizzato
-    def getBestIndexAttribute(self,CandidatesUsedListTrain,vecMutualInfo):
+    def getBestIndexAttribute(self,CandidatesUsedListTrain,vecMutualInfo,verbose):
         # ordino i candidati in base a gain decrescente
 
         vecMutualInfo = vecMutualInfo.sort_values(by='gain', ascending=False)
@@ -102,16 +100,13 @@ class Tree:
         # cicla fin quando trova candidato libero con gain maggiore
         while (bestIndexAttribute == -1 and i < len(vecMutualInfo)):
             attributeToVerify = int(vecMutualInfo.iloc[i]['IdCandidate'])
-            print('VEDIAMO')
-            print(attributeToVerify)
-            # indexAttr=CandidatesUsedListTrain[CandidatesUsedListTrain['IdCandidate'] == int(attributeToVerify)].index.values.tolist()
-            # indexAttr=indexAttr[0]
             if (CandidatesUsedListTrain.loc[attributeToVerify]['Used']==False):
                 bestIndexAttribute = attributeToVerify
                 splitValue = vecMutualInfo.iloc[i]['splitValue']
 
                 CandidatesUsedListTrain.loc[CandidatesUsedListTrain["IdCandidate"]==attributeToVerify,"Used"] = True  # settando a true il candidato scelto, non sarà usato in seguito
-                print('gain: ' + str(vecMutualInfo.iloc[i]['gain']))
+                if (verbose):
+                    print('gain: ' + str(vecMutualInfo.iloc[i]['gain']))
             else:
                 i += 1
 
@@ -121,7 +116,7 @@ class Tree:
 
 
 
-    def computeMutualInfo(self,datasetForMutual):
+    def computeMutualInfo(self,datasetForMutual,verbose):
         # cerca attributo, il cui relativo best split value massimizza l'information gain nello split
 
 
@@ -138,7 +133,8 @@ class Tree:
             bestvalueForSplit = 0
             previousClass = -1  # deve essere settato ad un valore non presente nei class value
             attribute = columns[i]
-            print('COMPUTE attr: ' + str(attribute))
+            if (verbose):
+                print('COMPUTE attr: ' + str(attribute))
             datasetForMutual = datasetForMutual.sort_values(by=attribute, ascending=True)
 
             y = datasetForMutual['class']
@@ -173,28 +169,25 @@ class Tree:
 
         # cerca e restituisce attributo migliore su cui splittaree relativo valore ottimale (optimal split point)
         # CANDIDATE GROUP permette di scegliere se usare come candidati 0=motifs 1=discord 2=entrambi
-        bestGain = 0
-        actualGain = 0
-        bestvalueForSplit = 0
-        entropyParent = self.computeEntropy(dfForDTree)
 
         # trovo best Attribute
 
         # calcolo gain e miglior valore di split per ogni attributo
 
-        vecMutualInfo = self.computeMutualInfo(dfForDTree)
+        vecMutualInfo = self.computeMutualInfo(dfForDTree,verbose)
         if (verbose == True):
             print('vec mutual info calcolato: ')
             print(vecMutualInfo)
 
         # se rimuovo candidati, faccio scegliere migliore non ancora utilizzato
         if (self.removeUsedCandidate == 1):
-            indexBestAttribute, bestValueForSplit  = self.getBestIndexAttribute(self.OriginalCandidatesUsedListTrain,vecMutualInfo)
+            indexBestAttribute, bestValueForSplit  = self.getBestIndexAttribute(self.OriginalCandidatesUsedListTrain,vecMutualInfo,verbose)
         else:  # se non rimuovo candidati, mi basta prendere il primo
             vecMutualInfo = vecMutualInfo.sort_values(by='gain', ascending=False)
             indexBestAttribute = vecMutualInfo.iloc[0]['IdCandidate']
             bestValueForSplit = vecMutualInfo.iloc[0]['splitValue']
-            print('gain: ' + str(vecMutualInfo.iloc[0]['gain']))  # stampo gain
+            if (verbose):
+                print('gain: ' + str(vecMutualInfo.iloc[0]['gain']))  # stampo gain
 
         if (verbose == True):
             print('BEST attribute | value')
@@ -253,9 +246,10 @@ class Tree:
             actualNode.data = nodeInfo
             actualNode.value = (int(indexChosenAttribute))
 
-            print('DLEFT & DRIGHT INIZIALMENTE')
-            print(Dleft)
-            print(Dright)
+            if (verbose):
+                print('DLEFT & DRIGHT INIZIALMENTE')
+                print(Dleft)
+                print(Dright)
 
             if(self.useClustering):
 
@@ -274,8 +268,9 @@ class Tree:
 
                 CandidateToCluster = CandidateToCluster.iloc[indexChoosenMedoids] #candidati da mantenere
 
-                print('CANDIDATI RIMASTI IN BUILD')
-                print(CandidateToCluster)
+                if (verbose):
+                    print('CANDIDATI RIMASTI IN BUILD')
+                    print(CandidateToCluster)
 
                 # calcolo distanze tra Ts in Dleft e candidati scelti
                 Dleft = computeSubSeqDistance(self, TsIndexLeft, CandidateToCluster, self.window_size)
@@ -296,15 +291,17 @@ class Tree:
 
                 CandidateToCluster = CandidateToCluster.iloc[indexChoosenMedoids] #candidati da mantenere
 
-                print('CANDIDATI RIMASTI IN BUILD')
-                print(CandidateToCluster)
+                if (verbose):
+                    print('CANDIDATI RIMASTI IN BUILD')
+                    print(CandidateToCluster)
 
                 #calcolo distanze tra Ts in Dright e candidati scelti
                 Dright = computeSubSeqDistance(self, TsIndexRight, CandidateToCluster, self.window_size)
 
-                print('DLEFT & DRIGHT DOPO IL CLUSTERING')
-                print(Dleft)
-                print(Dright)
+                if (verbose):
+                    print('DLEFT & DRIGHT DOPO IL CLUSTERING')
+                    print(Dleft)
+                    print(Dright)
 
 
 
@@ -358,9 +355,10 @@ class Tree:
         root.left = Node(int(indexChosenAttribute))
         root.right = Node(int(indexChosenAttribute))
 
-        print('DLEFT & DRIGHT INIZIALMENTE')
-        print(Dleft)
-        print(Dright)
+        if (verbose):
+            print('DLEFT & DRIGHT INIZIALMENTE')
+            print(Dleft)
+            print(Dright)
 
         if(self.useClustering):
 
@@ -380,8 +378,9 @@ class Tree:
 
             CandidateToCluster = CandidateToCluster.iloc[indexChoosenMedoids]
 
-            print('CANDIDATI RIMASTI IN FIT')
-            print(CandidateToCluster)
+            if (verbose):
+                print('CANDIDATI RIMASTI IN FIT')
+                print(CandidateToCluster)
 
             #calcolo distanze tra Ts in Dleft e candidati scelti
             Dleft = computeSubSeqDistance(self, TsIndexLeft, CandidateToCluster, self.window_size)
@@ -403,15 +402,17 @@ class Tree:
 
             CandidateToCluster = CandidateToCluster.iloc[indexChoosenMedoids]
 
-            print('CANDIDATI RIMASTI IN FIT')
-            print(CandidateToCluster)
+            if (verbose):
+                print('CANDIDATI RIMASTI IN FIT')
+                print(CandidateToCluster)
 
             #calcolo distanze tra Ts in Dleft e candidati scelti
             Dright = computeSubSeqDistance(self, TsIndexRight, CandidateToCluster, self.window_size)
 
-            print('DLEFT & DRIGHT DOPO IL CLUSTERING')
-            print(Dleft)
-            print(Dright)
+            if (verbose):
+                print('DLEFT & DRIGHT DOPO IL CLUSTERING')
+                print(Dleft)
+                print(Dright)
 
 
         # chiamata ricorsiva
