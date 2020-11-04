@@ -19,6 +19,8 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score, f1_score, classification_report
 from sklearn.metrics import roc_curve, auc, roc_auc_score
 import math
+from datetime import datetime
+import time
 from scipy.spatial.distance import euclidean
 from kCandidatesSearch2 import runKMeans
 
@@ -374,8 +376,9 @@ def reduceNumberCandidates(tree,CandidatesList,returnOnlyIndex):
                   #False => restituisce CnaiddatesList filtrato
 
     if(tree.n_clusters>= len(CandidatesList) or len(CandidatesList)==0):
-        print('Nessun clustering necessario su CandidatesList')
-        print('len CandidatesList: %s num cluster: %s \n' % (len(CandidatesList),tree.n_clusters))
+        if(tree.verbose):
+            print('Nessun clustering necessario su CandidatesList')
+            print('len CandidatesList: %s num cluster: %s \n' % (len(CandidatesList),tree.n_clusters))
         if(returnOnlyIndex):
             return np.arange(0,len(CandidatesList))
         else:
@@ -484,6 +487,8 @@ def plotDataAndShapelet(tree):
 
         #ax1.set_title('Color: Green(if minor of Treshold) Red(major)\nDistance: %f \n Treshold: %f' % (dist,treshOld))
 
+    start_time = time.time()
+    plt.savefig(str(time.time())+'.pdf')
     plt.show()
 
 

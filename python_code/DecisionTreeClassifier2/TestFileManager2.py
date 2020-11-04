@@ -209,7 +209,8 @@ def PlotValues(fileName):
 
 
 
-def plotComparison(fileName,datasetName,attribute1,attribute2):
+def plotComparison(fileName,datasetName,attribute1,attribute2,mOa):
+    #mOa=0 => max ||  mOa=1 => avg
     #ATT1 SU ASSE X, ATT2 SU CUI EFFETTO COMPARAZIONE -> PRENDO DIVERSE ACCURACY AL VARIARE DEL VALORE DI TALE ATTRIBUTO
     dfResults=readCsvAsDf(fileName)
 
@@ -225,6 +226,7 @@ def plotComparison(fileName,datasetName,attribute1,attribute2):
 
     # prendo differenti valori dell'attributo da confrontare
     valuesAtt2 = np.unique(dftest[attribute2].values)
+    valuesAtt2 = sorted(valuesAtt2)
 
     print('ATT')
     print(valuesAtt1)
@@ -252,7 +254,10 @@ def plotComparison(fileName,datasetName,attribute1,attribute2):
             dfLocal=dfLocal[(dfLocal[attribute1])==valueAtt1]['Accuracy']
             if(len(dfLocal)>0):
                 accuracy=dfLocal.values
-                choosenAccuracy=max(accuracy)
+                if(mOa==0):
+                    choosenAccuracy=max(accuracy)
+                else:
+                    choosenAccuracy = sum(accuracy)/len(accuracy)
             else:
                 choosenAccuracy=0
 

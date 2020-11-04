@@ -11,12 +11,12 @@ from pyts.transformation import ShapeletTransform
 
 
 #datasetNames = 'GunPoint,ItalyPowerDemand,ArrowHead,ECG200,ECG5000,ElectricDevices,PhalangesOutlinesCorrect'
-def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile,executeClassicDtree):
+def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
 
     first = True  # ESTRAZIONE DATASET TRAINING
     second = True  # CALCOLO ALBERO DECISIONE
-    third = False  # ESTRAZIONE DATASET TEST
-    quarter = False  # PREDIZIONE E RISULTATO
+    third = True  # ESTRAZIONE DATASET TEST
+    quarter = True  # PREDIZIONE E RISULTATO
     fifth = False  # GRAFICA DI SERIE TEMPORALI E MATRIX PROFILE DEI CANDIDATI SCELTI
 
 #METTERE K HYPER PARAMETRO CENTROIDI COME PARAMETRO DI TREE
@@ -29,7 +29,7 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile,e
 
     #genero albero (VUOTO) e avvio timer
     le = LabelEncoder()
-    tree= Tree(candidatesGroup=0,maxDepth=4,minSamplesLeaf=50,removeUsedCandidate=1,window_size=70,k=3,useClustering=True,n_clusters=10,warningDetected=False,verbose=0) # K= NUM DI MOTIF/DISCORD ESTRATTI
+    tree= Tree(candidatesGroup=1,maxDepth=4,minSamplesLeaf=20,removeUsedCandidate=1,window_size=40,k=3,useClustering=False,n_clusters=10,warningDetected=False,verbose=0) # K= NUM DI MOTIF/DISCORD ESTRATTI
 
 
 
@@ -193,8 +193,9 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile,e
         else:
             dfTest = computeLoadedDataset(X_test, y_test)
 
-        print('DF TEST')
-        print(dfTest)
+        if(tree.verbose):
+            print('DF TEST')
+            print(dfTest)
 
         tree.attributeList=sorted(tree.attributeList) #ordino attributi per rendere più efficiente 'computeSubSeqDistanceForTest'
         tree.attributeList=np.unique(tree.attributeList)
@@ -205,11 +206,12 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile,e
         tree.dTreeAttributes = tree.OriginalCandidatesListTrain[
             CandidatesListMatched]  # estraggo i candidati da OriginalCandidatesListTrain, che sono generati dalle Ts in Dleft
 
-        print('Attributi selezionati dal Decision Tree')
-        print(tree.dTreeAttributes)
+        if(tree.verbose):
+            print('Attributi selezionati dal Decision Tree')
+            print(tree.dTreeAttributes)
 
         dfForDTreeTest=computeSubSeqDistanceForTest(tree,dfTest,tree.dTreeAttributes)
-        if(verbose==True):
+        if(tree.verbose==True):
             print(dfForDTreeTest)
 
 
@@ -225,7 +227,7 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile,e
 
         yTest, yPredicted = tree.predict(dfForDTreeTest, tree.Root)
 
-        if (verbose == True):
+        if (tree.verbose == True):
             for a, b in zip(yTest, yPredicted):
                 print(a, b)
 
@@ -283,55 +285,60 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile,e
 
 
 def executeShapeletTransform(datasetName):
-    from pyts.datasets import load_gunpoint
     X_train, y_train, X_test, y_test = UCR_UEA_datasets().load_dataset(datasetName)
-    print(X_train.shape)
-    print(y_train.shape)
-    print(X_test.shape)
-    print(y_test.shape)
 
-    print('\n')
+    dfTrain = computeLoadedDataset(X_train, y_train)
 
-    print(X_train)
+    y_train=dfTrain['target'].values
+    y_train=y_train.astype(int)
+
+    del dfTrain['target']
+    del dfTrain['TsIndex']
 
 
-    X_train1, X_test, y_train, y_test = load_gunpoint(return_X_y=True)
-    print(X_train1.shape)
-    # print(y_train.shape)
-    # print(X_test.shape)
-    # print(y_test.shape)
 
-    # Shapelet transformation
-    # st = ShapeletTransform(window_sizes=[12],
-    #                        random_state=42, sort=True)
-    # X_new = st.fit_transform(X_train, y_train)
-    # X_test_new = st.transform(X_test)
-    #
-    # from sklearn.tree import DecisionTreeClassifier
-    #
-    # start_time = time.time()
-    #
-    # clf = DecisionTreeClassifier()
-    # clf.fit(X_new, y_train)
-    #
-    # timeToFit = time.time() - start_time
-    #
-    # print("--- %s seconds after fitting" % (timeToFit))
-    #
-    # y_pred = clf.predict(X_test_new)
-    #
-    # timeToTest = time.time() - start_time
-    #
-    # print(accuracy_score(y_pred, y_test))
-    #
-    # print("--- %s seconds after testing" % (timeToTest))
+    dfTest=computeLoadedDataset(X_test,y_test)
+
+    y_test = dfTest['target'].values
+    y_test = y_test.astype(int)
+
+    del dfTest['target']
+    del dfTest['TsIndex']
+
+    print(y_train)
+    print(y_test)
+
+    #Shapelet transformation
+    st = ShapeletTransform(window_sizes=[12],
+                           random_state=42, sort=True)
+    X_new = st.fit_transform(dfTrain, y_train)
+    X_test_new = st.transform(dfTest)
+
+    from sklearn.tree import DecisionTreeClassifier
+
+    start_time = time.time()
+
+    clf = DecisionTreeClassifier()
+    clf.fit(X_new, y_train)
+
+    timeToFit = time.time() - start_time
+
+    print("--- %s seconds after fitting" % (timeToFit))
+
+    y_pred = clf.predict(X_test_new)
+
+    timeToTest = time.time() - start_time
+
+    print(accuracy_score(y_pred, y_test))
+
+    print("--- %s seconds after testing" % (timeToTest))
 
 
 
 def executeClassicDtree(datasetName):
-    tree = Tree(candidatesGroup=0, maxDepth=4, minSamplesLeaf=50, removeUsedCandidate=1, window_size=70, k=3,useClustering=True, n_clusters=10, warningDetected=False, verbose=0)  # K= NUM DI MOTIF/DISCORD ESTRATTI
+    tree = Tree(candidatesGroup=1, maxDepth=3, minSamplesLeaf=10, removeUsedCandidate=1, window_size=60, k=2,useClustering=True, n_clusters=20, warningDetected=False, verbose=0)  # K= NUM DI MOTIF/DISCORD ESTRATTI
 
-    verbose=False
+    verbose=True
 
     le = LabelEncoder()
     X_train, y_train, X_test, y_test = UCR_UEA_datasets().load_dataset(datasetName)
@@ -407,8 +414,6 @@ def executeClassicDtree(datasetName):
     dfTest = computeLoadedDataset(X_test, y_test)
 
     columns=dfForDTree.columns.values
-
-    columns=sorted(columns)
 
     tree.attributeList=columns
 

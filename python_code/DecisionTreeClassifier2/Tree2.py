@@ -451,13 +451,9 @@ class Tree:
         #dizionario contenete shapelet e informazioni relative
         self.ShapeletDf=pd.DataFrame(columns=['IdShapelet','distance','majorMinor','startingIndex'],index=range(0,len(self.dTreeAttributes)))
 
-        columnList=np.arange(0,self.window_size)
         #self.Shapelet=pd.DataFrame(columns=columnList)
         self.Shapelet = pd.DataFrame(columns=['IdShapelet','Shapelet'],index=range(0,len(self.dTreeAttributes)))
 
-        print('STRUTTURE')
-        print(self.ShapeletDf)
-        print(self.Shapelet)
 
 
         # effettuo predizione per ogni pattern
@@ -466,7 +462,8 @@ class Tree:
             pattern = xTest.iloc[i]
             if(self.printed==False):
                 yPredicted[i] = self.treeExplorerPrint(pattern, root,0)
-                plotDataAndShapelet(self)
+                if(self.verbose):
+                    plotDataAndShapelet(self)
                 self.printed=True #dopo la prima stampa, setto a false e smetto di stampare
             else:
                 yPredicted[i] = self.treeExplorer(pattern, root) #non stampo piu
@@ -530,9 +527,6 @@ class Tree:
                 self.Shapelet.iloc[counter]['Shapelet']=TsContainingShapelet[idx:idx+self.window_size]
 
 
-
-
-
             if (pattern[attr] < node.data[0]):
                 self.ShapeletDf.iloc[counter]['majorMinor'] = -1
                 counter += 1
@@ -543,49 +537,6 @@ class Tree:
                 return self.treeExplorerPrint(pattern, node.right,counter)
 
 
-
-    #setto booleano prima in modo da stampare solo 1 TS
-    def treeExplorerPrint2(self,pattern, node):
-        # caso base, node è foglia
-        if (node.value == -1):
-            return int(node.data[0])
-        else:
-            # caso ricorsivo
-            attr = int(node.value)
-
-            if(self.printed==False):
-
-                idTsShapelet = self.dTreeAttributes[self.dTreeAttributes['IdCandidate'] == int(attr)]["IdTs"].values
-                idTsShapelet=idTsShapelet[0]
-
-                startingPosition = self.dTreeAttributes[self.dTreeAttributes['IdCandidate'] == int(attr)]["startingPosition"].values
-                startingPosition = startingPosition[0]
-
-
-                TsContainingShapelet = np.array(self.dfTrain[self.dfTrain['TsIndex'] == idTsShapelet].values)
-                TsContainingShapelet = TsContainingShapelet[0]
-                TsContainingShapelet = TsContainingShapelet[:len(TsContainingShapelet) - 2]
-
-
-                if (self.warningDetected):
-                    Dp = distanceProfile.naiveDistanceProfile(TsContainingShapelet, int(startingPosition),
-                                                              self.window_size, self.TsTestForPrint)
-                else:
-                    Dp = distanceProfile.massDistanceProfile(TsContainingShapelet, int(startingPosition),
-                                                             self.window_size, self.TsTestForPrint)
-
-                val, idx = min((val, idx) for (idx, val) in enumerate(Dp[0]))
-                print('DP')
-                print(Dp[0])
-
-            if (pattern[attr] < node.data[0]):
-                plotDataAndShapelet(self.TsTestForPrint,
-                                    TsContainingShapelet[startingPosition:startingPosition + self.window_size], idx,-1,val,node.data[0],self.window_size)
-                return self.treeExplorerPrint(pattern, node.left)
-            else:
-                plotDataAndShapelet(self.TsTestForPrint,
-                                    TsContainingShapelet[startingPosition:startingPosition + self.window_size], idx, 1,val,node.data[0],self.window_size)
-                return self.treeExplorerPrint(pattern, node.right)
 
 
 
