@@ -21,7 +21,7 @@ def main():
     avg=1
     #plotComparisonMultiple(nameFile,datasetName,'MaxDepth','Candidates',max)
 
-    plotComparisonSingle(nameFile,datasetName,'NumClusterMedoid',max)
+    plotComparisonSingle(nameFile,datasetName,'NumClusterMedoid',avg,UsePercentageTrainingSet=True)
 
 
 

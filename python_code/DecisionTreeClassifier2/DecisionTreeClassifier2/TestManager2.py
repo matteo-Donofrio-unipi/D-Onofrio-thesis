@@ -22,7 +22,7 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
 #METTERE K HYPER PARAMETRO CENTROIDI COME PARAMETRO DI TREE
 
 
-    PercentageTrainingSet = 1 # % se voglio usare una percentuale di Training Set
+    PercentageTrainingSet = 0.9 # % se voglio usare una percentuale di Training Set
     PercentageValidationSet = 0.3  # % set rispetto alla dim del Training Set
     writeOnCsv = True
 

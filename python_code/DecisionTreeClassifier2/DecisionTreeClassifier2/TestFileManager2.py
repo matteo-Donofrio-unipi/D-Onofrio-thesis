@@ -296,7 +296,7 @@ def plotComparisonMultiple(fileName,datasetName,attribute1,attribute2,mOa):
     plt.show()
 
 #plot del dataset, fissati n-1 attrivuti, ne vario 1
-def plotComparisonSingle(fileName,datasetName,attribute1,mOa):
+def plotComparisonSingle(fileName,datasetName,attribute1,mOa,UsePercentageTrainingSet):
     #mOa=0 => max ||  mOa=1 => avg
     #ATT1 SU ASSE X, ATT2 SU CUI EFFETTO COMPARAZIONE -> PRENDO DIVERSE ACCURACY AL VARIARE DEL VALORE DI TALE ATTRIBUTO
     dfResults=readCsvAsDf(fileName)
@@ -317,12 +317,21 @@ def plotComparisonSingle(fileName,datasetName,attribute1,mOa):
 
     print(dfLocal)
 
+    if (UsePercentageTrainingSet): #su asse x metto Percentage
+        attribute1='PercentageTrainingSet'
+    else:
+        dfLocal = dfLocal[dfLocal['PercentageTrainingSet'] == '1'] #prendo training set interi
+
+
     #prendo differenti valori dell'attributo su asse x
     valuesAtt1=np.unique(dfLocal[attribute1].values)
-    valuesAtt1=valuesAtt1.astype(int)
+    valuesAtt1=valuesAtt1.astype(float)
     valuesAtt1=sorted(valuesAtt1)
     for i in range(len(valuesAtt1)):
         valuesAtt1[i]=str(valuesAtt1[i])
+
+    if(UsePercentageTrainingSet): #setto 1 cosi riesco a fare la query correttamente, sul file è memorizzato come 1
+        valuesAtt1[-1]='1'
 
 
     print('ATT')
@@ -331,7 +340,9 @@ def plotComparisonSingle(fileName,datasetName,attribute1,mOa):
     colors = 'rbgcmyk'
 
     accuracyList=[]
+    timeList=[]
     fig, ax1 = plt.subplots(1, 1, sharex=True, figsize=(6, 4))
+    ax2 = ax1.twinx()
     ax1.set_title(datasetName)
 
     for i in range(len(valuesAtt1)):
@@ -340,25 +351,32 @@ def plotComparisonSingle(fileName,datasetName,attribute1,mOa):
         c = colors[colori % len(colors)]
 
         accuracy=dfLocal[(dfLocal[attribute1])==valueAtt1]['Accuracy'].values
+        time=dfLocal[(dfLocal[attribute1])==valueAtt1]['Time'].values
+        time=time.astype(float)
 
         if (len(accuracy) > 0):
             if (mOa == 0):
                 choosenAccuracy = max(accuracy)
+                choosenTime=max(time)
             else:
+                choosenTime=sum(time)/len(time)
                 choosenAccuracy = sum(accuracy) / len(accuracy)
         else:
             choosenAccuracy = 0
 
+        timeList.append(choosenTime)
         accuracyList.append(choosenAccuracy)
 
         # ora accuracyList ha tanti valori quanti i possibili valori di att1, fissato il valore di att2
 
 
-    ax1.plot(valuesAtt1, accuracyList, color=c, marker='o')
+    ax1.plot(valuesAtt1, accuracyList, color='r', marker='o')
+    ax2.plot(valuesAtt1, timeList, color='b', marker='^')
 
 
     ax1.set_xlabel(attribute1)
     ax1.set_ylabel('Accuracy')
+    ax2.set_ylabel('Time')
 
 
     plt.savefig(datasetName + '-' + attribute1 + '-' + '.pdf')
