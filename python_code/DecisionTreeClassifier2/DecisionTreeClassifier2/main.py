@@ -6,7 +6,7 @@ def main():
     useValidationSet = False
     usePercentageTrainingSet = True
 
-    #executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile)
+    executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile)
 
     #executeShapeletTransform(datasetName)
 
@@ -21,7 +21,7 @@ def main():
     avg=1
     #plotComparisonMultiple(nameFile,datasetName,'MaxDepth','Candidates',max)
 
-    plotComparisonSingle(nameFile,datasetName,'NumClusterMedoid',avg,UsePercentageTrainingSet=True)
+    #plotComparisonSingle(nameFile,datasetName,'NumClusterMedoid',avg,UsePercentageTrainingSet=True)
 
 
 

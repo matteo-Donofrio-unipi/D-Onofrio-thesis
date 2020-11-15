@@ -17,19 +17,19 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
     second = True  # CALCOLO ALBERO DECISIONE
     third = True  # ESTRAZIONE DATASET TEST
     quarter = True  # PREDIZIONE E RISULTATO
-    fifth = False  # GRAFICA DI SERIE TEMPORALI E MATRIX PROFILE DEI CANDIDATI SCELTI
+    fifth = True  # GRAFICA DI SERIE TEMPORALI E MATRIX PROFILE DEI CANDIDATI SCELTI
 
 #METTERE K HYPER PARAMETRO CENTROIDI COME PARAMETRO DI TREE
 
 
-    PercentageTrainingSet = 0.9 # % se voglio usare una percentuale di Training Set
+    PercentageTrainingSet = 1 # % se voglio usare una percentuale di Training Set
     PercentageValidationSet = 0.3  # % set rispetto alla dim del Training Set
     writeOnCsv = True
 
 
     #genero albero (VUOTO) e avvio timer
     le = LabelEncoder()
-    tree= Tree(candidatesGroup=1,maxDepth=3,minSamplesLeaf=20,removeUsedCandidate=1,window_size=20,k=2,useClustering=True,n_clusters=20,warningDetected=False,verbose=0) # K= NUM DI MOTIF/DISCORD ESTRATTI
+    tree= Tree(candidatesGroup=1,maxDepth=4,minSamplesLeaf=20,removeUsedCandidate=1,window_size=30,k=3,useClustering=True,n_clusters=100,warningDetected=False,verbose=0) # K= NUM DI MOTIF/DISCORD ESTRATTI
 
 
 
@@ -187,7 +187,7 @@ def executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
 
 
     if(third==True):
-        verbose=True
+        verbose=False
 
         if(useValidationSet):
             dfTest=dfVal

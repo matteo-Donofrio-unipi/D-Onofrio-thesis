@@ -331,7 +331,6 @@ class Tree:
 
 
     # effettua il primo passo dell'algo di generazione dell'albero, richiama ricorsivamente sui figli
-    # VERSIONE CHE NON RIMUOVE I CANDIDATI QUANDO VENGONO SCELTI
     def fit(self,dfForDTree,verbose):
         # inizio algo per nodo radice
         returnList = self.findBestSplit(dfForDTree,False)
@@ -462,7 +461,7 @@ class Tree:
             pattern = xTest.iloc[i]
             if(self.printed==False):
                 yPredicted[i] = self.treeExplorerPrint(pattern, root,0)
-                #plotDataAndShapelet(self)
+                plotDataAndShapelet(self)
                 self.printed=True #dopo la prima stampa, setto a false e smetto di stampare
             else:
                 yPredicted[i] = self.treeExplorer(pattern, root) #non stampo piu
@@ -523,7 +522,7 @@ class Tree:
                 self.ShapeletDf.iloc[counter]['startingIndex'] = idx
 
                 self.Shapelet.iloc[counter]['IdShapelet']=attr
-                self.Shapelet.iloc[counter]['Shapelet']=TsContainingShapelet[idx:idx+self.window_size]
+                self.Shapelet.iloc[counter]['Shapelet']=TsContainingShapelet[startingPosition:startingPosition+self.window_size]
 
 
             if (pattern[attr] < node.data[0]):
