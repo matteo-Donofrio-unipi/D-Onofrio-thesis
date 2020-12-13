@@ -1,8 +1,0 @@
-Candidates,Max depth,Min samples,Window size,Remove candi,k,% Training set,Accuracy,Time
-Motifs,2,5,5,0,2,0.25,0.76,6809.11
-Discords,2,5,5,0,2,0.25,0.84,8586.32
-Discords,2,5,5,0,2,1,0.65,24311.77
-Motifs,5,10,20,1,1,0.25,0.68,129.75
-Discords,5,10,20,1,1,0.25,0.76,119.01
-Discords,5,10,20,1,2,0.25,0.6,350.87
-Discords,5,5,5,0,2,0.25,0.68,352.78
