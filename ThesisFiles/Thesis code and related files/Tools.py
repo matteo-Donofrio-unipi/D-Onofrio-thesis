@@ -3,47 +3,36 @@ import numpy as np
 from matrixprofile import *
 from matrixprofile.discords import discords
 from matplotlib import pyplot as plt
-from scipy.io import arff
-from binarytree import Node
-from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
-from sklearn.feature_selection import mutual_info_classif
-from scipy.stats import entropy
-from math import log, e
-import pydotplus
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.model_selection import train_test_split
-from sklearn import tree
-from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import accuracy_score, f1_score, classification_report
-from sklearn.metrics import roc_curve, auc, roc_auc_score
-import math
-from datetime import datetime
 import time
 from scipy.spatial.distance import euclidean
-from kCandidatesSearch2 import runKMeans
+from kMedoidsSearch import runKMedoids
 
 
-# LIBRERIA PER TUTTE LE FUNZIONI DI PRE PROCESSING DEI DATI
-# DALL'ESTRAZIONE AL PASSAGGIO PER LA CREAZIONE DELL'ALBERO
+# Library contining functions for:
+# - the data preprocessing aimed at the generation of the dataset for the training phase
+# - computation and optimisaztion of data structures during the fitting phase
 
 
 
 def computeLoadedDataset(X, y):
 
+    #INPUT: Raw dataset X (time series) and theirs labels y
+
+    #OUTPUT: Structured single dataset (X,y)
+
     columnsList = np.arange(len(X[0]))
     columnsList2 = list()
     prefix = 'att'
 
-    #conto il numero di attributi e genero nomi colonne
+    #Generates as many columns attributes as many values in the time series
     for i in columnsList:
         columnsList2.append(prefix + str(i))
     columnsList2.append('target')
     columnsList2.append('TsIndex')
     dataset = pd.DataFrame(columns=columnsList2, index=range(0, len(X)))
 
-    #aggiungo ad ogni record l'attributo classe
+    #each rows of dataset contains a time series and its label (as last value)
     for i in range(len(X)):
         l1 = list()
         record = X[i]
@@ -55,10 +44,17 @@ def computeLoadedDataset(X, y):
 
     return dataset
 
+
 def retrieve_all(tree,Ts,window_size,k):  # fornita la Ts calcola e restituisce mp, motifs, motifs_distances e discords
-    dfMP = pd.DataFrame(Ts).astype(float)  # genero Dframe per lavorarci su, DA CAPIRE PERCHE SERVE FLOAT
+
+    #INPUT: Decision tree, Time series, sliding window size, #of motifs and discords extracted from each Ts
+
+    #OUTPUT: Matrix Profile and the top K motifs and discords extracted from the Ts
+
+    dfMP = pd.DataFrame(Ts).astype(float)
     dis=[]
 
+    # IF the Ts contains almost all equal values, the MP Stomp function arises problems, so the MP its computed with the naive function
 
     if(tree.warningDetected==True):
         mp, mpi = matrixProfile.naiveMP(dfMP[0].values, window_size)
@@ -66,20 +62,22 @@ def retrieve_all(tree,Ts,window_size,k):  # fornita la Ts calcola e restituisce 
     else:
         mp, mpi = matrixProfile.stomp(dfMP[0].values, window_size)
 
+    #check if the MP Stomp function arises problems
     if(np.isnan(mp).any() or np.isinf(mp).any()):
         tree.warningDetected=True
         print('switch to ComputeMpAndMpi')
         mp, mpi = matrixProfile.naiveMP(dfMP[0].values, window_size)
 
-    # PREPARO TUPLA DA PASSARE ALLA FUN MOTIF (RICHIEDE TUPLA FATTA DA MP E MPI)
+
+    # Tuple needed to extract Motifs
     tupla = mp, mpi
 
     mot, motif_dist = motifs.motifs(dfMP[0].values, tupla, k)
 
-    # CALCOLO DISCORDS
+    #check if the MP Stomp function arises problems
     if(sum(mp)!=0):
         dis = discords(mp, window_size, k)
-    # print('Discords starting position: '+str(dis))
+    # else impossible extract other discords (maybe windowSize too large)
 
     tupla = mp, mot, motif_dist, dis
     return tupla
@@ -87,8 +85,13 @@ def retrieve_all(tree,Ts,window_size,k):  # fornita la Ts calcola e restituisce 
 
 
 
-#my function for compute mp and mpi
+#Our function to compute the MP and the MPI
 def ComputeMpAndMpi(Ts, window_size):
+
+    #INPUT: Time series, sliding window size
+
+    #OUTPUT: MP and MPI
+
     if window_size >= len(Ts) or window_size < 2:
         raise ValueError('Window_size not supported')
 
@@ -125,13 +128,19 @@ def ComputeMpAndMpi(Ts, window_size):
 
     return mp, mpi
 
-#my fun for compute the Distance Profile
 #CALCOLA DP TRA SUBSEQ A CONTENUTA IN TsContainigSubSeq E TUTTE LE SUBSEQ B CONTENUTE IN TsToCompare
+
+#Our function to compute the Distance Profile
 def ComputeDp(TsContainigSubSeq, indexStartigPosition, window_size, TsToCompare=None):
+
+    #INPUT: Ts containing the subsequence (Query), index of the subsequence within Ts, Sliding window size, Ts whose distance has to be computed
+    #TsToCompare=None if the Ts has to compute the distance with itself
+
+    #OUTPUT: Distance profile btw the subsequence and the Ts
+
     TsContainigSubSeq = TsContainigSubSeq.astype(float)
     ComparingWithItSelf = False
 
-    #controllo e inizializzola TS su cui calcolare DP
     if (TsToCompare is None):
         ComparingWithItSelf = True
         TsToCompare = TsContainigSubSeq
@@ -141,7 +150,7 @@ def ComputeDp(TsContainigSubSeq, indexStartigPosition, window_size, TsToCompare=
     if window_size >= len(TsToCompare) or window_size < 2:
         raise ValueError('Window_size not supported')
 
-    #subSeq A
+    #Query
     subSeq = TsContainigSubSeq[indexStartigPosition:indexStartigPosition + window_size]
 
     lenTs = len(TsToCompare)
@@ -154,7 +163,7 @@ def ComputeDp(TsContainigSubSeq, indexStartigPosition, window_size, TsToCompare=
         elif (i == indexStartigPosition and ComparingWithItSelf == True):
             continue
         else:
-            # subSeq A generata in ogni iterazione
+            # subSeq generated by the sliding window
             subSeqToCompute = TsToCompare[i:i + window_size]
             dist = euclidean(subSeq, subSeqToCompute)
             dp.append(dist)
@@ -163,10 +172,17 @@ def ComputeDp(TsContainigSubSeq, indexStartigPosition, window_size, TsToCompare=
 
 
 
-# ogni motif e identificato da almeno due indici di partenza nella Ts, ne prendo uno solo rappresentativo
+
 # genero poi struttura contenente gli indici di partenza di tutti i candidati
 
+#Each motif is identified by at least 2 starting positions, candidateFilter takes one starting position for each motifs
 def candidateFilter(CandidatesList):
+
+    #INPUT: A Dataframe containing in each row, the starting index positions of motifs and discrods extracted from a Ts
+
+    #OUTPUT: A Dataframe containing in each row, only one starting index position for each motif and discord
+    #        The overall number of motifs and discord extracted
+
     counterNumberMotif = 0
     counterNumberDiscord = 0
     l2 = np.array([])
@@ -174,13 +190,13 @@ def candidateFilter(CandidatesList):
         numMotif = len(CandidatesList['Motif'].iloc[i])
         numDiscord = len(CandidatesList['Discord'].iloc[i])
         counterNumberDiscord += numDiscord
-        for j in range(numMotif):  # per ogni lista di motif
-            l1 = CandidatesList['Motif'].iloc[i]  # prima lista
-            l2 = np.append(l2, l1[j][0])  # prendo primo valore di ogni lista
+        for j in range(numMotif):  # for each motifs starting index position list
+            l1 = CandidatesList['Motif'].iloc[i]  # motifs list
+            l2 = np.append(l2, l1[j][0])  # takes the first starting position
             counterNumberMotif += 1
 
         CandidatesList['Motif'].iloc[i] = l2
-        l2 = np.array([])  # svuoto array
+        l2 = np.array([])
 
     return CandidatesList, counterNumberMotif, counterNumberDiscord
 
@@ -201,8 +217,14 @@ def countNumberOfCandidates(CandidatesListTrain):
 
 
 
-# riceve la lista di candidati e genera una lista della stessa dimensione di booleani
+# Generates a boolean list of the same lentgh of the motifs and discords extracted from all Ts in the whole dataset
+# in order to take trace of the alreay used candidates
 def buildCandidatesUsedList(CandidatesList):
+
+    #INPUT: List of the motifs and discords extracted from all Ts in the whole dataset
+
+    #OUTPUT: List of as many boolean values as many motifs and discords extracted
+
     CandidatesUsedList = pd.DataFrame(columns=['IdCandidate','Used'], index=CandidatesList["IdCandidate"].values)
     boolList = [False] * (len(CandidatesList))
     CandidatesUsedList['Used'] = boolList
@@ -212,7 +234,12 @@ def buildCandidatesUsedList(CandidatesList):
 
 
 def getDataStructures(tree,df,window_size,k,verbose):
-    # trasformo da stringa a numero il campo target
+
+    #INPUT: Deicsion Tree, training dataset, sliding window size, # of motifs and discords extracted from each Ts
+
+    #OUTPUT: Dataframe containing all the candidates extracted, the number of candidates extracted
+
+    # transform target value into number
     le = LabelEncoder()
     num_classes = le.fit_transform(df['target'])
     df['target'] = num_classes
@@ -222,7 +249,7 @@ def getDataStructures(tree,df,window_size,k,verbose):
     numberOfMotifs=0
     numberOfDiscords=0
 
-    # CALCOLO MOTIF E DISCORD E LI INSERISCO NEL DIZIONARIO
+    # Extract motifs and discords
 
     if(verbose):
         print('start computing MP, MPI')
@@ -257,7 +284,6 @@ def getDataStructures(tree,df,window_size,k,verbose):
             counter+=1
 
 
-    # GENERO DFRAME DA DIZIONARIO
     CandidatesList = pd.DataFrame(diz)
     if (verbose == True):
         print('Candidati estratti: ')
@@ -265,11 +291,15 @@ def getDataStructures(tree,df,window_size,k,verbose):
         print('numberOfMotif: %d, numberOfDiscord: %d \n'% (numberOfMotifs, numberOfDiscords))
         print('\n')
 
-    return mp, CandidatesList, numberOfMotifs, numberOfDiscords
+    return CandidatesList, numberOfMotifs, numberOfDiscords
 
 
 
 def computeSubSeqDistance(tree, TsIndexList ,CandidatesList,window_size):
+
+    #INPUT: Decision tree, list of Ts Index, list of candidates
+
+    #OUTPUT: Training dataset such that: each row is a Ts, each column is a candidate, each cell is the Min euclidean dist btw the Ts and candidate
 
     columnsList = CandidatesList['IdCandidate'].values
     columnsList = columnsList.astype(int)
@@ -278,6 +308,7 @@ def computeSubSeqDistance(tree, TsIndexList ,CandidatesList,window_size):
     dfForDTree['class'] = None
 
 
+    #for each Ts, retireive each candidate and compute the min euclidean distance
     for i in range(len(TsIndexList)):
         # acquisisco la Ts di cui calcolare distanza
         TsIndexValue=TsIndexList[i]
@@ -285,11 +316,12 @@ def computeSubSeqDistance(tree, TsIndexList ,CandidatesList,window_size):
         TsToCompare=np.array(tree.dfTrain[tree.dfTrain['TsIndex']==TsIndexValue].values)
 
         TsToCompare=TsToCompare[0]
-        classValue = TsToCompare[len(TsToCompare)-2] #la classe è sempre il penultimo attributo
-        TsToCompare = TsToCompare[:len(TsToCompare)-2] #la serie è ottenuta rimuovendo i due ultimi attributi
+        classValue = TsToCompare[len(TsToCompare)-2] #class value is always the penultimate value, Ts index index is last
+        TsToCompare = TsToCompare[:len(TsToCompare)-2]
 
         dfForDTree['TsIndex'].iloc[i] = TsIndexValue
         dfForDTree['class'].iloc[i] = classValue
+
 
         for j in range (len(CandidatesList)):
             IdCandidate=CandidatesList.iloc[j]['IdCandidate']
@@ -320,8 +352,13 @@ def computeSubSeqDistance(tree, TsIndexList ,CandidatesList,window_size):
 
 
 
-#realizzata differentemente perche chiamata una sola volta su DframeTest
+#built differently because its called once on test dataset (DframeTest)
 def computeSubSeqDistanceForTest(tree,datasetTest, CandidatesListTest):
+
+    #INPUT: Decision tree, list of Ts Index belonging to the test set, list of candidates chosen by the Decision Tree
+
+    #OUTPUT: Test dataset such that: each row is a Ts, each column is a candidate, each cell is the Min euclidean dist btw the Ts and candidate
+
     # quantifico il num di candidati usati dall'albero e in base a tale valore genero colonne per dfForDTree
     columnsList = CandidatesListTest['IdCandidate'].values
     columnsList = columnsList.astype(int)
@@ -366,14 +403,19 @@ def computeSubSeqDistanceForTest(tree,datasetTest, CandidatesListTest):
     num_classes = le.fit_transform(dfForDTreeTest['class'])
     dfForDTreeTest['class'] = num_classes
 
-    return dfForDTreeTest  # columnsList2 restituito per generare poi dFrame in "Split" (struttura dframe)
+    return dfForDTreeTest
 
 
 
-#dopo aver calcolato dfTrain, recupero la sottosequenza di ogni candidato shapelet
+#Apply the K-Medoids to the candidatesList
 def reduceNumberCandidates(tree,CandidatesList,returnOnlyIndex):
-    #return index=True => restituisce solo indici
-                  #False => restituisce CnaiddatesList filtrato
+
+    #INPUT: Decision Tree, list of candidates, options
+
+    #OUTPUT: List of the candidates chosen as medoids
+
+    #returnOnlyIndex = True => returns only candidates index
+    #                  False => returns candidates
 
     if(tree.n_clusters>= len(CandidatesList) or len(CandidatesList)==0):
         if(tree.verbose):
@@ -427,7 +469,7 @@ def reduceNumberCandidates(tree,CandidatesList,returnOnlyIndex):
 
 
     # indici all interno di candDfMotifs & candDfDiscords dei candidati scelti come medoidi
-    CandidateMedoids = runKMeans(CandidatesSubSeq, tree.n_clusters)
+    CandidateMedoids = runKMedoids(CandidatesSubSeq, tree.n_clusters)
     if(verboseretireveCandidatesSubSeq):
         print('indici all interno di CandidatesList scelti come medoidi ')
         print(CandidateMedoids)
@@ -447,178 +489,7 @@ def reduceNumberCandidates(tree,CandidatesList,returnOnlyIndex):
 
 
 
-#FUNZIONI PER PLOTTING DEI DATI
 
-
-def plotDataAndShapelet(tree,i,labelValue):
-    #value può essere -1 => distanza minore, vado a sx | 1 => distanza maggiore, vado a dx
-    fig, ax1 = plt.subplots(1, 1, sharex=True, figsize=(20, 15))
-
-    print('DENTRO PLOT')
-    print(tree.ShapeletDf)
-
-
-    print('\n')
-    print(tree.Shapelet)
-
-    if (i == 0):
-        Ts = tree.TsTestForPrint
-    elif (i == 1):
-        Ts = tree.TsTestForPrint2
-    elif (i == 2):
-        Ts = tree.TsTestForPrint3
-
-    ax1.plot(np.arange(len(Ts)), Ts, label="Ts",color='b')  # stampo linespace su x e valori data su y (USATO SE NON STAMPO MOTIF/DIS)
-    print('labelValue= '+str(int(labelValue)))
-    ax1.set_title('b(x) = '+str(int(labelValue)),fontsize=30)
-
-    for i in range(tree.counter):
-
-        idShapelet=tree.ShapeletDf.iloc[i]["IdShapelet"]
-        majorMinor = tree.ShapeletDf.iloc[i]["majorMinor"]
-        startingIndex = tree.ShapeletDf.iloc[i]["startingIndex"]
-
-        PrintedShapelet=tree.Shapelet[tree.Shapelet["IdShapelet"]==idShapelet]["Shapelet"].values
-        PrintedShapelet=PrintedShapelet[0]
-
-        if(majorMinor==-1):
-            c='g'
-        else:
-            c='r'
-
-        shapeletPlot=ax1.plot(range(startingIndex, startingIndex + tree.window_size),PrintedShapelet, label='Shapelet', color=c ,linewidth=2)
-        coordinates=shapeletPlot[0].get_data()
-        x=coordinates[0][0]
-        y=coordinates[1][0]
-        ax1.annotate(idShapelet, xy=(x, y), xytext=(x+0.3, y+0.3),fontsize=30)
-
-
-
-    start_time = time.time()
-    plt.tick_params(axis='both', which='major', labelsize=35)
-    plt.savefig(str(time.time())+'.png',bbox_inches='tight')
-    plt.show()
-
-
-
-
-
-def plotDataAndShapelet2(Ts,Shapelet,indexOnTs,value,dist,treshOld,window_size):
-    #value può essere -1 => distanza minore, vado a sx | 1 => distanza maggiore, vado a dx
-    fig, ax1 = plt.subplots(1, 1, sharex=True, figsize=(20, 15))
-
-    print('DENTRO PLOT')
-    print(Shapelet)
-    print(window_size)
-    print('indexoNts')
-    print(indexOnTs)
-
-    if(value==-1):
-        c='g'
-    else:
-        c='r'
-    ax1.plot(np.arange(len(Ts)), Ts, label="Ts",color='b')  # stampo linespace su x e valori data su y (USATO SE NON STAMPO MOTIF/DIS)
-    ax1.set_xlabel('Ts', size=22)
-
-    ax1.plot(range(indexOnTs, indexOnTs + window_size), Shapelet, label='Shapelet', color=c ,linewidth=2)
-    ax1.legend(loc=1, prop={'size': 12})
-
-    ax1.set_title('Color: Green(if minor of Treshold) Red(major)\nDistance: %f \n Treshold: %f' % (dist,treshOld))
-
-    plt.show()
-
-def plotData(Ts):
-    Ts.plot(figsize=(7, 7), legend=None, title='Time series')
-    plt.show()
-
-#PLOTTA SU OGNI TS CONTENENTE SHAPELET, TUTTI I MOTIF E DISCORD TROVATI
-def plot_motifsAll(mtfs, labels, ax, data, sp,window_size):
-    #data can be raw data or MP
-    colori = 0
-    colors = 'rmb'
-    for ms,l in zip(mtfs,labels):
-        c =colors[colori % len(colors)]
-        starts = list(ms)
-        print(starts)
-        ends = [min(s + window_size,len(data)-1) for s in starts]
-        print(ends)
-        ax.plot(starts, data[starts],  c +'o',  label=l+'(Motif)')
-        ax.plot(ends, data[ends],  c +'o', markerfacecolor='none')
-        for nn in ms:
-            ax.plot(range(nn,nn+window_size),data[nn:nn+window_size], c , linewidth=2)
-        colori += 1
-
-    #ax.plot(a,'green', linewidth=1, label="data") COMMENTATO PERCHE PLOTTO I DATI INDIPENDENTEMENTE
-    ax.legend(loc=1, prop={'size': 12})
-
-
-
-
-#PLOTTA SU OGNI TS CONTENENTE SHAPELET, SOLO I MOTIF / DISCORD USATI DAL DTREE
-def plot_motifs(mtfs, labels, ax, fig, data, sp,window_size,idCandidate):
-    #data can be raw data or MP
-    colori = 0
-    colors = 'rmb'
-    for ms,l in zip(mtfs,labels):
-        c =colors[colori % len(colors)]
-        starts = list(ms)
-        ends = [min(s + window_size,len(data)-1) for s in starts]
-
-        for i in range(len(list(ms))):
-            start=ms[i]
-            if(start==sp):
-                end=start+window_size
-                ax.plot(start, data[start],  c +'o',  label=l+'(Motif)')
-                ax.plot(end, data[end],  c +'o', markerfacecolor='none')
-                ax.plot(range(start,start+window_size),data[start:start+window_size], c , linewidth=2)
-                fig.suptitle('Shapelet: '+str(idCandidate),fontsize=30)
-                colori += 1
-
-    #ax.plot(a,'green', linewidth=1, label="data") COMMENTATO PERCHE PLOTTO I DATI INDIPENDENTEMENTE
-    #ax.legend(loc=1, prop={'size': 12})
-
-
-def plot_discords(dis, ax, fig, data, sp,window_size,idCandidate):
-    # data can be raw data or Mp
-    color = 'k'
-    for start in dis:
-        if(start==sp):
-            end = start + window_size
-            ax.plot(start, data[start], color, label='Discord')
-            if(end >= len(data)):
-                end=len(data)-1
-            ax.plot(end, data[end], color, markerfacecolor='none')
-
-            ax.plot(range(start, start + window_size), data[start:start + window_size], color, linewidth=2)
-            fig.suptitle('shapelet '+str(idCandidate),fontsize=30)
-    #ax.legend(loc=1, prop={'size': 12})
-
-
-def plot_all(Ts, mp, mot, motif_dist, dis, sp,MoD, window_size,idCandidate):
-
-    # Append np.nan to Matrix profile to enable plotting against raw data (FILL DI 0 ALLA FINE PER RENDERE LE LUNGHEZZE UGUALI )
-    mp_adj = np.append(mp, np.zeros(window_size - 1) + np.nan)
-
-    # MODO 2 PER PLOTTARE (O-ORIENTED)
-    # Plot dei dati
-    #fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True, figsize=(20, 15))
-    fig, ax1 = plt.subplots(1, 1, sharex=True, figsize=(20, 15))
-    #ax1.plot(np.arange(len(Ts)), Ts, label="Ts",
-    #         color='g')  # stampo linespace su x e valori data su y (USATO SE NON STAMPO MOTIF/DIS)
-    if(MoD==0):
-        plot_motifs(mot, [f"{md:.3f}" for md in motif_dist], ax1, fig, Ts, sp,window_size,idCandidate)  # sk
-    else:
-        plot_discords(dis, ax1, fig, Ts, sp,window_size,idCandidate)
-
-    #Plot della Matrix Profile
-    # ax2.plot(np.arange(len(mp_adj)), mp_adj, label="Matrix Profile", color='green')
-    # ax2.set_ylabel('Matrix Profile', size=22)
-    # if(MoD==0):
-    #     plot_motifs(mot, [f"{md:.3f}" for md in motif_dist], ax2, mp_adj, sp, window_size)
-    # else:
-    #     plot_discords(dis, ax2, mp_adj, sp,window_size)
-    plt.tick_params(axis='both', which='major', labelsize=35)
-    plt.show()
 
 
 def retrieve_all2(Ts,window_size,k):  # fornita la Ts calcola e restituisce mp, motifs, motifs_distances e discords

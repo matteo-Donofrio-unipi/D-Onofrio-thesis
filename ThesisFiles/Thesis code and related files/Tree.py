@@ -3,14 +3,11 @@ import numpy as np
 from matrixprofile import *
 from matrixprofile.discords import discords
 from matplotlib import pyplot as plt
-from scipy.io import arff
 from binarytree import Node
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from sklearn.feature_selection import mutual_info_classif
 from scipy.stats import entropy
-from math import log, e
-import pydotplus
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
 from sklearn import tree
@@ -18,7 +15,8 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score, f1_score, classification_report
 from sklearn.metrics import roc_curve, auc, roc_auc_score
-from PreProcessingLibrary2 import  computeSubSeqDistance,reduceNumberCandidates,plotDataAndShapelet
+from Tools import  computeSubSeqDistance,reduceNumberCandidates
+from PlotLibrary import plotDataAndShapelet
 
 
 class Tree:
@@ -37,23 +35,24 @@ class Tree:
         self.attributeList=list()
 
 
-    def modifyCandidateUsedList(self,newCand):
-        self.OriginalCandidatesUsedListTrain=newCand
 
-    def printTree(self):
-        print(self.candidatesGroup)
-        print(self.removeUsed)
-        print('ciao')
-
-    # dataset (dframe): nella riga i: indice della ts di appartenenza, distanza tra candidato e Ts, e classe di appartenenza di Ts
-    # calcola entropia di un dataset basandosi sul num di classi esistenti
     def computeEntropy(self,dataset):
+
+        #INPUT: Dataset contining Ts and their label
+
+        #OUTPUT: Entropy of the Dataset
+
         value, counts = np.unique(dataset['class'], return_counts=True)
         actualEntropy = entropy(counts, base=2)
         return actualEntropy
 
-    # calcola il gain tra entropia nodo padre e sommatoria entropia nodi figli (GAIN CALCOLATO SUL VALORE DELL'ATTRIBUTO)
+
     def computeGain(self,entropyParent, LenDatasetParent, Dleft, Dright):
+
+        #INPUT: Entropy of the parent node, lenght parent node, left and right child node
+
+        #OUTPUT: Gain entropy btw parent entropy and the weighed summation of the child entropy
+
         entropyLeft = self.computeEntropy(Dleft)
         entropyRight = self.computeEntropy(Dright)
         gain = entropyParent
@@ -65,9 +64,12 @@ class Tree:
 
 
 
-    # SPLIT SLAVE
-    # effettua lo split del dataset sul attributo e valore fornito
+
     def split(self,dataset, attribute, value):
+
+        #INPUT: dataset,attribute and value on which split the dataset
+
+        #OUTPUT: left and right dataset obtained from the split
 
         columnsList = dataset.columns.values
         attribute=str(attribute)
@@ -115,10 +117,14 @@ class Tree:
 
 
 
-
+    #Given the dataset, compute for each candidate: the best treshold value on which split and the relative difference entropy gained
     def computeMutualInfo(self,datasetForMutual,verbose):
         # cerca attributo, il cui relativo best split value massimizza l'information gain nello split
 
+        #INPUT: Dataset
+
+
+        #OUTPUT: Dataframe such that each row contains the best treshold and the relative difference entropy gained, on a specific candidate
 
         columns = datasetForMutual.columns
         dframe = pd.DataFrame(columns=['IdCandidate', 'splitValue', 'gain'],
@@ -162,24 +168,22 @@ class Tree:
 
         return dframe
 
-    # SPLIT INTERMEDIO
-    # dato il dataset, cerca il miglior attributo e relativo valore (optimal split point) su cui splittare
-    # restituiendo il dataset splittato e i valori trovati
+
+
+    #Find the Shapelet and relative OptimalSplitPoint (treshold value) on which split the dataset
     def findBestSplit(self,dfForDTree, verbose=False):
 
-        # cerca e restituisce attributo migliore su cui splittaree relativo valore ottimale (optimal split point)
-        # CANDIDATE GROUP permette di scegliere se usare come candidati 0=motifs 1=discord 2=entrambi
+        #INPUT: Training Dataset
 
-        # trovo best Attribute
+        #OUTPUT: CandidateIndex, value, left and right child dataset
 
-        # calcolo gain e miglior valore di split per ogni attributo
 
         vecMutualInfo = self.computeMutualInfo(dfForDTree,verbose)
         if (verbose == True):
             print('vec mutual info calcolato: ')
             print(vecMutualInfo)
 
-        # se rimuovo candidati, faccio scegliere migliore non ancora utilizzato
+        # based on the "removeUsedCandidate" parameter value, its chosen the best candidate on which split
         if (self.removeUsedCandidate == 1):
             indexBestAttribute, bestValueForSplit  = self.getBestIndexAttribute(self.OriginalCandidatesUsedListTrain,vecMutualInfo,verbose)
         else:  # se non rimuovo candidati, mi basta prendere il primo
@@ -187,7 +191,7 @@ class Tree:
             indexBestAttribute = vecMutualInfo.iloc[0]['IdCandidate']
             bestValueForSplit = vecMutualInfo.iloc[0]['splitValue']
             if (verbose):
-                print('gain: ' + str(vecMutualInfo.iloc[0]['gain']))  # stampo gain
+                print('gain: ' + str(vecMutualInfo.iloc[0]['gain']))
 
         if (verbose == True):
             print('BEST attribute | value')
@@ -203,11 +207,10 @@ class Tree:
     # memorizza in ogni nodo: attributo, valore attributo su cui splitto, entropia nodo, num pattern
     # memorizza in ogni foglia: entropia nodo, num pattern, classe nodo
 
-    # VERSIONE CHE RIMUOVE I CANDIDATI QUANDO VENGONO SCELTI
-
+    #Recursive function that builds the Decision Tree
     def buildTree(self,actualNode, dataset, depth,verbose):
-        # caso base: num pattern < soglia minima || profondità massima raggiunta => genero foglia con media delle classi
-        # DATASET HA SEMPRE ALMENO UN PATTERN
+
+        #Base case
         boolValue = self.checkIfIsLeaf(dataset)
         if (len(dataset) < self.minSamplesLeaf or depth >= self.maxDepth or boolValue == True):
             average = sum(dataset['class'].values) / len(dataset['class'].values)
@@ -225,8 +228,8 @@ class Tree:
             actualNode.left = None
             actualNode.right = None
             return
-            # caso ricorsivo in cui si può splittare
-        else:
+
+        else: #Recursive case
 
             returnList = self.findBestSplit(dataset,verbose)
             indexChosenAttribute = returnList[0]
@@ -237,7 +240,7 @@ class Tree:
             entropy = self.computeEntropy(dataset)
             self.attributeList.append(indexChosenAttribute)
 
-            # memorizzo nel nodo l'attributo, il valore e altre info ottenute dallo split
+            #Store in each node values about split
 
             nodeInfo = list()
             nodeInfo.append(attributeValue)
@@ -253,8 +256,14 @@ class Tree:
 
             if(self.useClustering):
 
-                # effettuo clustering
+
+
+
+                # APPLY K-MEDOIDS FOR DLEFT------------------------------------------------------
+
                 TsIndexLeft = Dleft['TsIndex']  # TsIndex contenute in Dleft
+
+                #Retrieve medoids among all candidates
 
                 CandidatesListLeft = self.OriginalCandidatesListTrain['IdTs'].isin(
                     TsIndexLeft)  # setta a True gli indici dei candidati che sono stati generati dalle Ts contenute in Dleft
@@ -272,12 +281,15 @@ class Tree:
                     print('CANDIDATI RIMASTI IN BUILD')
                     print(CandidateToCluster)
 
-                # calcolo distanze tra Ts in Dleft e candidati scelti
+                # Compute distances btw Ts and chosen medoids
                 Dleft = computeSubSeqDistance(self, TsIndexLeft, CandidateToCluster, self.window_size)
 
-                # RIPETO PER DRIGHT------------------------------------------------------
+
+                # APPLY K-MEDOIDS FOR DRIGHT------------------------------------------------------
 
                 TsIndexRight = Dright['TsIndex']  # TsIndex contenute in Dleft
+
+                # Retrieve medoids among all candidates
 
                 CandidatesListRight = self.OriginalCandidatesListTrain['IdTs'].isin(
                     TsIndexRight)  # # setta a True gli indici dei candidati che sono stati generati dalle Ts contenute in Dright
@@ -295,7 +307,7 @@ class Tree:
                     print('CANDIDATI RIMASTI IN BUILD')
                     print(CandidateToCluster)
 
-                #calcolo distanze tra Ts in Dright e candidati scelti
+                # Compute distances btw Ts and chosen medoids
                 Dright = computeSubSeqDistance(self, TsIndexRight, CandidateToCluster, self.window_size)
 
                 if (verbose):
@@ -305,7 +317,7 @@ class Tree:
 
 
 
-            # se possibile richiamo ricorsivamente sul nodo dx e sx figlio
+            #Recursive call
             if (len(Dleft) > 0):
                 actualNode.left = Node(int(indexChosenAttribute))
                 self.buildTree(actualNode.left, Dleft, depth + 1, verbose)
@@ -317,8 +329,11 @@ class Tree:
 
 
 
-    # verifica se dataset, ha pattern appartenenti ad una sola classe => è gia foglia
     def checkIfIsLeaf(self,dataset):
+        #INPUT: Dataset
+
+        #OUTPUT: True if the node containing this dataset can be defined as a Leaf
+
         isLeaf = True
         entropy = self.computeEntropy(dataset)
         if (entropy > 0):
@@ -330,8 +345,13 @@ class Tree:
 
 
 
-    # effettua il primo passo dell'algo di generazione dell'albero, richiama ricorsivamente sui figli
+    # Start to define and train the model
     def fit(self,dfForDTree,verbose):
+
+        #INPUT: Training dataset
+
+        #OUTPUT: Trained Decision Tree
+
         # inizio algo per nodo radice
         returnList = self.findBestSplit(dfForDTree,False)
         indexChosenAttribute = returnList[0]
@@ -361,9 +381,13 @@ class Tree:
 
         if(self.useClustering):
 
-            #effettuo clustering
+            # APPLY K-MEDOIDS FOR DLEFT------------------------------------------------------
+
+
             TsIndexLeft = Dleft['TsIndex']  # TsIndex contenute in Dleft
 
+
+            # Retrieve medoids among all candidates
             CandidatesListLeft = self.OriginalCandidatesListTrain['IdTs'].isin(
                 TsIndexLeft)  #  setta a True gli indici dei candidati che sono stati generati dalle Ts contenute in Dleft
 
@@ -381,15 +405,16 @@ class Tree:
                 print('CANDIDATI RIMASTI IN FIT')
                 print(CandidateToCluster)
 
-            #calcolo distanze tra Ts in Dleft e candidati scelti
+            # Compute distances btw Ts and chosen medoids
             Dleft = computeSubSeqDistance(self, TsIndexLeft, CandidateToCluster, self.window_size)
 
 
 
-            #RIPETO PER DRIGHT------------------------------------------------------
+            # APPLY K-MEDOIDS FOR DRIGHT------------------------------------------------------
 
             TsIndexRight = Dright['TsIndex']  # TsIndex contenute in Dleft
 
+            # Retrieve medoids among all candidates
             CandidatesListRight = self.OriginalCandidatesListTrain['IdTs'].isin(
                 TsIndexRight) #  setta a True gli indici dei candidati che sono stati generati dalle Ts contenute in Dright
 
@@ -405,7 +430,7 @@ class Tree:
                 print('CANDIDATI RIMASTI IN FIT')
                 print(CandidateToCluster)
 
-            #calcolo distanze tra Ts in Dleft e candidati scelti
+            # Compute distances btw Ts and chosen medoids
             Dright = computeSubSeqDistance(self, TsIndexRight, CandidateToCluster, self.window_size)
 
             if (verbose):
@@ -414,7 +439,7 @@ class Tree:
                 print(Dright)
 
 
-        # chiamata ricorsiva
+        # Recursive call
         if (len(Dleft) > 0):
             self.buildTree(root.left, Dleft, 1, verbose)
         if (len(Dright) > 0):
@@ -424,11 +449,11 @@ class Tree:
 
 
 
-    # stampa dell'albero
+
     def printAll(self,Root):
         if (Root.left == None and Root.right == None):
-            print('foglia')
-        print('Nodo: ' + str(Root.value))
+            print('leaf')
+        print('Node: ' + str(Root.value))
         df = Root.data
         print(df)
         print("\n")
@@ -437,34 +462,35 @@ class Tree:
         if (Root.right != None):
             self.printAll(Root.right)
 
-    def predict(self,testDataset, root):
-        # preparo dataset
+
+    def predict(self,testDataset, root, printClassifiedInstances):
+
+        #INPUT: Test Dataset, Decision tree root, option
+
+        #OUTPUT: List of test label, list of predicted label
+
         numAttributes = len(testDataset.columns.values)
         numAttributes -= 1  # per prendere solo gli attributi utili a xTest
         yTest = testDataset.iloc[:]['class'].values
         yPredicted = np.zeros(len(yTest))
         xTest = testDataset.iloc[:, np.r_[:numAttributes]]
 
-        self.printed = False  # DOPO PRIMA PRINT DEL PERCORSO SETTATO A TRUE, COSI STAMPO UNA VOLTA SOLA
-
-        #dizionario contenete shapelet e informazioni relative
+        #Dictionary in which store shapelet for plot the classified instances
         self.ShapeletDf=pd.DataFrame(columns=['IdShapelet','distance','majorMinor','startingIndex'],index=range(0,len(self.dTreeAttributes)))
 
-        #self.Shapelet=pd.DataFrame(columns=columnList)
         self.Shapelet = pd.DataFrame(columns=['IdShapelet','Shapelet'],index=range(0,len(self.dTreeAttributes)))
 
 
 
-        # effettuo predizione per ogni pattern
-
+        # make prediction for each pattern
         for i in range(len(xTest)):
             pattern = xTest.iloc[i]
-            if(self.printed==False):
+            if(printClassifiedInstances==True):
                 yPredicted[i] = self.treeExplorerPrint(pattern, root,0,i)
                 plotDataAndShapelet(self,i,yPredicted[i])
-                self.printed=True #dopo la prima stampa, setto a false e smetto di stampare
+                printClassifiedInstances = False #set to False for plot only 1 instances
             else:
-                yPredicted[i] = self.treeExplorer(pattern, root) #non stampo piu
+                yPredicted[i] = self.treeExplorer(pattern, root) #predict without plot
 
 
         yTest = yTest.astype(int)
@@ -472,6 +498,9 @@ class Tree:
 
         return yTest, yPredicted
 
+
+
+    #Recursive function, given a pattern, classifies it by exploring the Decision tree
     def treeExplorer(self,pattern, node):
         # caso base, node è foglia
         if (node.value == -1):
@@ -484,52 +513,45 @@ class Tree:
             else:
                 return self.treeExplorer(pattern, node.right)
 
-        # setto booleano prima in modo da stampare solo 1 TS
-
+    # Recursive function, given a pattern, classifies it by exploring the Decision tree
+    # store the information needed for the plot
     def treeExplorerPrint(self, pattern, node,counter,i):
-        # caso base, node è foglia
+        # Base case
         if (node.value == -1):
             return int(node.data[0])
         else:
-            # caso ricorsivo
+            # recursive case
             self.counter=counter+1 #+1 perche parte da 0 e voglio il numero effettivo
             attr = int(node.value)
 
-            if (self.printed == False):
 
-                idTsShapelet = self.dTreeAttributes[self.dTreeAttributes['IdCandidate'] == int(attr)]["IdTs"].values
-                idTsShapelet = idTsShapelet[0]
 
-                startingPosition = self.dTreeAttributes[self.dTreeAttributes['IdCandidate'] == int(attr)][
+            idTsShapelet = self.dTreeAttributes[self.dTreeAttributes['IdCandidate'] == int(attr)]["IdTs"].values
+            idTsShapelet = idTsShapelet[0]
+
+            startingPosition = self.dTreeAttributes[self.dTreeAttributes['IdCandidate'] == int(attr)][
                     "startingPosition"].values
-                startingPosition = startingPosition[0]
+            startingPosition = startingPosition[0]
 
-                TsContainingShapelet = np.array(self.dfTrain[self.dfTrain['TsIndex'] == idTsShapelet].values)
-                TsContainingShapelet = TsContainingShapelet[0]
-                TsContainingShapelet = TsContainingShapelet[:len(TsContainingShapelet) - 2]
+            TsContainingShapelet = np.array(self.dfTrain[self.dfTrain['TsIndex'] == idTsShapelet].values)
+            TsContainingShapelet = TsContainingShapelet[0]
+            TsContainingShapelet = TsContainingShapelet[:len(TsContainingShapelet) - 2]
 
-                if(i==0):
-                    serie=self.TsTestForPrint
-                elif(i==1):
-                    serie = self.TsTestForPrint2
-                elif (i == 2):
-                    serie = self.TsTestForPrint3
+            if (self.warningDetected):
+                Dp = distanceProfile.naiveDistanceProfile(TsContainingShapelet, int(startingPosition),
+                                                              self.window_size, self.TsTestForPrint[i])
+            else:
+                Dp = distanceProfile.massDistanceProfile(TsContainingShapelet, int(startingPosition),
+                                                             self.window_size, self.TsTestForPrint[i])
 
-                if (self.warningDetected):
-                    Dp = distanceProfile.naiveDistanceProfile(TsContainingShapelet, int(startingPosition),
-                                                              self.window_size, serie)
-                else:
-                    Dp = distanceProfile.massDistanceProfile(TsContainingShapelet, int(startingPosition),
-                                                             self.window_size, serie)
+            val, idx = min((val, idx) for (idx, val) in enumerate(Dp[0]))
 
-                val, idx = min((val, idx) for (idx, val) in enumerate(Dp[0]))
+            self.ShapeletDf.iloc[counter]['IdShapelet']=attr
+            self.ShapeletDf.iloc[counter]['distance'] = val
+            self.ShapeletDf.iloc[counter]['startingIndex'] = idx
 
-                self.ShapeletDf.iloc[counter]['IdShapelet']=attr
-                self.ShapeletDf.iloc[counter]['distance'] = val
-                self.ShapeletDf.iloc[counter]['startingIndex'] = idx
-
-                self.Shapelet.iloc[counter]['IdShapelet']=attr
-                self.Shapelet.iloc[counter]['Shapelet']=TsContainingShapelet[startingPosition:startingPosition+self.window_size]
+            self.Shapelet.iloc[counter]['IdShapelet']=attr
+            self.Shapelet.iloc[counter]['Shapelet']=TsContainingShapelet[startingPosition:startingPosition+self.window_size]
 
 
             if (pattern[attr] < node.data[0]):

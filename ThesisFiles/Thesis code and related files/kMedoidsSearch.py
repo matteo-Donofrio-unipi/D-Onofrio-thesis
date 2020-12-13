@@ -1,11 +1,9 @@
-from sklearn.datasets import load_iris
 from sklearn.cluster import KMeans
 import numpy as np
-import pandas as pd
 from scipy.spatial.distance import pdist, squareform
 
 
-def runKMeans(dataset,n_clusters):
+def runKMedoids(dataset,n_clusters):
 
     #columnsList=list(['idTs','IdCandidate,'startingPosition','M/D']) LISTA DELLE PRIME 4 COLONNE BASE DI DATASET
     #DA QUESTE DEVO ESTRARRE TUTTE LE SUCCESSIVE
@@ -28,7 +26,6 @@ def runKMeans(dataset,n_clusters):
         dist = pdist(X_cluster)
         index = np.argmin(np.sum(squareform(dist), axis=0))
         medoids.append(X_cluster.iloc[index]['index'])
-    #medoids = np.array(medoids)
 
 
     #retituisco gli indici, di dataset, che sono stati scelti

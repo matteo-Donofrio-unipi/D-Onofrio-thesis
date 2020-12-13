@@ -1,140 +1,207 @@
-import csv
-from matplotlib.pyplot import errorbar
-from matplotlib import pyplot as plt
-import pandas as pd
-import numpy as np
+#FUNZIONI PER PLOTTING DEI DATI
 import statistics
-import os
-
-def readCsv(fileName):
-
-    fields = []
-    rows = []
-
-
-    with open(fileName, 'r') as csvfile:
-        # creating a csv reader object
-        csvreader = csv.reader(csvfile)
-
-        # extracting field names through first row
-        fields = next(csvreader)
-
-        # extracting each data row one by one
-        for row in csvreader:
-            rows.append(row)
-
-            # get total number of rows
-        print("Total no. of rows: %d" % (csvreader.line_num))
-
-    # printing the field names
-    print('Field names are:' + ', '.join(field for field in fields))
-
-    #  printing first 5 rows
-    print('\nFirst 5 rows are:\n')
-    for row in rows:
-        print(row)
-        # parsing each column of a row
-        # for col in row:
-        #     print("%10s" % col)
+import time
+from matplotlib import pyplot as plt
+import numpy as np
+from sklearn.preprocessing import LabelEncoder
+from tslearn.datasets import UCR_UEA_datasets
+from FileManager import readCsvAsDf
+from Tools import computeLoadedDataset
 
 
-def readCsvAsDf(fileName):
-    Candidates = list()
-    Maxdepth = list()
-    MinSamples = list()
-    WindowSize = list()
-    RemoveCanddates = list()
-    useValidationSet = list()
-    k = list()
-    PercentageTrainingSet = list()
-    useClustering = list()
-    NumClusterMedoid = list()
-    Time = list()
+def plotDataAndShapelet(tree,i,labelValue):
+    #value può essere -1 => distanza minore, vado a sx | 1 => distanza maggiore, vado a dx
+    fig, ax1 = plt.subplots(1, 1, sharex=True, figsize=(20, 15))
 
-    with open(fileName, 'r') as csvfile:
-        # creating a csv reader object
-        csvreader = csv.reader(csvfile)
-
-        Percentage = list()
-        Accuracy = list()
-        i = 0
-        # extracting each data row one by one
-        for row in csvreader:
-            if (i == 0):
-                i = 1
-                continue
-            Candidates.append(row[0])
-            Maxdepth.append(row[1])
-            MinSamples.append(row[2])
-            WindowSize.append(row[3])
-            RemoveCanddates.append(row[4])
-            k.append(row[5])
-            useValidationSet.append(row[6])
-            PercentageTrainingSet.append(row[7])
-            useClustering.append(row[8])
-            NumClusterMedoid.append(row[9])
-            Accuracy.append(row[10])
-            if (row[11] != None):
-                Time.append(row[11])
-            else:
-                Time.append(0)
-        # get total number of rows
-
-        dfResults = pd.DataFrame(
-            columns=['Candidates', 'MaxDepth', 'MinSamples', 'WindowSize', 'RemoveCanddates', 'k', 'useValidationSet'
-                                                                                                   'PercentageTrainingSet',
-                     'useClustering', 'NumClusterMedoid', 'Accuracy', 'Time'], index=range(csvreader.line_num - 1))
+    print('DENTRO PLOT')
+    print(tree.ShapeletDf)
 
 
-    dfResults['Candidates'] = Candidates
-    dfResults['MaxDepth'] = Maxdepth
-    dfResults['MinSamples'] = MinSamples
-    dfResults['WindowSize'] = WindowSize
-    dfResults['RemoveCandidates'] = RemoveCanddates
-    dfResults['k'] = k
-    dfResults['useValidationSet'] = useValidationSet
-    dfResults['PercentageTrainingSet'] = PercentageTrainingSet
-    dfResults['useClustering'] = useClustering
-    dfResults['NumClusterMedoid'] = NumClusterMedoid
-    dfResults['Accuracy'] = Accuracy
-    dfResults['Time'] = Time
-
-    dfResults['Accuracy'] = list(map(float, dfResults['Accuracy']))
-
-    return dfResults
+    print('\n')
+    print(tree.Shapelet)
 
 
-def WriteCsv(fileName,row):
-    fields = ['Candidates', 'Max depth', 'Min samples', 'Window size', 'Remove candi', 'k', 'useValidationSet' ,'% Training set', 'useClustering','NumCluster(Medoids)' ,'Accuracy','Time']
-    writeFileds=False
-    if(os.path.isfile(fileName)==False):
-        writeFileds=True
+    Ts=tree.TsTestForPrint[i]
 
-    # writing to csv file
-    with open(fileName, 'a', newline='') as csvfile:
-        # creating a csv writer object
-        csvwriter = csv.writer(csvfile)
-        if (writeFileds):
-            csvwriter.writerow(fields)
-        # writing the data rows
-        csvwriter.writerow(row)
+    ax1.plot(np.arange(len(Ts)), Ts, label="Ts",color='b')  # stampo linespace su x e valori data su y (USATO SE NON STAMPO MOTIF/DIS)
+    print('labelValue= '+str(int(labelValue)))
+    ax1.set_title('b(x) = '+str(int(labelValue)),fontsize=30)
+
+    for i in range(tree.counter):
+
+        idShapelet=tree.ShapeletDf.iloc[i]["IdShapelet"]
+        majorMinor = tree.ShapeletDf.iloc[i]["majorMinor"]
+        startingIndex = tree.ShapeletDf.iloc[i]["startingIndex"]
+
+        PrintedShapelet=tree.Shapelet[tree.Shapelet["IdShapelet"]==idShapelet]["Shapelet"].values
+        PrintedShapelet=PrintedShapelet[0]
+
+        if(majorMinor==-1):
+            c='g'
+        else:
+            c='r'
+
+        shapeletPlot=ax1.plot(range(startingIndex, startingIndex + tree.window_size),PrintedShapelet, label='Shapelet', color=c ,linewidth=2)
+        coordinates=shapeletPlot[0].get_data()
+        x=coordinates[0][0]
+        y=coordinates[1][0]
+        ax1.annotate(idShapelet, xy=(x, y), xytext=(x+0.3, y+0.3),fontsize=30)
 
 
 
-def WriteCsvComparison(fileName,row):
-    fields = ['Algorithm', 'DatasetName', 'Accuracy', 'Time']
-    writeFileds=False
-    if(os.path.isfile(fileName)==False):
-        writeFileds=True
+    start_time = time.time()
+    plt.tick_params(axis='both', which='major', labelsize=35)
+    plt.savefig(str(time.time())+'.png',bbox_inches='tight')
+    plt.show()
 
-    # writing to csv file
-    with open(fileName, 'a', newline='') as csvfile:
-        # creating a csv writer object
-        csvwriter = csv.writer(csvfile)
-        if (writeFileds):
-            csvwriter.writerow(fields)
-        # writing the data rows
-        csvwriter.writerow(row)
+
+
+
+
+def plotDataAndShapelet2(Ts,Shapelet,indexOnTs,value,dist,treshOld,window_size):
+    #value può essere -1 => distanza minore, vado a sx | 1 => distanza maggiore, vado a dx
+    fig, ax1 = plt.subplots(1, 1, sharex=True, figsize=(20, 15))
+
+    print('DENTRO PLOT')
+    print(Shapelet)
+    print(window_size)
+    print('indexoNts')
+    print(indexOnTs)
+
+    if(value==-1):
+        c='g'
+    else:
+        c='r'
+    ax1.plot(np.arange(len(Ts)), Ts, label="Ts",color='b')  # stampo linespace su x e valori data su y (USATO SE NON STAMPO MOTIF/DIS)
+    ax1.set_xlabel('Ts', size=22)
+
+    ax1.plot(range(indexOnTs, indexOnTs + window_size), Shapelet, label='Shapelet', color=c ,linewidth=2)
+    ax1.legend(loc=1, prop={'size': 12})
+
+    ax1.set_title('Color: Green(if minor of Treshold) Red(major)\nDistance: %f \n Treshold: %f' % (dist,treshOld))
+
+    plt.show()
+
+def plotData(Ts):
+    Ts.plot(figsize=(7, 7), legend=None, title='Time series')
+    plt.show()
+
+#PLOTTA SU OGNI TS CONTENENTE SHAPELET, TUTTI I MOTIF E DISCORD TROVATI
+def plot_motifsAll(mtfs, labels, ax, data, sp,window_size):
+    #data can be raw data or MP
+    colori = 0
+    colors = 'rmb'
+    for ms,l in zip(mtfs,labels):
+        c =colors[colori % len(colors)]
+        starts = list(ms)
+        print(starts)
+        ends = [min(s + window_size,len(data)-1) for s in starts]
+        print(ends)
+        ax.plot(starts, data[starts],  c +'o',  label=l+'(Motif)')
+        ax.plot(ends, data[ends],  c +'o', markerfacecolor='none')
+        for nn in ms:
+            ax.plot(range(nn,nn+window_size),data[nn:nn+window_size], c , linewidth=2)
+        colori += 1
+
+    #ax.plot(a,'green', linewidth=1, label="data") COMMENTATO PERCHE PLOTTO I DATI INDIPENDENTEMENTE
+    ax.legend(loc=1, prop={'size': 12})
+
+
+
+
+#PLOTTA SU OGNI TS CONTENENTE SHAPELET, SOLO I MOTIF / DISCORD USATI DAL DTREE
+def plot_motifs(mtfs, labels, ax, fig, data, sp,window_size,idCandidate):
+    #data can be raw data or MP
+    colori = 0
+    colors = 'rmb'
+    for ms,l in zip(mtfs,labels):
+        c =colors[colori % len(colors)]
+        starts = list(ms)
+        ends = [min(s + window_size,len(data)-1) for s in starts]
+
+        for i in range(len(list(ms))):
+            start=ms[i]
+            if(start==sp):
+                end=start+window_size
+                ax.plot(start, data[start],  c +'o',  label=l+'(Motif)')
+                ax.plot(end, data[end],  c +'o', markerfacecolor='none')
+                ax.plot(range(start,start+window_size),data[start:start+window_size], c , linewidth=2)
+                fig.suptitle('Shapelet: '+str(idCandidate),fontsize=30)
+                colori += 1
+
+    #ax.plot(a,'green', linewidth=1, label="data") COMMENTATO PERCHE PLOTTO I DATI INDIPENDENTEMENTE
+    #ax.legend(loc=1, prop={'size': 12})
+
+
+def plot_discords(dis, ax, fig, data, sp,window_size,idCandidate):
+    # data can be raw data or Mp
+    color = 'k'
+    for start in dis:
+        if(start==sp):
+            end = start + window_size
+            ax.plot(start, data[start], color, label='Discord')
+            if(end >= len(data)):
+                end=len(data)-1
+            ax.plot(end, data[end], color, markerfacecolor='none')
+
+            ax.plot(range(start, start + window_size), data[start:start + window_size], color, linewidth=2)
+            fig.suptitle('shapelet '+str(idCandidate),fontsize=30)
+    #ax.legend(loc=1, prop={'size': 12})
+
+
+def plot_all(Ts, mp, mot, motif_dist, dis, sp,MoD, window_size,idCandidate):
+
+    # Append np.nan to Matrix profile to enable plotting against raw data (FILL DI 0 ALLA FINE PER RENDERE LE LUNGHEZZE UGUALI )
+    mp_adj = np.append(mp, np.zeros(window_size - 1) + np.nan)
+
+    # MODO 2 PER PLOTTARE (O-ORIENTED)
+    # Plot dei dati
+    #fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True, figsize=(20, 15))
+    fig, ax1 = plt.subplots(1, 1, sharex=True, figsize=(20, 15))
+    #ax1.plot(np.arange(len(Ts)), Ts, label="Ts",
+    #         color='g')  # stampo linespace su x e valori data su y (USATO SE NON STAMPO MOTIF/DIS)
+    if(MoD==0):
+        plot_motifs(mot, [f"{md:.3f}" for md in motif_dist], ax1, fig, Ts, sp,window_size,idCandidate)  # sk
+    else:
+        plot_discords(dis, ax1, fig, Ts, sp,window_size,idCandidate)
+
+    #Plot della Matrix Profile
+    # ax2.plot(np.arange(len(mp_adj)), mp_adj, label="Matrix Profile", color='green')
+    # ax2.set_ylabel('Matrix Profile', size=22)
+    # if(MoD==0):
+    #     plot_motifs(mot, [f"{md:.3f}" for md in motif_dist], ax2, mp_adj, sp, window_size)
+    # else:
+    #     plot_discords(dis, ax2, mp_adj, sp,window_size)
+    plt.tick_params(axis='both', which='major', labelsize=35)
+    plt.show()
+
+
+def plotTs(datasetName):
+    # INPUT: Dataset
+
+    # OUTPUT: Plot of all the Ts in the training dataset
+
+    X_train, y_train, X_test, y_test = UCR_UEA_datasets().load_dataset(datasetName)
+
+    dfTrain = computeLoadedDataset(X_train, y_train)
+
+    le = LabelEncoder()
+    num_classes = le.fit_transform(dfTrain['target'])
+    plt.scatter(dfTrain['att0'], dfTrain['att1'],
+                c=num_classes)  # scatter mi permette di "disegnare" il piano in 2d, mettendo attributi, e avere graficamente classificazione lineare
+    plt.show()
+
+    for i in range(len(dfTrain)):
+        Ts = np.array(dfTrain.iloc[i].values)
+        print('TS ID:' + str(i))
+        print('TS CLASS:' + str(dfTrain.iloc[i]['target']))
+        plotData(dfTrain.iloc[i])
+
+
+def plotTestResults(nameFile):  # print results
+    PlotValues(nameFile)
+
+
 
 #stampa parametri VS accuracy fissato un dataset
 def PlotValues(fileName):
@@ -422,65 +489,3 @@ def plotComparisonSingle(fileName,datasetName,attribute1,mOa,UsePercentageTraini
     ax2.tick_params(axis='both', which='both', labelsize=35)
     plt.savefig('stampeAlgoritmo\ ' + fileName+ 'Comparison'+ attribute1 + '.png')
     plt.show()
-
-
-
-
-
-
-def buildTable(fileName,datasetName,query):
-
-    dfResult=readCsvAsDf(fileName)
-
-    print(dfResult)
-
-    dfResult=dfResult[(dfResult['useValidationSet']=="False")]
-
-    print(dfResult)
-
-    #['Motifs','3','10','5','1','2','40']
-    dfLocal = dfResult[(dfResult['Candidates'] == query[0])]
-    dfLocal = dfLocal[(dfLocal['MaxDepth'] == query[1])]
-    print('prinop')
-    print(dfLocal)
-    dfLocal = dfLocal[(dfLocal['MinSamples'] == query[2])]
-    dfLocal = dfLocal[(dfLocal['WindowSize'] == query[3])]
-    dfLocal = dfLocal[(dfLocal['RemoveCandidates'] == query[4])]
-    dfLocal = dfLocal[(dfLocal['k'] == query[5])]
-    dfLocal = dfLocal[(dfLocal['NumClusterMedoid'] == query[6])]
-
-    print(dfLocal)
-
-    accuracy = dfLocal['Accuracy'].values
-    time = dfLocal['Time'].values
-
-
-    accuracy=max(accuracy)
-    time=min(time)
-
-    row=[datasetName,accuracy,time]
-
-    fields = ['NameDataset', 'Accuracy', 'Execution Time']
-    writeFileds = False
-    if (os.path.isfile(fileName) == False):
-        writeFileds = True
-
-    # writing to csv file
-    with open(fileName, 'a', newline='') as csvfile:
-        # creating a csv writer object
-        csvwriter = csv.writer(csvfile)
-        if (writeFileds):
-            csvwriter.writerow(fields)
-        # writing the data rows
-        csvwriter.writerow(row)
-
-
-
-
-
-
-
-
-
-
-

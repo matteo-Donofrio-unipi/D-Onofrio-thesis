@@ -1,12 +1,12 @@
-from TestManager2 import executeTest, plotTs, plotTestResults, plotComparisonSingle, buildTable,executeShapeletTransform, executeClassicDtree,plotComparisonMultiple
-from kCandidatesSearch2 import runKMeans
+from TestManager import executeTestTSCMP, buildTable,executeShapeletTransform, executeClassicDtree
+from PlotLibrary import plotComparisonMultiple,plotTs, plotTestResults, plotComparisonSingle
 def main():
     datasetName = 'ECG200'
     nameFile = datasetName + 'TestResults.csv'
     useValidationSet = False
     usePercentageTrainingSet = True
 
-    executeTest(useValidationSet,usePercentageTrainingSet,datasetName,nameFile)
+    executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameFile)
 
     #executeShapeletTransform(datasetName)
 
