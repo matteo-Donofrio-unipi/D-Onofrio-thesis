@@ -1,0 +1,7 @@
+Dataset,TSCMP,Shapelet Transformation,Decision Tree Classifier
+ArrowHead,0.58,0.64,0.54
+ECG200,0.84,0.80,0.58
+ECG5000,0.90,0.89,0.36
+GunPoint,0.90,0.84,0.72
+ItalyPowerDemand,0.92,0.91,0.53
+PhalangesOutlinesCorrect,0.70,0.68,0.39

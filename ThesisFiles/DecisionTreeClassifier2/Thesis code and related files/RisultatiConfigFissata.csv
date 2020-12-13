@@ -1,0 +1,7 @@
+Dataset,Numero istanze,Lunghezza istanze,Num Classi,Training set,Test set
+Arrow Head,211,251,3,"17,00%","83,00%"
+ECG200,200,96,2,"50,00%","50,00%"
+ECG5000,5000,140,5,"10,00%","90,00%"
+GunPoint,200,150,2,"25,00%","75,00%"
+ItalyPowerDemand,1096,24,2,"6,00%","94,00%"
+PhalangesOutlinesCorrect,2568,80,2,"70,00%","30,00%"
