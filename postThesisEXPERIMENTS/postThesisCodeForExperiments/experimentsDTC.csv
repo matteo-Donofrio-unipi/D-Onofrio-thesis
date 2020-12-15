@@ -1,0 +1,14 @@
+Algorithm,DatasetName,Accuracy,Time
+Decision tree classifier,GunPoint,0.63,0.0029997825622558594
+Decision tree classifier,GunPoint,0.63,0.003001689910888672
+Decision tree classifier,GunPoint,0.63,0.0029997825622558594
+Decision tree classifier,ItalyPowerDemand,0.97,0.0019998550415039062
+Decision tree classifier,ItalyPowerDemand,0.97,0.0020003318786621094
+Decision tree classifier,ArrowHead,0.40,0.0029997825622558594
+Decision tree classifier,ArrowHead,0.40,0.0030050277709960938
+Decision tree classifier,ECG200,0.76,0.0039997100830078125
+Decision tree classifier,ECG200,0.76,0.003996849060058594
+Decision tree classifier,ECG5000,0.90,0.04299783706665039
+Decision tree classifier,ECG5000,0.90,0.043998003005981445
+Decision tree classifier,PhalangesOutlinesCorrect,0.69,0.07299923896789551
+Decision tree classifier,PhalangesOutlinesCorrect,0.69,0.07400250434875488

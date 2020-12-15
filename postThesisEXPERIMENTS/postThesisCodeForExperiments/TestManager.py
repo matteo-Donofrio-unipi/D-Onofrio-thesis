@@ -6,9 +6,11 @@ from sklearn.utils.random import sample_without_replacement
 from tslearn.datasets import UCR_UEA_datasets
 from pyts.transformation import ShapeletTransform
 from PlotLibrary import plot_all, plotData
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 
 
-#datasetNames = 'GunPoint,ItalyPowerDemand,ArrowHead,ECG200,ECG5000,ElectricDevices,PhalangesOutlinesCorrect'
+#datasetNames = 'GunPoint,ItalyPowerDemand,ArrowHead,ECG200,ECG5000,PhalangesOutlinesCorrect'
 def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
 
     #INPUT: Parameters for TSCMP algorithm
@@ -471,5 +473,106 @@ def executeClassicDtree(datasetName):
 
 
 
+def executeDecisionTreeStandard(datasetName):
+    X_train, y_train, X_test, y_test = UCR_UEA_datasets().load_dataset(datasetName)
 
+    #pre processing phase
+    dfTrain = computeLoadedDataset(X_train, y_train)
+    del dfTrain["TsIndex"]
+    del dfTrain["target"]
+
+    print(dfTrain)
+
+    dfTest = computeLoadedDataset(X_test, y_test)
+
+
+    y_test = y_test.astype('int')
+
+    del dfTest["target"]
+    del dfTest["TsIndex"]
+    print(dfTest)
+
+    #test phase
+    clf = DecisionTreeClassifier(criterion='entropy', max_depth=3,
+                                 min_samples_leaf=20)
+    start_time = time.time()
+
+    clf.fit(dfTrain, y_train)
+
+    timeToFit = time.time() - start_time  # Training phase time
+
+
+    y_predTest = clf.predict(dfTest)
+
+    print(classification_report(y_test, y_predTest))
+    print('Accuracy %s' % accuracy_score(y_test, y_predTest))
+    print('F1-score %s' % f1_score(y_test, y_predTest, average=None))
+    confusion_matrix(y_test, y_predTest)
+
+    row = ['Decision tree classifier', datasetName, accuracy_score(y_test, y_predTest), timeToFit]
+
+    WriteCsvComparison('experiments.csv', row)
+
+
+
+def executeKNN(datasetName):
+    X_train, y_train, X_test, y_test = UCR_UEA_datasets().load_dataset(datasetName)
+
+    scalerMM = MinMaxScaler()
+
+    scalerS = StandardScaler()
+
+    scalerUsed=0
+
+    if(scalerUsed==1):
+        scaler=scalerMM
+    else:
+        scaler=scalerS
+
+    K=7
+
+    # pre processing phase Training set
+    dfTrain = computeLoadedDataset(X_train, y_train)
+    del dfTrain["TsIndex"]
+    del dfTrain["target"]
+
+    dfTrain[dfTrain.columns] = scaler.fit_transform(dfTrain)
+
+    print(dfTrain)
+
+    # pre processing phase Test set
+    dfTest = computeLoadedDataset(X_test, y_test)
+
+    y_test = y_test.astype('int')
+
+    del dfTest["target"]
+    del dfTest["TsIndex"]
+
+    dfTest[dfTest.columns] = scaler.fit_transform(dfTest)
+
+    print(dfTest)
+
+    # test phase
+
+    knn = KNeighborsClassifier(n_neighbors=K)
+
+    start_time = time.time()
+
+    knn.fit(dfTrain, y_train)
+
+    # prediction on the test test
+    test_pred_knn = knn.predict(dfTest)
+
+    timeToFit = time.time() - start_time  # Training phase time
+
+
+    print(classification_report(y_test, test_pred_knn))
+    print('Accuracy %s' % accuracy_score(y_test, test_pred_knn))
+    print('F1-score %s' % f1_score(y_test, test_pred_knn, average=None))
+    confusion_matrix(y_test, test_pred_knn)
+
+
+    row = ['KNN', datasetName, K , scaler, accuracy_score(y_test, test_pred_knn), timeToFit]
+
+    WriteCsvComparison('experimentsKnn.csv', row)
 

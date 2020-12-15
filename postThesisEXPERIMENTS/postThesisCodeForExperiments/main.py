@@ -1,12 +1,18 @@
-from TestManager import executeTestTSCMP, buildTable,executeShapeletTransform, executeClassicDtree
+from TestManager import executeTestTSCMP, buildTable, executeShapeletTransform, executeClassicDtree, \
+    executeDecisionTreeStandard, executeKNN
 from PlotLibrary import plotComparisonMultiple,plotTs, plotTestResults, plotComparisonSingle
 def main():
-    datasetName = 'ECG200'
+    datasetName = 'PhalangesOutlinesCorrect'
     nameFile = datasetName + 'TestResults.csv'
     useValidationSet = False
     usePercentageTrainingSet = True
 
-    executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameFile)
+    #executeDecisionTreeStandard(datasetName)
+
+    executeKNN(datasetName)
+
+
+    #executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameFile)
 
     #executeShapeletTransform(datasetName)
 
