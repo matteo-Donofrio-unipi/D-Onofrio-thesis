@@ -2,21 +2,33 @@ from TestManager import executeTestTSCMP, buildTable, executeShapeletTransform, 
     executeDecisionTreeStandard, executeKNN
 from PlotLibrary import plotComparisonMultiple,plotTs, plotTestResults, plotComparisonSingle
 def main():
-    datasetName = 'PhalangesOutlinesCorrect'
+    datasetName = 'Wine'
     nameFile = datasetName + 'TestResults.csv'
     useValidationSet = False
     usePercentageTrainingSet = True
 
-    #executeDecisionTreeStandard(datasetName)
 
-    executeKNN(datasetName)
+    initialWS=20
+    for i in range(10):
+        executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameFile,initialWS)
+        initialWS+=10
 
 
-    #executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameFile)
+    #executeTestTSCMP(useValidationSet, usePercentageTrainingSet, datasetName, nameFile)
 
     #executeShapeletTransform(datasetName)
 
-    #executeClassicDtree(datasetName)
+    #executeClassicDtree(datasetName) #con shapelet
+
+    #executeKNN(datasetName)
+
+    #executeDecisionTreeStandard(datasetName)
+
+
+
+
+
+
 
     #plotTs(datasetName)
 

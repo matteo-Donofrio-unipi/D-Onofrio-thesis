@@ -105,7 +105,7 @@ def readCsvAsDf(fileName):
 
 
 def WriteCsv(fileName,row):
-    fields = ['Candidates', 'Max depth', 'Min samples', 'Window size', 'Remove candi', 'k', 'useValidationSet' ,'% Training set', 'useClustering','NumCluster(Medoids)' ,'Accuracy','Time']
+    fields = ['Dataset','Candidates', 'Max depth', 'Min samples', 'Window size', 'Remove candi', 'k', 'useValidationSet' ,'% Training set', 'useClustering','NumCluster(Medoids)' ,'Accuracy','Time']
     writeFileds=False
     if(os.path.isfile(fileName)==False):
         writeFileds=True
@@ -122,7 +122,7 @@ def WriteCsv(fileName,row):
 
 
 def WriteCsvComparison(fileName,row):
-    fields = ['Algorithm', 'DatasetName', 'K', 'Scaler' 'Accuracy', 'Time']
+    fields = ['Algorithm', 'DatasetName', 'Accuracy', 'Time']
     writeFileds=False
     if(os.path.isfile(fileName)==False):
         writeFileds=True

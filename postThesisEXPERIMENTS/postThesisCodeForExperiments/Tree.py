@@ -9,7 +9,6 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.feature_selection import mutual_info_classif
 from scipy.stats import entropy
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.model_selection import train_test_split
 from sklearn import tree
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import confusion_matrix

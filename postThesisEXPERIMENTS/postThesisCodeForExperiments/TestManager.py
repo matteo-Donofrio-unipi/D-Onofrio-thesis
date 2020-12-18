@@ -11,7 +11,7 @@ from sklearn.preprocessing import MinMaxScaler, StandardScaler
 
 
 #datasetNames = 'GunPoint,ItalyPowerDemand,ArrowHead,ECG200,ECG5000,PhalangesOutlinesCorrect'
-def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):
+def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameFile,initialWS):
 
     #INPUT: Parameters for TSCMP algorithm
 
@@ -21,8 +21,8 @@ def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameF
     second = True  # Fittin of the Decision Tree
     third = True  # Generation & Computation of the testing dataset
     quarter = True  # Predict and show scores
-    fifth=True   # Plot some/all classified instances
-    sixth = True  # Plot of the choosen shapelet
+    fifth=False   # Plot some/all classified instances
+    sixth = False  # Plot of the choosen shapelet
 
 
     PercentageTrainingSet = 1 # variable percentage of the training set
@@ -31,7 +31,7 @@ def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameF
 
 
     le = LabelEncoder()
-    tree= Tree(candidatesGroup=1,maxDepth=4,minSamplesLeaf=20,removeUsedCandidate=1,window_size=30,k=3,useClustering=True,n_clusters=5,warningDetected=False,verbose=0)
+    tree= Tree(candidatesGroup=1,maxDepth=3,minSamplesLeaf=10,removeUsedCandidate=1,window_size=initialWS,k=2,useClustering=True,n_clusters=20,warningDetected=False,verbose=0)
 
 
 
@@ -114,7 +114,7 @@ def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameF
                 print(np.unique(num_classes, return_counts=True))
                 print('\n')
 
-                print('PATT LENGHT: ' + str(patternLenght))
+            print('PATT LENGHT: ' + str(patternLenght))
 
 
         # generate the TSCMP dataset from the oringial training dataset
@@ -168,7 +168,7 @@ def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameF
 
 
     if(second==True):
-        verbose = True
+        verbose = False
         #fit the Decision Tree
         tree.fit(dfForDTree,verbose=False)
         fitTime=time.time() - start_time #take the training phase time
@@ -255,7 +255,10 @@ def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameF
         elif(usePercentageTrainingSet):
             percentage=PercentageTrainingSet
 
-        row=[group,tree.maxDepth,tree.minSamplesLeaf,tree.window_size,tree.removeUsedCandidate,tree.k,useValidationSet,percentage,tree.useClustering,tree.n_clusters,round(aS,2),round(fitTime,2)]
+        row=[datasetName,group,tree.maxDepth,tree.minSamplesLeaf,tree.window_size,tree.removeUsedCandidate,tree.k,useValidationSet,percentage,tree.useClustering,tree.n_clusters,round(aS,2),round(fitTime,2)]
+        #row = ['TSCMP', datasetName, round(aS,2),round(fitTime,2)]
+
+
         print('Classification Report  \n%s ' % cR)
         print('Accuracy %s' % aS)
         print('F1-score %s' % f1)
@@ -263,9 +266,8 @@ def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameF
 
         #COMMENTO PER STAMPARE SU CONFRONTO ALGO
         if(writeOnCsv):
-            WriteCsv(nameFile, row)
-        # row2=['MatrixProfileBased',datasetName,aS,totalTime]
-        # WriteCsvComparison('confrontoAlgoritmi.csv',row2)
+            WriteCsv("TSCMPaperTest.csv", row)
+            #WriteCsvComparison('experimentsPaper.csv', row)
 
     if(sixth==True):
 
@@ -343,11 +345,11 @@ def executeShapeletTransform(datasetName):
 
     print(accuracy_score(y_pred, y_test))
 
-    # print("--- %s seconds after testing" % (timeToTest))
-    #
-    # row=['ShapeletTransformation',datasetName,accuracy_score(y_pred, y_test),timeToTest]
-    #
-    #WriteCsvComparison('confrontoAlgoritmi.csv',row)
+    print("--- %s seconds after testing" % (timeToTest))
+
+    row = ['ShapeletTransformation', datasetName, round(accuracy_score(y_test, y_pred), 2), round(timeToFit, 2)]
+
+    WriteCsvComparison('experimentsPaper.csv', row)
 
 
 
@@ -359,7 +361,7 @@ def executeClassicDtree(datasetName):
 
 
     # NB: IN ORDER TO MAKE A VALID COMPARISON WITH TSCMP, THESE VALUES OF THE PARAMETERS MUST BE THE SAME OF THE VALUE CHOSEN IN TSCMP
-    tree= Tree(candidatesGroup=1,maxDepth=3,minSamplesLeaf=20,removeUsedCandidate=1,window_size=20,k=2,useClustering=True,n_clusters=20,warningDetected=False,verbose=0) # K= NUM DI MOTIF/DISCORD ESTRATTI
+    tree= Tree(candidatesGroup=1,maxDepth=3,minSamplesLeaf=20,removeUsedCandidate=1,window_size=20,k=2,useClustering=True,n_clusters=20,warningDetected=False,verbose=0)
 
     verbose=False
 
@@ -372,7 +374,7 @@ def executeClassicDtree(datasetName):
 
     start_time = time.time()
     tree.dfTrain = dfTrain
-    mpTrain, OriginalCandidatesListTrain, numberOfMotifTrain, numberOfDiscordTrain = getDataStructures(tree,
+    OriginalCandidatesListTrain, numberOfMotifTrain, numberOfDiscordTrain = getDataStructures(tree,
                                                                                                        dfTrain,
                                                                                                        tree.window_size,
                                                                                                        tree.k, verbose=False)
@@ -422,7 +424,7 @@ def executeClassicDtree(datasetName):
 
     y_train = y_train.astype('int')
 
-    print(dfForDTree)
+    #print(dfForDTree)
 
     # NB: IN ORDER TO MAKE A VALID COMPARISON WITH TSCMP, THESE VALUES OF THE PARAMETERS MUST BE THE SAME OF THE VALUE CHOSEN IN TSCMP
 
@@ -466,9 +468,9 @@ def executeClassicDtree(datasetName):
     print('F1-score %s' % f1_score(y_test, y_predTest, average=None))
     confusion_matrix(y_test, y_predTest)
 
-    # row = ['Classic Classification', datasetName, accuracy_score(y_test, y_predTest), timeToTest]
-    #
-    # WriteCsvComparison('confrontoAlgoritmi.csv', row)
+    row = ['Decision Tree with Shapelet', datasetName, round(accuracy_score( y_test, y_predTest), 2), round(timeToFit, 2)]
+
+    WriteCsvComparison('experimentsPaper.csv', row)
 
 
 
@@ -509,9 +511,9 @@ def executeDecisionTreeStandard(datasetName):
     print('F1-score %s' % f1_score(y_test, y_predTest, average=None))
     confusion_matrix(y_test, y_predTest)
 
-    row = ['Decision tree classifier', datasetName, accuracy_score(y_test, y_predTest), timeToFit]
+    row = ['Decision tree classifier', datasetName, round(accuracy_score(y_test, y_predTest)), round(timeToFit,2)]
 
-    WriteCsvComparison('experiments.csv', row)
+    WriteCsvComparison('experimentsPaper.csv', row)
 
 
 
@@ -522,14 +524,14 @@ def executeKNN(datasetName):
 
     scalerS = StandardScaler()
 
-    scalerUsed=0
+    scalerUsed=1
 
     if(scalerUsed==1):
         scaler=scalerMM
     else:
         scaler=scalerS
 
-    K=7
+    K=3
 
     # pre processing phase Training set
     dfTrain = computeLoadedDataset(X_train, y_train)
@@ -560,10 +562,10 @@ def executeKNN(datasetName):
 
     knn.fit(dfTrain, y_train)
 
+    timeToFit = time.time() - start_time  # Training phase time
     # prediction on the test test
     test_pred_knn = knn.predict(dfTest)
 
-    timeToFit = time.time() - start_time  # Training phase time
 
 
     print(classification_report(y_test, test_pred_knn))
@@ -572,7 +574,7 @@ def executeKNN(datasetName):
     confusion_matrix(y_test, test_pred_knn)
 
 
-    row = ['KNN', datasetName, K , scaler, accuracy_score(y_test, test_pred_knn), timeToFit]
+    row = ['KNN', datasetName, round(accuracy_score(y_test, test_pred_knn),2), round(timeToFit,2)]
 
-    WriteCsvComparison('experimentsKnn.csv', row)
+    WriteCsvComparison('experimentsPaper.csv', row)
 
