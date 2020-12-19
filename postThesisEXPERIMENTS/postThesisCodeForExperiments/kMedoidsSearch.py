@@ -3,7 +3,7 @@ import numpy as np
 from scipy.spatial.distance import pdist, squareform
 
 
-def runKMedoids(dataset,n_clusters):
+def runKMedoids(tree,dataset,n_clusters):
 
     #columnsList=list(['idTs','IdCandidate,'startingPosition','M/D']) LISTA DELLE PRIME 4 COLONNE BASE DI DATASET
     #DA QUESTE DEVO ESTRARRE TUTTE LE SUCCESSIVE
@@ -17,6 +17,7 @@ def runKMedoids(dataset,n_clusters):
     kmeans.fit(X)
 
     centroids = kmeans.cluster_centers_
+    tree.SseList.append(kmeans.inertia_)
 
     #per ogni centroide, estraggo medoide (record nel cluster piu vicino al centroide )
     medoids = list()

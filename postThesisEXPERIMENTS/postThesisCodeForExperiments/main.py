@@ -2,16 +2,24 @@ from TestManager import executeTestTSCMP, buildTable, executeShapeletTransform, 
     executeDecisionTreeStandard, executeKNN
 from PlotLibrary import plotComparisonMultiple,plotTs, plotTestResults, plotComparisonSingle
 def main():
-    datasetName = 'Wine'
+    datasetName = 'Worms'
     nameFile = datasetName + 'TestResults.csv'
     useValidationSet = False
     usePercentageTrainingSet = True
 
 
-    initialWS=20
-    for i in range(10):
-        executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameFile,initialWS)
-        initialWS+=10
+    initialWS=400
+    candidate=0
+    for i in range(8):
+        executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameFile,initialWS,candidate)
+        initialWS+=50
+
+    # candidate = 0
+    # initialWS = 20
+    # for i in range(10):
+    #     executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameFile,initialWS,candidate)
+    #     initialWS+=50
+
 
 
     #executeTestTSCMP(useValidationSet, usePercentageTrainingSet, datasetName, nameFile)

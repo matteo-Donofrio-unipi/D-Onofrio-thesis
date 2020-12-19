@@ -469,7 +469,7 @@ def reduceNumberCandidates(tree,CandidatesList,returnOnlyIndex):
 
 
     # indici all interno di candDfMotifs & candDfDiscords dei candidati scelti come medoidi
-    CandidateMedoids = runKMedoids(CandidatesSubSeq, tree.n_clusters)
+    CandidateMedoids = runKMedoids(tree,CandidatesSubSeq, tree.n_clusters)
     if(verboseretireveCandidatesSubSeq):
         print('indici all interno di CandidatesList scelti come medoidi ')
         print(CandidateMedoids)

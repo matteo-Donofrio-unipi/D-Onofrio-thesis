@@ -11,7 +11,7 @@ from sklearn.preprocessing import MinMaxScaler, StandardScaler
 
 
 #datasetNames = 'GunPoint,ItalyPowerDemand,ArrowHead,ECG200,ECG5000,PhalangesOutlinesCorrect'
-def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameFile,initialWS):
+def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameFile,initialWS,candidate):
 
     #INPUT: Parameters for TSCMP algorithm
 
@@ -31,7 +31,7 @@ def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameF
 
 
     le = LabelEncoder()
-    tree= Tree(candidatesGroup=1,maxDepth=3,minSamplesLeaf=10,removeUsedCandidate=1,window_size=initialWS,k=2,useClustering=True,n_clusters=20,warningDetected=False,verbose=0)
+    tree= Tree(candidatesGroup=candidate,maxDepth=3,minSamplesLeaf=20,removeUsedCandidate=1,window_size=initialWS,k=2,useClustering=True,n_clusters=20,warningDetected=False,verbose=0)
 
 
 
@@ -178,6 +178,9 @@ def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameF
             tree.printAll(tree.Root)
 
         print("--- %s seconds after fitting" % (fitTime))
+        print(tree.SseList)
+        print("SSE avg: ")
+        print(sum(tree.SseList)/len(tree.SseList))
 
 
 

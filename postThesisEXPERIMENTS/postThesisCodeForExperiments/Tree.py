@@ -32,7 +32,7 @@ class Tree:
         self.warningDetected=warningDetected
         self.verbose=verbose
         self.attributeList=list()
-
+        self.SseList=list()
 
 
     def computeEntropy(self,dataset):
