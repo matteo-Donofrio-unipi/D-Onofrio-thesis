@@ -2,40 +2,44 @@ from TestManager import executeTestTSCMP, buildTable, executeShapeletTransform, 
     executeDecisionTreeStandard, executeKNN
 from PlotLibrary import plotComparisonMultiple,plotTs, plotTestResults, plotComparisonSingle
 def main():
-    datasetName = 'Worms'
-    nameFile = datasetName + 'TestResults.csv'
-    useValidationSet = False
-    usePercentageTrainingSet = True
 
+    # DatasetNames=["Adiac","BirdChicken","Coffee","Earthquakes","FaceFour","Fish", "MedicalImages",
+    #               "OliveOil","Plane","Strawberry","Symbols","Trace","TwoLeadECG","Wafer",
+    #               "Wine","WordSynonyms","Worms","WormsTwoClass","Yoga","ArrowHead","ECG200",
+    #               "ECG5000","GunPoint","ItalyPowerDemand","PhalangesOutlinesCorrect","ElectricDevices"]
+    DatasetNames=["ElectricDevices"]
 
-    initialWS=400
-    candidate=0
-    for i in range(8):
-        executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameFile,initialWS,candidate)
-        initialWS+=50
+    #DatasetNames=["ArrowHead","ECG200","ECG5000","GunPoint","ItalyPowerDemand","PhalangesOutlinesCorrect"]
 
-    # candidate = 0
-    # initialWS = 20
-    # for i in range(10):
-    #     executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameFile,initialWS,candidate)
-    #     initialWS+=50
+    for i in range(len(DatasetNames)):
+        datasetName = DatasetNames[i]
+        nameFile = datasetName + 'TestResults.csv'
+        useValidationSet = False
+        usePercentageTrainingSet = True
 
+        # initialWS=200
+        # candidate=1
+        # for i in range(10):
+        #     executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameFile,initialWS,candidate)
+        #     initialWS+=10
 
+        # candidate = 0
+        # initialWS = 200
+        # for i in range(10):
+        #     executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameFile,initialWS,candidate)
+        #     initialWS+=10
 
-    #executeTestTSCMP(useValidationSet, usePercentageTrainingSet, datasetName, nameFile)
+       # executeTestTSCMP(useValidationSet, usePercentageTrainingSet, datasetName, nameFile)
 
-    #executeShapeletTransform(datasetName)
+        #executeShapeletTransform(datasetName)
 
-    #executeClassicDtree(datasetName) #con shapelet
+        executeLearningShapelet(datasetName)
 
-    #executeKNN(datasetName)
+        executeClassicDtree(datasetName) #con shapelet
 
-    #executeDecisionTreeStandard(datasetName)
+        executeKNN(datasetName)
 
-
-
-
-
+        executeDecisionTreeStandard(datasetName)
 
 
     #plotTs(datasetName)

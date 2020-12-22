@@ -8,10 +8,11 @@ from pyts.transformation import ShapeletTransform
 from PlotLibrary import plot_all, plotData
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from tslearn.shapelets import LearningShapelets, grabocka_params_to_shapelet_size_dict
 
 
 #datasetNames = 'GunPoint,ItalyPowerDemand,ArrowHead,ECG200,ECG5000,PhalangesOutlinesCorrect'
-def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameFile,initialWS,candidate):
+def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):#,initialWS,candidate):
 
     #INPUT: Parameters for TSCMP algorithm
 
@@ -31,7 +32,7 @@ def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameF
 
 
     le = LabelEncoder()
-    tree= Tree(candidatesGroup=candidate,maxDepth=3,minSamplesLeaf=20,removeUsedCandidate=1,window_size=initialWS,k=2,useClustering=True,n_clusters=20,warningDetected=False,verbose=0)
+    tree= Tree(candidatesGroup=1,maxDepth=3,minSamplesLeaf=20,removeUsedCandidate=1,window_size=20,k=2,useClustering=True,n_clusters=20,warningDetected=False,verbose=0)
 
 
 
@@ -258,8 +259,8 @@ def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameF
         elif(usePercentageTrainingSet):
             percentage=PercentageTrainingSet
 
-        row=[datasetName,group,tree.maxDepth,tree.minSamplesLeaf,tree.window_size,tree.removeUsedCandidate,tree.k,useValidationSet,percentage,tree.useClustering,tree.n_clusters,round(aS,2),round(fitTime,2)]
-        #row = ['TSCMP', datasetName, round(aS,2),round(fitTime,2)]
+        #row=[datasetName,group,tree.maxDepth,tree.minSamplesLeaf,tree.window_size,tree.removeUsedCandidate,tree.k,useValidationSet,percentage,tree.useClustering,tree.n_clusters,round(aS,2),round(fitTime,2)]
+        row = ['TSCMP', datasetName, round(aS,2),round(fitTime,2)]
 
 
         print('Classification Report  \n%s ' % cR)
@@ -269,8 +270,8 @@ def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameF
 
         #COMMENTO PER STAMPARE SU CONFRONTO ALGO
         if(writeOnCsv):
-            WriteCsv("TSCMPaperTest.csv", row)
-            #WriteCsvComparison('experimentsPaper.csv', row)
+            #WriteCsv("TSCMPaperTest.csv", row)
+            WriteCsvComparison('experimentsForPaper2.csv', row)
 
     if(sixth==True):
 
@@ -352,8 +353,64 @@ def executeShapeletTransform(datasetName):
 
     row = ['ShapeletTransformation', datasetName, round(accuracy_score(y_test, y_pred), 2), round(timeToFit, 2)]
 
-    WriteCsvComparison('experimentsPaper.csv', row)
+    WriteCsvComparison('experimentsForPaper2.csv', row)
 
+
+def executeLearningShapelet(datasetName):
+    # INPUT: Dataset name
+
+    # Execution of a ShapeletTransformation algorithm over the dataset: datasetName
+
+    X_train, y_train, X_test, y_test = UCR_UEA_datasets().load_dataset(datasetName)
+
+    # RE-SIZE BY FUN X TRAIN
+    dfTrain = computeLoadedDataset(X_train, y_train)
+
+    y_train = dfTrain['target'].values
+    y_train = y_train.astype(int)
+
+    #get the number of classes
+    le = LabelEncoder()
+    distinct_classes = le.fit_transform(dfTrain['target'])
+    distinct_classes = np.unique(distinct_classes, return_counts=False)
+    num_classes = len(distinct_classes)
+
+    print(distinct_classes)
+    print(num_classes)
+
+    del dfTrain['target']
+    del dfTrain['TsIndex']
+
+
+
+
+    # RE-SIZE BY FUN X TEST
+    dfTest = computeLoadedDataset(X_test, y_test)
+
+    y_test = dfTest['target'].values
+    y_test = y_test.astype(int)
+
+    del dfTest['target']
+    del dfTest['TsIndex']
+
+    start_time = time.time()
+
+    shapelet_sizes = grabocka_params_to_shapelet_size_dict(n_ts=len(dfTrain),
+                                                           ts_sz=len(dfTrain.iloc[0]),
+                                                           n_classes=num_classes,
+                                                           l=0.1,  # parametri fissi
+                                                           r=1)
+
+    grabocka = LearningShapelets(n_shapelets_per_size=shapelet_sizes)
+    grabocka.fit(dfTrain, y_train)
+    X_train_distances = grabocka.transform(dfTrain)
+    X_test_distances = grabocka.transform(dfTest)
+
+    dt = DecisionTreeClassifier(max_depth=3)
+    dt.fit(X_train_distances, y_train)
+    y_predict = dt.predict(X_test_distances)
+
+    accuracy_score(y_test, y_predict)
 
 
 
@@ -473,7 +530,7 @@ def executeClassicDtree(datasetName):
 
     row = ['Decision Tree with Shapelet', datasetName, round(accuracy_score( y_test, y_predTest), 2), round(timeToFit, 2)]
 
-    WriteCsvComparison('experimentsPaper.csv', row)
+    WriteCsvComparison('experimentsForPaper2.csv', row)
 
 
 
@@ -514,9 +571,9 @@ def executeDecisionTreeStandard(datasetName):
     print('F1-score %s' % f1_score(y_test, y_predTest, average=None))
     confusion_matrix(y_test, y_predTest)
 
-    row = ['Decision tree classifier', datasetName, round(accuracy_score(y_test, y_predTest)), round(timeToFit,2)]
+    row = ['Decision tree classifier', datasetName, round(accuracy_score(y_test, y_predTest),2), round(timeToFit,2)]
 
-    WriteCsvComparison('experimentsPaper.csv', row)
+    WriteCsvComparison('experimentsForPaper2.csv', row)
 
 
 
@@ -579,5 +636,5 @@ def executeKNN(datasetName):
 
     row = ['KNN', datasetName, round(accuracy_score(y_test, test_pred_knn),2), round(timeToFit,2)]
 
-    WriteCsvComparison('experimentsPaper.csv', row)
+    WriteCsvComparison('experimentsForPaper2.csv', row)
 
