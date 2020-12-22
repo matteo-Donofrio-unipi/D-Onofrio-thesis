@@ -122,7 +122,8 @@ def WriteCsv(fileName,row):
 
 
 def WriteCsvComparison(fileName,row):
-    fields = ['Algorithm', 'DatasetName', 'Accuracy', 'Time']
+    #fields = ['Algorithm', 'DatasetName', 'Accuracy', 'Time']
+    fields = ['DatasetName','NumIter']
     writeFileds=False
     if(os.path.isfile(fileName)==False):
         writeFileds=True

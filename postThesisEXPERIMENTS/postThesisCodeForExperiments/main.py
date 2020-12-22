@@ -1,13 +1,13 @@
 from TestManager import executeTestTSCMP, buildTable, executeShapeletTransform, executeClassicDtree, \
-    executeDecisionTreeStandard, executeKNN
+    executeDecisionTreeStandard, executeKNN, executeLearningShapelet
+from FileManager import WriteCsvComparison
 from PlotLibrary import plotComparisonMultiple,plotTs, plotTestResults, plotComparisonSingle
 def main():
 
-    # DatasetNames=["Adiac","BirdChicken","Coffee","Earthquakes","FaceFour","Fish", "MedicalImages",
-    #               "OliveOil","Plane","Strawberry","Symbols","Trace","TwoLeadECG","Wafer",
-    #               "Wine","WordSynonyms","Worms","WormsTwoClass","Yoga","ArrowHead","ECG200",
-    #               "ECG5000","GunPoint","ItalyPowerDemand","PhalangesOutlinesCorrect","ElectricDevices"]
-    DatasetNames=["ElectricDevices"]
+    DatasetNames=["Adiac","BirdChicken","Coffee","Earthquakes","FaceFour","Fish", "MedicalImages",
+                   "OliveOil","Plane","Strawberry","Symbols","Trace","TwoLeadECG","Wafer",
+                   "Wine","WordSynonyms","Worms","WormsTwoClass","Yoga","ArrowHead","ECG200",
+                   "ECG5000","GunPoint","ItalyPowerDemand","PhalangesOutlinesCorrect","ElectricDevices"]
 
     #DatasetNames=["ArrowHead","ECG200","ECG5000","GunPoint","ItalyPowerDemand","PhalangesOutlinesCorrect"]
 
@@ -28,18 +28,22 @@ def main():
         # for i in range(10):
         #     executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameFile,initialWS,candidate)
         #     initialWS+=10
+        print("INIZIO NUOVO DATASET")
+        print(datasetName)
 
-       # executeTestTSCMP(useValidationSet, usePercentageTrainingSet, datasetName, nameFile)
+        row = [datasetName, -1]
+        WriteCsvComparison('NumIterationKMeans.csv', row)
 
-        #executeShapeletTransform(datasetName)
+        executeTestTSCMP(useValidationSet, usePercentageTrainingSet, datasetName, nameFile)
 
-        executeLearningShapelet(datasetName)
+       # executeShapeletTransform(datasetName)
+       # executeLearningShapelet(datasetName)
 
-        executeClassicDtree(datasetName) #con shapelet
+       # executeClassicDtree(datasetName) #con shapelet
 
-        executeKNN(datasetName)
+       # executeKNN(datasetName)
 
-        executeDecisionTreeStandard(datasetName)
+       # executeDecisionTreeStandard(datasetName)
 
 
     #plotTs(datasetName)

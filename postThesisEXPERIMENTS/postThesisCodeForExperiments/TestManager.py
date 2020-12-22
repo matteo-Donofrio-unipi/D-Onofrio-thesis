@@ -271,7 +271,7 @@ def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameF
         #COMMENTO PER STAMPARE SU CONFRONTO ALGO
         if(writeOnCsv):
             #WriteCsv("TSCMPaperTest.csv", row)
-            WriteCsvComparison('experimentsForPaper2.csv', row)
+            WriteCsvComparison('NumIterationKMeans.csv', row)
 
     if(sixth==True):
 
@@ -408,10 +408,17 @@ def executeLearningShapelet(datasetName):
 
     dt = DecisionTreeClassifier(max_depth=3)
     dt.fit(X_train_distances, y_train)
+
+    timeToFit = time.time() - start_time
+
     y_predict = dt.predict(X_test_distances)
 
-    accuracy_score(y_test, y_predict)
 
+    print(accuracy_score(y_test, y_predict))
+
+    row = ['LearningShapelets', datasetName, round(accuracy_score(y_test, y_predict), 2), round(timeToFit, 2)]
+
+    WriteCsvComparison('experimentsForPaperLearning.csv', row)
 
 
 def executeClassicDtree(datasetName):
