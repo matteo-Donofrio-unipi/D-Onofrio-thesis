@@ -1,0 +1,23 @@
+Algorithm,DatasetName,Accuracy,TrainTime,TestTime
+KNN,ArrowHead,0.64,0.01,0.03
+Decision tree classifier,ArrowHead,0.39,0.0,0.0
+KNN,BirdChicken,0.45,0.01,0.03
+Decision tree classifier,BirdChicken,0.5,0.0,0.0
+KNN,Coffee,0.89,0.01,0.02
+Decision tree classifier,Coffee,0.54,0.0,0.0
+KNN,Earthquakes,0.74,0.06,0.12
+Decision tree classifier,Earthquakes,0.68,0.06,0.01
+KNN,ECG200,0.85,0.01,0.02
+Decision tree classifier,ECG200,0.76,0.0,0.0
+KNN,ECG5000,0.87,0.03,0.95
+Decision tree classifier,ECG5000,0.9,0.04,0.04
+KNN,FaceFour,0.68,0.01,0.03
+Decision tree classifier,FaceFour,0.16,0.0,0.0
+KNN,GunPoint,0.85,0.01,0.02
+Decision tree classifier,GunPoint,0.63,0.0,0.0
+KNN,ItalyPowerDemand,0.93,0.0,0.05
+Decision tree classifier,ItalyPowerDemand,0.97,0.0,0.0
+KNN,OliveOil,0.83,0.01,0.03
+Decision tree classifier,OliveOil,0.4,0.0,0.0
+KNN,PhalangesOutlinesCorrect,0.66,0.07,0.28
+Decision tree classifier,PhalangesOutlinesCorrect,0.69,0.07,0.01

@@ -119,7 +119,7 @@ def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameF
 
 
         # generate the TSCMP dataset from the oringial training dataset
-        start_time = time.time()
+        start_timePreprocessingTrain = time.time()
         tree.dfTrain = dfTrain
         OriginalCandidatesListTrain, numberOfMotifTrain, numberOfDiscordTrain  = getDataStructures(tree,
             dfTrain, tree.window_size, tree.k, verbose)
@@ -163,6 +163,9 @@ def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameF
 
         # compute the euclidean dist btw each Ts and each chosen candidate
         dfForDTree = computeSubSeqDistance(tree,TsIndexList, CandidatesListTrain, tree.window_size)
+
+        PreprocessingTrainTime=time.time() - start_timePreprocessingTrain
+
         if (verbose == True):
             print('dfTrain: \n'+str(dfTrain))
             print('dfForDTree: \n'+str(dfForDTree))
@@ -170,18 +173,21 @@ def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameF
 
     if(second==True):
         verbose = False
+
+        start_timeTrain = time.time()
+
         #fit the Decision Tree
         tree.fit(dfForDTree,verbose=False)
-        fitTime=time.time() - start_time #take the training phase time
+        TrainTime=time.time() - start_timeTrain #take the training phase time
         if(verbose==True):
             print(tree.attributeList)
             print(tree.Root)
             tree.printAll(tree.Root)
 
-        print("--- %s seconds after fitting" % (fitTime))
-        print(tree.SseList)
-        print("SSE avg: ")
-        print(sum(tree.SseList)/len(tree.SseList))
+
+        avgSSE=sum(tree.SseList)/len(tree.SseList)
+
+        avgIteration=sum(tree.IterationList)/len(tree.IterationList)
 
 
 
@@ -198,6 +204,8 @@ def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameF
             print('DF TEST')
             print(dfTest)
 
+        start_timePreprocessingTest = time.time()
+
         tree.attributeList=sorted(tree.attributeList) #ordino attributi per rendere più efficiente 'computeSubSeqDistanceForTest'
         tree.attributeList=np.unique(tree.attributeList)
 
@@ -212,6 +220,9 @@ def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameF
             print(tree.dTreeAttributes)
 
         dfForDTreeTest=computeSubSeqDistanceForTest(tree,dfTest,tree.dTreeAttributes)
+
+        PreprocessingTestTime = time.time() - start_timePreprocessingTest
+
         if(tree.verbose==True):
             print(dfForDTreeTest)
 
@@ -231,10 +242,11 @@ def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameF
             tree.TsTestForPrint.append(temp)
             temp=None
 
+        start_timeTest = time.time()
 
         yTest, yPredicted = tree.predict(dfForDTreeTest, tree.Root, fifth)
 
-        totalTime = time.time() - start_time
+        TestTime = time.time() - start_timeTest
 
 
         if (tree.verbose == True):
@@ -260,18 +272,17 @@ def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameF
             percentage=PercentageTrainingSet
 
         #row=[datasetName,group,tree.maxDepth,tree.minSamplesLeaf,tree.window_size,tree.removeUsedCandidate,tree.k,useValidationSet,percentage,tree.useClustering,tree.n_clusters,round(aS,2),round(fitTime,2)]
-        row = ['TSCMP', datasetName, round(aS,2),round(fitTime,2)]
+        row = ['MAPIC', datasetName, round(aS,2), round(PreprocessingTrainTime,2),round(TrainTime,2),round(PreprocessingTestTime,2),round(TestTime,2),round(avgSSE),round(avgIteration)]
 
 
         print('Classification Report  \n%s ' % cR)
         print('Accuracy %s' % aS)
         print('F1-score %s' % f1)
-        print(" %s seconds END OF EXECUTION" % totalTime)
 
         #COMMENTO PER STAMPARE SU CONFRONTO ALGO
         if(writeOnCsv):
-            #WriteCsv("TSCMPaperTest.csv", row)
-            WriteCsvComparison('NumIterationKMeans.csv', row)
+            WriteCsvMAPIC("MAPIC_Experiments_29-12.csv", row)
+            #WriteCsvComparison('NumIterationKMeans.csv', row)
 
     if(sixth==True):
 
@@ -324,36 +335,51 @@ def executeShapeletTransform(datasetName):
     del dfTest['target']
     del dfTest['TsIndex']
 
-
-    start_time = time.time()
+    #inizio preprocessing train
+    start_timePreprocessingTrain = time.time()
 
     #Shapelet transformation WITH RANDOM STATE
     #NB: IN ORDER TO MAKE A VALID COMPARISON WITH TSCMP, THE WINDOW SIZE VALUE MUST BE THE SAME OF THE VALUE CHOSEN IN TSCMP
-    st = ShapeletTransform(window_sizes=[20],
-                           random_state=41, sort=True)
+    st = ShapeletTransform(window_sizes=[20],sort=True)
     X_new = st.fit_transform(dfTrain, y_train)
-    X_test_new = st.transform(dfTest)
+
+    # fine preprocessing train
+    PreprocessingTrainTime = time.time() - start_timePreprocessingTrain
 
     from sklearn.tree import DecisionTreeClassifier
 
-    clf = DecisionTreeClassifier()
+    clf = DecisionTreeClassifier(criterion='entropy', max_depth=3,
+                                 min_samples_leaf=20)
+    # inizio train
+    start_timeTrain = time.time()
+
     clf.fit(X_new, y_train)
 
-    timeToFit = time.time() - start_time
+    # fine train
+    TrainTime = time.time() - start_timeTrain
 
-    print("--- %s seconds after fitting" % (timeToFit)) #training phase time
+    # inizio preprocessing test
+    start_timePreprocessingTest = time.time()
+
+    X_test_new = st.transform(dfTest)
+
+    # fine preprocessing test
+    PreprocessingTestTime = time.time() - start_timePreprocessingTest
+
+    # inizio test
+    start_timeTest = time.time()
 
     y_pred = clf.predict(X_test_new)
 
-    timeToTest = time.time() - start_time
+    # fine test
+    TestTime = time.time() - start_timeTest
 
-    print(accuracy_score(y_pred, y_test))
+    print(accuracy_score(y_test,y_pred))
 
-    print("--- %s seconds after testing" % (timeToTest))
 
-    row = ['ShapeletTransformation', datasetName, round(accuracy_score(y_test, y_pred), 2), round(timeToFit, 2)]
+    row = ['ShapeletTransformation', datasetName, round(accuracy_score(y_test, y_pred), 2), round(PreprocessingTrainTime, 2) ,round(TrainTime, 2),round(PreprocessingTestTime, 2),round(TestTime, 2)]
 
-    WriteCsvComparison('experimentsForPaper2.csv', row)
+    WriteCsvShapeletAlgo('Shapelet_Algo_Experiments_29-12.csv', row)
 
 
 def executeLearningShapelet(datasetName):
@@ -393,7 +419,8 @@ def executeLearningShapelet(datasetName):
     del dfTest['target']
     del dfTest['TsIndex']
 
-    start_time = time.time()
+    # inizio preprocessing train
+    start_timePreprocessingTrain = time.time()
 
     shapelet_sizes = grabocka_params_to_shapelet_size_dict(n_ts=len(dfTrain),
                                                            ts_sz=len(dfTrain.iloc[0]),
@@ -404,21 +431,41 @@ def executeLearningShapelet(datasetName):
     grabocka = LearningShapelets(n_shapelets_per_size=shapelet_sizes)
     grabocka.fit(dfTrain, y_train)
     X_train_distances = grabocka.transform(dfTrain)
-    X_test_distances = grabocka.transform(dfTest)
 
-    dt = DecisionTreeClassifier(max_depth=3)
+    # fine preprocessing train
+    PreprocessingTrainTime = time.time() - start_timePreprocessingTrain
+
+    # inizio train
+    start_timeTrain = time.time()
+
+    dt = DecisionTreeClassifier(criterion='entropy', max_depth=3,
+                                 min_samples_leaf=20)
     dt.fit(X_train_distances, y_train)
 
-    timeToFit = time.time() - start_time
+    # fine train
+    TrainTime = time.time() - start_timeTrain
+
+    # inizio preprocessing test
+    start_timePreprocessingTest = time.time()
+
+    X_test_distances = grabocka.transform(dfTest)
+
+    # fine preprocessing test
+    PreprocessingTestTime = time.time() - start_timePreprocessingTest
+
+    # inizio test
+    start_timeTest = time.time()
 
     y_predict = dt.predict(X_test_distances)
 
+    # fine test
+    TestTime = time.time() - start_timeTest
 
     print(accuracy_score(y_test, y_predict))
 
-    row = ['LearningShapelets', datasetName, round(accuracy_score(y_test, y_predict), 2), round(timeToFit, 2)]
+    row = ['LearningShapelets', datasetName, round(accuracy_score(y_test, y_predict), 2), round(PreprocessingTrainTime, 2) ,round(TrainTime, 2),round(PreprocessingTestTime, 2),round(TestTime, 2)]
 
-    WriteCsvComparison('experimentsForPaperLearning.csv', row)
+    WriteCsvShapeletAlgo('Shapelet_Algo_Experiments_29-12.csv', row)
 
 
 def executeClassicDtree(datasetName):
@@ -439,7 +486,10 @@ def executeClassicDtree(datasetName):
 
     dfTrain = computeLoadedDataset(X_train, y_train)
 
-    start_time = time.time()
+    # inizio preprocessing train
+    start_timePreprocessingTrain = time.time()
+
+
     tree.dfTrain = dfTrain
     OriginalCandidatesListTrain, numberOfMotifTrain, numberOfDiscordTrain = getDataStructures(tree,
                                                                                                        dfTrain,
@@ -478,6 +528,10 @@ def executeClassicDtree(datasetName):
 
 
     dfForDTree = computeSubSeqDistance(tree, TsIndexList, CandidatesListTrain, tree.window_size)
+
+    # fine preprocessing train
+    PreprocessingTrainTime = time.time() - start_timePreprocessingTrain
+
     if (verbose == True):
         print('dfTrain: \n' + str(dfTrain))
         print('dfForDTree: \n' + str(dfForDTree))
@@ -495,17 +549,22 @@ def executeClassicDtree(datasetName):
 
     # NB: IN ORDER TO MAKE A VALID COMPARISON WITH TSCMP, THESE VALUES OF THE PARAMETERS MUST BE THE SAME OF THE VALUE CHOSEN IN TSCMP
 
+    # inizio train
+    start_timeTrain = time.time()
+
     clf = DecisionTreeClassifier(criterion='entropy', max_depth=3,
                                  min_samples_leaf=20)  # fissando random state ho sempre lo stesso valore e non ho ranodmicità nello split
 
     clf.fit(dfForDTree, y_train)
 
-    timeToFit = time.time() - start_time #Training phase time
-
-    print('Time to fit '+str(timeToFit))
+    # fine train
+    TrainTime = time.time() - start_timeTrain
 
     #INIZIO STESSA PROCEDURA EPR GENERARE dfForDTreeTest
     dfTest = computeLoadedDataset(X_test, y_test)
+
+    # inizio preprocessing test
+    start_timePreprocessingTest = time.time()
 
     columns=dfForDTree.columns.values
 
@@ -519,6 +578,9 @@ def executeClassicDtree(datasetName):
 
     dfForDTreeTest = computeSubSeqDistanceForTest(tree, dfTest, tree.dTreeAttributes )
 
+    # fine preprocessing test
+    PreprocessingTestTime = time.time() - start_timePreprocessingTest
+
     y_test=dfForDTreeTest["class"].values
 
     y_test=y_test.astype('int')
@@ -526,18 +588,22 @@ def executeClassicDtree(datasetName):
     del dfForDTreeTest["class"]
     print(dfForDTreeTest)
 
+    # inizio test
+    start_timeTest = time.time()
+
     y_predTest = clf.predict(dfForDTreeTest)
 
-    timeToTest = time.time() - start_time
+    # fine test
+    TestTime = time.time() - start_timeTest
 
     print(classification_report(y_test, y_predTest))
     print('Accuracy %s' % accuracy_score(y_test, y_predTest))
     print('F1-score %s' % f1_score(y_test, y_predTest, average=None))
     confusion_matrix(y_test, y_predTest)
 
-    row = ['Decision Tree with Shapelet', datasetName, round(accuracy_score( y_test, y_predTest), 2), round(timeToFit, 2)]
+    row = ['Decision Tree with Shapelet', datasetName, round(accuracy_score( y_test, y_predTest), 2), round(PreprocessingTrainTime, 2) ,round(TrainTime, 2),round(PreprocessingTestTime, 2),round(TestTime, 2)]
 
-    WriteCsvComparison('experimentsForPaper2.csv', row)
+    WriteCsvShapeletAlgo('Shapelet_Algo_Experiments_29-12.csv', row)
 
 
 
@@ -564,26 +630,30 @@ def executeDecisionTreeStandard(datasetName):
     #test phase
     clf = DecisionTreeClassifier(criterion='entropy', max_depth=3,
                                  min_samples_leaf=20)
-    start_time = time.time()
+    start_timeTrain = time.time()
 
     clf.fit(dfTrain, y_train)
 
-    timeToFit = time.time() - start_time  # Training phase time
+    TrainTime = time.time() - start_timeTrain  # Training phase time
 
+    start_timeTest = time.time()
 
     y_predTest = clf.predict(dfTest)
+
+    TestTime = time.time() - start_timeTest
 
     print(classification_report(y_test, y_predTest))
     print('Accuracy %s' % accuracy_score(y_test, y_predTest))
     print('F1-score %s' % f1_score(y_test, y_predTest, average=None))
     confusion_matrix(y_test, y_predTest)
 
-    row = ['Decision tree classifier', datasetName, round(accuracy_score(y_test, y_predTest),2), round(timeToFit,2)]
+    row = ['Decision tree classifier', datasetName, round(accuracy_score(y_test, y_predTest),2), round(TrainTime, 2),round(TestTime, 2)]
 
-    WriteCsvComparison('experimentsForPaper2.csv', row)
+    WriteCsvComparison('Algorithms_Experiments_29-12.csv.csv', row)
 
 
 
+#NEGLI ESPERIMENTI USO MINMAX SCALER
 def executeKNN(datasetName):
     X_train, y_train, X_test, y_test = UCR_UEA_datasets().load_dataset(datasetName)
 
@@ -605,7 +675,7 @@ def executeKNN(datasetName):
     del dfTrain["TsIndex"]
     del dfTrain["target"]
 
-    dfTrain[dfTrain.columns] = scaler.fit_transform(dfTrain)
+
 
     print(dfTrain)
 
@@ -617,7 +687,7 @@ def executeKNN(datasetName):
     del dfTest["target"]
     del dfTest["TsIndex"]
 
-    dfTest[dfTest.columns] = scaler.fit_transform(dfTest)
+
 
     print(dfTest)
 
@@ -625,14 +695,24 @@ def executeKNN(datasetName):
 
     knn = KNeighborsClassifier(n_neighbors=K)
 
-    start_time = time.time()
+    start_timeTrain = time.time()
+
+    dfTrain[dfTrain.columns] = scaler.fit_transform(dfTrain)
 
     knn.fit(dfTrain, y_train)
 
-    timeToFit = time.time() - start_time  # Training phase time
+    TrainTime = time.time() - start_timeTrain  # Training phase time
+
+
     # prediction on the test test
+
+    start_timeTest = time.time()
+
+    dfTest[dfTest.columns] = scaler.fit_transform(dfTest)
+
     test_pred_knn = knn.predict(dfTest)
 
+    TestTime = time.time() - start_timeTrain
 
 
     print(classification_report(y_test, test_pred_knn))
@@ -641,7 +721,7 @@ def executeKNN(datasetName):
     confusion_matrix(y_test, test_pred_knn)
 
 
-    row = ['KNN', datasetName, round(accuracy_score(y_test, test_pred_knn),2), round(timeToFit,2)]
+    row = ['KNN', datasetName, round(accuracy_score(y_test, test_pred_knn),2), round(TrainTime, 2),round(TestTime, 2)]
 
-    WriteCsvComparison('experimentsForPaper2.csv', row)
+    WriteCsvComparison('Algorithms_Experiments_29-12.csv.csv', row)
 

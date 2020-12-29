@@ -33,6 +33,7 @@ class Tree:
         self.verbose=verbose
         self.attributeList=list()
         self.SseList=list()
+        self.IterationList = list()
 
 
     def computeEntropy(self,dataset):

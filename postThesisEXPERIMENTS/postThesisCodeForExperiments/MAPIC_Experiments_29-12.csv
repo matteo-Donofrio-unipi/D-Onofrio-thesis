@@ -1,0 +1,13 @@
+Algorithm,Dataset,Accuracy,PreprocessingTrainTime,TrainTime,PreprocessingTestTime,TestTime,avgSSE,avgNumIterationKMeans
+MAPIC,ArrowHead,0.53,2.65,3.66,0.54,0.02,3,2
+MAPIC,BirdChicken,0.8,2.39,0.71,0.04,0.0,1,2
+MAPIC,Coffee,0.96,2.22,1.26,0.05,0.01,1,3
+MAPIC,Earthquakes,0.74,1346.75,192.32,6.5,0.02,6432,8
+MAPIC,ECG200,0.78,4.7,11.41,0.57,0.01,41,4
+MAPIC,ECG5000,0.91,27.51,58.77,42.08,0.55,174,8
+MAPIC,FaceFour,0.24,44.96,4.05,0.63,0.01,118,2
+MAPIC,GunPoint,0.91,2.82,4.64,0.66,0.02,2,3
+MAPIC,ItalyPowerDemand,0.92,2.19,4.7,2.63,0.11,25,3
+MAPIC,OliveOil,0.13,3.93,1.44,0.06,0.01,0,2
+MAPIC,PhalangesOutlinesCorrect,0.65,221.42,426.13,15.35,0.11,368,8
+MAPIC,Strawberry,0.87,44.22,78.6,4.24,0.05,13,6

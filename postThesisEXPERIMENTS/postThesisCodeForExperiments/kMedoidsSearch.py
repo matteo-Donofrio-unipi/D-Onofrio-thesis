@@ -20,11 +20,7 @@ def runKMedoids(tree,dataset,n_clusters):
 
     centroids = kmeans.cluster_centers_
     tree.SseList.append(kmeans.inertia_)
-
-    print("KMEANS iteration")
-    print(kmeans.n_iter_)
-    row = ["same", kmeans.n_iter_]
-    WriteCsvComparison('NumIterationKMeans.csv', row)
+    tree.IterationList.append(kmeans.n_iter_)
 
 
     #per ogni centroide, estraggo medoide (record nel cluster piu vicino al centroide )

@@ -103,9 +103,11 @@ def readCsvAsDf(fileName):
 
     return dfResults
 
+#Write per MAPIC
+def WriteCsvMAPIC(fileName,row):
+    #fields = ['Dataset','Candidates', 'Max depth', 'Min samples', 'Window size', 'Remove candi', 'k', 'useValidationSet' ,'% Training set', 'useClustering','NumCluster(Medoids)' ,'Accuracy','Time']
+    fields = ['Algorithm','Dataset','Accuracy','PreprocessingTrainTime','TrainTime','PreprocessingTestTime','TestTime','avgSSE','avgNumIterationKMeans']
 
-def WriteCsv(fileName,row):
-    fields = ['Dataset','Candidates', 'Max depth', 'Min samples', 'Window size', 'Remove candi', 'k', 'useValidationSet' ,'% Training set', 'useClustering','NumCluster(Medoids)' ,'Accuracy','Time']
     writeFileds=False
     if(os.path.isfile(fileName)==False):
         writeFileds=True
@@ -120,10 +122,28 @@ def WriteCsv(fileName,row):
         csvwriter.writerow(row)
 
 
+#Write per MAPIC
+def WriteCsvShapeletAlgo(fileName,row):
+    #fields = ['Dataset','Candidates', 'Max depth', 'Min samples', 'Window size', 'Remove candi', 'k', 'useValidationSet' ,'% Training set', 'useClustering','NumCluster(Medoids)' ,'Accuracy','Time']
+    fields = ['Algorithm','Dataset','Accuracy','PreprocessingTrainTime','TrainTime','PreprocessingTestTime','TestTime']
 
+    writeFileds=False
+    if(os.path.isfile(fileName)==False):
+        writeFileds=True
+
+    # writing to csv file
+    with open(fileName, 'a', newline='') as csvfile:
+        # creating a csv writer object
+        csvwriter = csv.writer(csvfile)
+        if (writeFileds):
+            csvwriter.writerow(fields)
+        # writing the data rows
+        csvwriter.writerow(row)
+
+
+#Write per altri algoritmi
 def WriteCsvComparison(fileName,row):
-    #fields = ['Algorithm', 'DatasetName', 'Accuracy', 'Time']
-    fields = ['DatasetName','NumIter']
+    fields = ['Algorithm', 'DatasetName', 'Accuracy', 'TrainTime','TestTime']
     writeFileds=False
     if(os.path.isfile(fileName)==False):
         writeFileds=True
