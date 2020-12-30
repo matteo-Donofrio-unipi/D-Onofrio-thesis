@@ -105,8 +105,8 @@ def readCsvAsDf(fileName):
 
 #Write per MAPIC
 def WriteCsvMAPIC(fileName,row):
-    #fields = ['Dataset','Candidates', 'Max depth', 'Min samples', 'Window size', 'Remove candi', 'k', 'useValidationSet' ,'% Training set', 'useClustering','NumCluster(Medoids)' ,'Accuracy','Time']
-    fields = ['Algorithm','Dataset','Accuracy','PreprocessingTrainTime','TrainTime','PreprocessingTestTime','TestTime','avgSSE','avgNumIterationKMeans']
+    fields = ['Candidates', 'Max depth', 'Min samples', 'Window size', 'Remove candi', 'k', 'useValidationSet' ,'% Training set', 'useClustering','NumCluster(Medoids)' ,'Accuracy','PreprocessingTrainTime','TrainTime','PreprocessingTestTime','TestTime']
+    #fields = ['Algorithm','Dataset','Accuracy','PreprocessingTrainTime','TrainTime','PreprocessingTestTime','TestTime','avgSSE','avgNumIterationKMeans']
 
     writeFileds=False
     if(os.path.isfile(fileName)==False):

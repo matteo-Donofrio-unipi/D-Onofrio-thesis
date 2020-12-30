@@ -4,39 +4,40 @@ from FileManager import WriteCsvComparison
 from PlotLibrary import plotComparisonMultiple,plotTs, plotTestResults, plotComparisonSingle
 def main():
 
-    DatasetNames=["ArrowHead","BirdChicken","Coffee","Earthquakes", "ECG200",
-                   "ECG5000","FaceFour","GunPoint","ItalyPowerDemand","OliveOil","PhalangesOutlinesCorrect",
-                   "Strawberry","Trace","TwoLeadECG","Wafer","Wine","Worms","WormsTwoClass","Yoga"]
+    # DatasetNames=["ArrowHead","BirdChicken","Coffee","Earthquakes", "ECG200",
+    #                "ECG5000","FaceFour","GunPoint","ItalyPowerDemand","OliveOil","PhalangesOutlinesCorrect",
+    #                "Strawberry","Trace","TwoLeadECG","Wafer","Wine","Worms","WormsTwoClass","Yoga"]
 
-    DatasetNames=["Strawberry","Trace","TwoLeadECG","Wafer","Wine","Worms","WormsTwoClass","Yoga"]
+    DatasetNames=["ItalyPowerDemand","GunPoint"]
+    datasetName = "ItalyPowerDemand"
+    nameFile = datasetName + 'TestResults.csv'
 
-    for i in range(len(DatasetNames)):
-        datasetName = DatasetNames[i]
-        nameFile = datasetName + 'TestResults.csv'
-        useValidationSet = False
-        usePercentageTrainingSet = True
+    # for i in range(len(DatasetNames)):
+    #     datasetName = DatasetNames[i]
+    #     nameFile = datasetName + 'TestResults.csv'
+    useValidationSet = False
+    usePercentageTrainingSet = True
+    #
+    # PERCENTAGE = 0.9
+    # for i in range(2):
+    #     executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameFile,PERCENTAGE)
+        #PERCENTAGE+=0.1
 
-        # candidate = 0
-        # initialWS = 200
-        # for i in range(10):
-        #     executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameFile,initialWS,candidate)
-        #     initialWS+=10
+        #executeTestTSCMP(useValidationSet, usePercentageTrainingSet, datasetName, nameFile)
 
-        executeTestTSCMP(useValidationSet, usePercentageTrainingSet, datasetName, nameFile)
+        #executeShapeletTransform(datasetName)
+        #executeLearningShapelet(datasetName)
 
-        executeShapeletTransform(datasetName)
-        executeLearningShapelet(datasetName)
+        #executeClassicDtree(datasetName) #con shapelet
 
-        executeClassicDtree(datasetName) #con shapelet
+        #executeKNN(datasetName)
 
-        executeKNN(datasetName)
-
-        executeDecisionTreeStandard(datasetName)
+        #executeDecisionTreeStandard(datasetName)
 
 
     #plotTs(datasetName)
 
-    #plotTestResults(nameFile) #prende in considerazione solo i risultati ottenuti su test set (senza validation)
+    plotTestResults(nameFile,datasetName) #prende in considerazione solo i risultati ottenuti su test set (senza validation)
 
     #fissato il primo su x, vario il secondo su y
     max=0

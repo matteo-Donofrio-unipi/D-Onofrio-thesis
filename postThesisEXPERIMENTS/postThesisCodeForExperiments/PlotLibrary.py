@@ -198,13 +198,13 @@ def plotTs(datasetName):
         plotData(dfTrain.iloc[i])
 
 
-def plotTestResults(nameFile):  # print results
-    PlotValues(nameFile)
+def plotTestResults(nameFile,datasetName):  # print results
+    PlotValues(nameFile,datasetName)
 
 
 
 #stampa parametri VS accuracy fissato un dataset
-def PlotValues(fileName):
+def PlotValues(fileName,datasetName):
     errorBarPlot=True
     dfResults=readCsvAsDf(fileName)
 
@@ -307,7 +307,7 @@ def PlotValues(fileName):
 
         fig, ax1= plt.subplots(1, 1, sharex=True, figsize=(8, 4))
         #ax2 = ax1.twinx()
-        ax1.set_title("GunPoint", fontsize=25)
+        ax1.set_title(datasetName, fontsize=25)
 
 
         #ax1.errorbar(percentage, mean, yerr=stdevList, c='r',label='Accuracy mean')
@@ -316,7 +316,7 @@ def PlotValues(fileName):
         #ax1.set_ylabel('Accuracy', fontsize=25)
         ax1.set_ylabel('Time (sec)', fontsize=25)
         plt.tick_params(axis='both', which='major', labelsize=35)
-        plt.savefig('stampeAlgoritmo\ ' + fileName+ 'errorPlot' + '.png')
+        plt.savefig('stampeAlgoritmo\ ' + fileName+ 'errorPlot2' + '.png')
         plt.show()
 
 

@@ -12,7 +12,7 @@ from tslearn.shapelets import LearningShapelets, grabocka_params_to_shapelet_siz
 
 
 #datasetNames = 'GunPoint,ItalyPowerDemand,ArrowHead,ECG200,ECG5000,PhalangesOutlinesCorrect'
-def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):#,initialWS,candidate):
+def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameFile,PERCENTAGE):#,initialWS,candidate):
 
     #INPUT: Parameters for TSCMP algorithm
 
@@ -26,7 +26,7 @@ def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameF
     sixth = False  # Plot of the choosen shapelet
 
 
-    PercentageTrainingSet = 1 # variable percentage of the training set
+    PercentageTrainingSet = PERCENTAGE # variable percentage of the training set
     PercentageValidationSet = 0.3  # percentage of the training set chosen as validation set
     writeOnCsv = True
 
@@ -184,10 +184,15 @@ def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameF
             print(tree.Root)
             tree.printAll(tree.Root)
 
+        if(len(tree.SseList)>0):
+            avgSSE=sum(tree.SseList)/len(tree.SseList)
+        else:
+            avgSSE=0
 
-        avgSSE=sum(tree.SseList)/len(tree.SseList)
-
-        avgIteration=sum(tree.IterationList)/len(tree.IterationList)
+        if(len(tree.IterationList)>0):
+            avgIteration=sum(tree.IterationList)/len(tree.IterationList)
+        else:
+            avgIteration=0
 
 
 
@@ -271,8 +276,8 @@ def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameF
         elif(usePercentageTrainingSet):
             percentage=PercentageTrainingSet
 
-        #row=[datasetName,group,tree.maxDepth,tree.minSamplesLeaf,tree.window_size,tree.removeUsedCandidate,tree.k,useValidationSet,percentage,tree.useClustering,tree.n_clusters,round(aS,2),round(fitTime,2)]
-        row = ['MAPIC', datasetName, round(aS,2), round(PreprocessingTrainTime,2),round(TrainTime,2),round(PreprocessingTestTime,2),round(TestTime,2),round(avgSSE),round(avgIteration)]
+        row=[group,tree.maxDepth,tree.minSamplesLeaf,tree.window_size,tree.removeUsedCandidate,tree.k,useValidationSet,percentage,tree.useClustering,tree.n_clusters,round(aS,2),round(PreprocessingTrainTime,2),round(TrainTime,2),round(PreprocessingTestTime,2),round(TestTime,2)]
+        #row = ['MAPIC', datasetName, round(aS,2), round(PreprocessingTrainTime,2),round(TrainTime,2),round(PreprocessingTestTime,2),round(TestTime,2),round(avgSSE),round(avgIteration)]
 
 
         print('Classification Report  \n%s ' % cR)
@@ -281,7 +286,7 @@ def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameF
 
         #COMMENTO PER STAMPARE SU CONFRONTO ALGO
         if(writeOnCsv):
-            WriteCsvMAPIC("MAPIC_Experiments_29-12.csv", row)
+            WriteCsvMAPIC(nameFile, row)
             #WriteCsvComparison('NumIterationKMeans.csv', row)
 
     if(sixth==True):
