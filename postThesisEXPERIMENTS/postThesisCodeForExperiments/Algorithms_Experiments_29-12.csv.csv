@@ -21,3 +21,19 @@ KNN,OliveOil,0.83,0.01,0.03
 Decision tree classifier,OliveOil,0.4,0.0,0.0
 KNN,PhalangesOutlinesCorrect,0.66,0.07,0.28
 Decision tree classifier,PhalangesOutlinesCorrect,0.69,0.07,0.01
+KNN,Strawberry,0.94,0.06,0.15
+Decision tree classifier,Strawberry,0.88,0.06,0.01
+KNN,Trace,0.74,0.01,0.03
+Decision tree classifier,Trace,0.72,0.01,0.0
+KNN,TwoLeadECG,0.58,0.01,0.07
+Decision tree classifier,TwoLeadECG,0.5,0.0,0.01
+KNN,Wafer,0.99,0.06,1.61
+Decision tree classifier,Wafer,0.97,0.06,0.06
+KNN,Wine,0.72,0.01,0.02
+Decision tree classifier,Wine,0.74,0.0,0.0
+KNN,Worms,0.35,0.06,0.1
+Decision tree classifier,Worms,0.29,0.07,0.01
+KNN,WormsTwoClass,0.61,0.06,0.1
+Decision tree classifier,WormsTwoClass,0.52,0.05,0.01
+KNN,Yoga,0.79,0.04,0.9
+Decision tree classifier,Yoga,0.6,0.05,0.08

@@ -32,3 +32,27 @@ Decision Tree with Shapelet,OliveOil,0.4,3.91,0.0,0.91,0.0
 ShapeletTransformation,PhalangesOutlinesCorrect,0.68,3552.22,0.03,1.71,0.0
 LearningShapelets,PhalangesOutlinesCorrect,0.67,199.37,0.0,0.09,0.0
 Decision Tree with Shapelet,PhalangesOutlinesCorrect,0.62,217.67,0.02,43.92,0.0
+ShapeletTransformation,Strawberry,0.9,3821.47,0.03,6.56,0.01
+LearningShapelets,Strawberry,0.85,236.84,0.0,0.07,0.0
+Decision Tree with Shapelet,Strawberry,0.64,43.58,0.01,11.7,0.0
+ShapeletTransformation,Trace,0.98,192.35,0.0,7.26,0.0
+LearningShapelets,Trace,0.89,67.65,0.0,0.05,0.0
+Decision Tree with Shapelet,Trace,0.66,7.56,0.0,2.92,0.0
+ShapeletTransformation,TwoLeadECG,0.5,3.01,0.0,1.8,0.0
+LearningShapelets,TwoLeadECG,0.5,22.81,0.0,0.1,0.0
+Decision Tree with Shapelet,TwoLeadECG,0.5,1.09,0.0,30.73,0.0
+ShapeletTransformation,Wafer,0.95,4140.26,0.03,12.91,0.0
+LearningShapelets,Wafer,0.92,213.21,0.0,0.49,0.0
+Decision Tree with Shapelet,Wafer,0.89,359.73,0.01,431.17,0.01
+ShapeletTransformation,Wine,0.57,48.8,0.0,0.21,0.0
+LearningShapelets,Wine,0.74,44.13,0.0,0.04,0.0
+Decision Tree with Shapelet,Wine,0.5,3.88,0.0,1.52,0.0
+ShapeletTransformation,Worms,0.55,4901.84,0.03,98.99,0.0
+LearningShapelets,Worms,0.35,671.84,0.0,0.07,0.0
+Decision Tree with Shapelet,Worms,0.38,35.06,0.0,2.51,0.0
+ShapeletTransformation,WormsTwoClass,0.71,4772.93,0.02,4.69,0.0
+LearningShapelets,WormsTwoClass,0.6,671.6,0.0,0.07,0.0
+Decision Tree with Shapelet,WormsTwoClass,0.43,34.94,0.0,2.51,0.0
+ShapeletTransformation,Yoga,0.62,2855.66,0.02,59.7,0.0
+LearningShapelets,Yoga,0.61,294.04,0.0,0.49,0.0
+Decision Tree with Shapelet,Yoga,0.52,30.16,0.0,94.55,0.0
