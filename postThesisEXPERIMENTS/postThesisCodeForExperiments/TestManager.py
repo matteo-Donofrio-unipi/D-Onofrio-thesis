@@ -12,7 +12,7 @@ from tslearn.shapelets import LearningShapelets, grabocka_params_to_shapelet_siz
 
 
 #datasetNames = 'GunPoint,ItalyPowerDemand,ArrowHead,ECG200,ECG5000,PhalangesOutlinesCorrect'
-def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameFile,PERCENTAGE):#,initialWS,candidate):
+def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):#,initialWS,candidate):
 
     #INPUT: Parameters for TSCMP algorithm
 
@@ -26,13 +26,13 @@ def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameF
     sixth = False  # Plot of the choosen shapelet
 
 
-    PercentageTrainingSet = PERCENTAGE # variable percentage of the training set
+    PercentageTrainingSet = 1 # variable percentage of the training set
     PercentageValidationSet = 0.3  # percentage of the training set chosen as validation set
     writeOnCsv = True
 
 
     le = LabelEncoder()
-    tree= Tree(candidatesGroup=1,maxDepth=3,minSamplesLeaf=20,removeUsedCandidate=1,window_size=20,k=2,useClustering=True,n_clusters=20,warningDetected=False,verbose=0)
+    tree= Tree(candidatesGroup=1,maxDepth=3,minSamplesLeaf=20,removeUsedCandidate=1,window_size=20,k=5,useClustering=True,n_clusters=20,warningDetected=False,verbose=0)
 
 
 

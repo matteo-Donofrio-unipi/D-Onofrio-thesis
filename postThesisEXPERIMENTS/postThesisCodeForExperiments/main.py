@@ -9,7 +9,7 @@ def main():
     #                "Strawberry","Trace","TwoLeadECG","Wafer","Wine","Worms","WormsTwoClass","Yoga"]
 
     DatasetNames=["ItalyPowerDemand","GunPoint"]
-    datasetName = "ItalyPowerDemand"
+    datasetName = "GunPoint"
     nameFile = datasetName + 'TestResults.csv'
 
     # for i in range(len(DatasetNames)):
@@ -23,7 +23,7 @@ def main():
     #     executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameFile,PERCENTAGE)
         #PERCENTAGE+=0.1
 
-        #executeTestTSCMP(useValidationSet, usePercentageTrainingSet, datasetName, nameFile)
+    #executeTestTSCMP(useValidationSet, usePercentageTrainingSet, datasetName, nameFile)
 
         #executeShapeletTransform(datasetName)
         #executeLearningShapelet(datasetName)
@@ -37,14 +37,15 @@ def main():
 
     #plotTs(datasetName)
 
-    plotTestResults(nameFile,datasetName) #prende in considerazione solo i risultati ottenuti su test set (senza validation)
+    #plotTestResults(nameFile,datasetName) #prende in considerazione solo i risultati ottenuti su test set (senza validation)
 
     #fissato il primo su x, vario il secondo su y
-    max=0
+    max=0 #take best accuracy and min time
     avg=1
+    min=-1
     #plotComparisonMultiple(nameFile,datasetName,'MaxDepth','Candidates',max)
 
-    #plotComparisonSingle(nameFile,datasetName,'NumClusterMedoid',avg,UsePercentageTrainingSet=False)
+    plotComparisonSingle(nameFile,datasetName,'Candidates',max,UsePercentageTrainingSet=False)
 
 
 

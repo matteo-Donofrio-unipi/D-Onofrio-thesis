@@ -403,13 +403,13 @@ def plotComparisonSingle(fileName,datasetName,attribute1,mOa,UsePercentageTraini
 
     dfLocal=dftest
     # SCELGO LA CONFIGURAZIONE MIGLIORE
-    dfLocal = dfLocal[(dftest['Candidates'] == 'Discords')]
+    #dfLocal = dfLocal[(dftest['Candidates'] == 'Discords')]
     dfLocal = dfLocal[(dfLocal['MaxDepth'] == '3')]
     dfLocal = dfLocal[(dfLocal['MinSamples'] == '20')]
     dfLocal = dfLocal[(dfLocal['WindowSize'] == '20')]
     dfLocal = dfLocal[(dfLocal['RemoveCandidates'] == '1')]
     dfLocal = dfLocal[(dfLocal['k'] == '2')]
-    #dfLocal = dfLocal[(dfLocal['NumClusterMedoid'] == '20')]
+    dfLocal = dfLocal[(dfLocal['NumClusterMedoid'] == '20')]
 
     print(dfLocal)
 
@@ -461,7 +461,10 @@ def plotComparisonSingle(fileName,datasetName,attribute1,mOa,UsePercentageTraini
         if (len(accuracy) > 0):
             if (mOa == 0):
                 choosenAccuracy = max(accuracy)
-                choosenTime=max(time)
+                choosenTime=min(time)
+            elif(mOa==-1):
+                choosenTime=min(time)
+                choosenAccuracy = min(accuracy)
             else:
                 choosenTime=sum(time)/len(time)
                 choosenAccuracy = sum(accuracy) / len(accuracy)
@@ -481,11 +484,13 @@ def plotComparisonSingle(fileName,datasetName,attribute1,mOa,UsePercentageTraini
     ax2.plot(valuesAtt1, timeList, color='b', marker='^', label='Time')
 
 
-    ax1.set_xlabel("Nbr of medoids chosen",fontsize=25)
+    ax1.set_xlabel("Type of candidate",fontsize=25)
     ax1.set_ylabel('Accuracy',fontsize=25)
     ax2.set_ylabel('Time (sec)',fontsize=25)
 
     ax1.tick_params(axis='both', which='both', labelsize=35)
     ax2.tick_params(axis='both', which='both', labelsize=35)
-    plt.savefig('stampeAlgoritmo\ ' + fileName+ 'Comparison'+ attribute1 + '.png')
+    #manager = plt.get_current_fig_manager()
+    #manager.window.showMaximized() #stampa full screen
+    #plt.savefig('stampeAlgoritmo\ ' + fileName + 'Comparison' + attribute1 + '.png',bbox_inches='tight')
     plt.show()
