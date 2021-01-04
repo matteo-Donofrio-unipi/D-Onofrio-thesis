@@ -105,7 +105,7 @@ def readCsvAsDf(fileName):
 
 #Write per MAPIC
 def WriteCsvMAPIC(fileName,row):
-    fields = ['Candidates', 'Max depth', 'Min samples', 'Window size', 'Remove candi', 'k', 'useValidationSet' ,'% Training set', 'useClustering','NumCluster(Medoids)' ,'Accuracy','PreprocessingTrainTime','TrainTime','PreprocessingTestTime','TestTime']
+    fields = ['Dataset','Candidates', 'Max depth', 'Min samples', 'Window size', 'Remove candi', 'k', 'useValidationSet' ,'% Training set', 'useClustering','NumCluster(Medoids)' ,'Accuracy','PreprocessingTrainTime','TrainTime','PreprocessingTestTime','PredictionTime']
     #fields = ['Algorithm','Dataset','Accuracy','PreprocessingTrainTime','TrainTime','PreprocessingTestTime','TestTime','avgSSE','avgNumIterationKMeans']
 
     writeFileds=False
@@ -143,7 +143,7 @@ def WriteCsvShapeletAlgo(fileName,row):
 
 #Write per altri algoritmi
 def WriteCsvComparison(fileName,row):
-    fields = ['Algorithm', 'DatasetName', 'Accuracy', 'TrainTime','TestTime']
+    fields = ['Algorithm', 'DatasetName', 'Accuracy', 'PreProcessingTrainTime' , 'TrainTime','PredictionTime']
     writeFileds=False
     if(os.path.isfile(fileName)==False):
         writeFileds=True

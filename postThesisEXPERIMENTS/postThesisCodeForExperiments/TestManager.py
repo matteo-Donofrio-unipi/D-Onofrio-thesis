@@ -12,7 +12,7 @@ from tslearn.shapelets import LearningShapelets, grabocka_params_to_shapelet_siz
 
 
 #datasetNames = 'GunPoint,ItalyPowerDemand,ArrowHead,ECG200,ECG5000,PhalangesOutlinesCorrect'
-def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameFile):#,initialWS,candidate):
+def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameFile,percentage):#,initialWS,candidate):
 
     #INPUT: Parameters for TSCMP algorithm
 
@@ -26,13 +26,14 @@ def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameF
     sixth = False  # Plot of the choosen shapelet
 
 
-    PercentageTrainingSet = 1 # variable percentage of the training set
+    PercentageTrainingSet = percentage # variable percentage of the training set
     PercentageValidationSet = 0.3  # percentage of the training set chosen as validation set
     writeOnCsv = True
 
 
     le = LabelEncoder()
-    tree= Tree(candidatesGroup=1,maxDepth=3,minSamplesLeaf=20,removeUsedCandidate=1,window_size=20,k=5,useClustering=True,n_clusters=20,warningDetected=False,verbose=0)
+    # candidatesGroup=1,maxDepth=3,minSamplesLeaf=20,removeUsedCandidate=1,window_size=20,k=2,useClustering=True,n_clusters=20,warningDetected=False,verbose=0
+    tree= Tree(candidatesGroup=1,maxDepth=3,minSamplesLeaf=20,removeUsedCandidate=1,window_size=20,k=2,useClustering=True,n_clusters=20,warningDetected=False,verbose=0)
 
 
 
@@ -276,7 +277,7 @@ def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameF
         elif(usePercentageTrainingSet):
             percentage=PercentageTrainingSet
 
-        row=[group,tree.maxDepth,tree.minSamplesLeaf,tree.window_size,tree.removeUsedCandidate,tree.k,useValidationSet,percentage,tree.useClustering,tree.n_clusters,round(aS,2),round(PreprocessingTrainTime,2),round(TrainTime,2),round(PreprocessingTestTime,2),round(TestTime,2)]
+        row=[datasetName,group,tree.maxDepth,tree.minSamplesLeaf,tree.window_size,tree.removeUsedCandidate,tree.k,useValidationSet,percentage,tree.useClustering,tree.n_clusters,round(aS,2),round(PreprocessingTrainTime,2),round(TrainTime,2),round(PreprocessingTestTime,2),round(TestTime,2)]
         #row = ['MAPIC', datasetName, round(aS,2), round(PreprocessingTrainTime,2),round(TrainTime,2),round(PreprocessingTestTime,2),round(TestTime,2),round(avgSSE),round(avgIteration)]
 
 
@@ -286,7 +287,7 @@ def executeTestTSCMP(useValidationSet,usePercentageTrainingSet,datasetName,nameF
 
         #COMMENTO PER STAMPARE SU CONFRONTO ALGO
         if(writeOnCsv):
-            WriteCsvMAPIC(nameFile, row)
+            WriteCsvMAPIC('parametri_mapic.csv', row)
             #WriteCsvComparison('NumIterationKMeans.csv', row)
 
     if(sixth==True):
@@ -700,9 +701,13 @@ def executeKNN(datasetName):
 
     knn = KNeighborsClassifier(n_neighbors=K)
 
-    start_timeTrain = time.time()
+    start_timePreprocessingTrain = time.time()
 
     dfTrain[dfTrain.columns] = scaler.fit_transform(dfTrain)
+
+    PreProcessingTrainTime = time.time() - start_timePreprocessingTrain  # Training phase time
+
+    start_timeTrain = time.time()
 
     knn.fit(dfTrain, y_train)
 
@@ -726,7 +731,7 @@ def executeKNN(datasetName):
     confusion_matrix(y_test, test_pred_knn)
 
 
-    row = ['KNN', datasetName, round(accuracy_score(y_test, test_pred_knn),2), round(TrainTime, 2),round(TestTime, 2)]
+    row = ['KNN', datasetName, round(accuracy_score(y_test, test_pred_knn),2), round(PreProcessingTrainTime, 2) ,round(TrainTime, 2),round(TestTime, 2)]
 
-    WriteCsvComparison('Algorithms_Experiments_29-12.csv.csv', row)
+    WriteCsvComparison('KNN_Experiments_04-01.csv', row)
 
